@@ -21,7 +21,7 @@ global.wss = wss;
 
 // Enhanced CORS configuration
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"], // Include both frontend ports
+  origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "https://cool-malabi-d4598b.netlify.app"], // Include both frontend ports and production URL
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow all standard methods
   allowedHeaders: ["Content-Type", "Authorization", "Accept"], // Allow common headers
   exposedHeaders: ["Authorization"], // Expose headers if needed
