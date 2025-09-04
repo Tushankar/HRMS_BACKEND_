@@ -62,7 +62,7 @@ const JobDescriptionAcknowledgmentSchema = new mongoose.Schema(
     // Form Status
     status: {
       type: String,
-      enum: ["draft", "staff_signed", "completed", "submitted", "approved", "rejected"],
+      enum: ["draft", "staff_signed", "completed", "submitted", "under_review", "approved", "rejected"],
       default: "draft",
     },
 

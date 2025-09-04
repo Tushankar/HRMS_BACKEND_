@@ -9,9 +9,11 @@ const router = express.Router();
 // Save or update Background Check form
 router.post("/save-background-check", async (req, res) => {
   try {
+    console.log("Background check request received:", JSON.stringify(req.body, null, 2));
     const { applicationId, employeeId, formData, status = "draft" } = req.body;
 
     if (!applicationId || !employeeId) {
+      console.log("Missing required fields:", { applicationId, employeeId });
       return res.status(400).json({ message: "Application ID and Employee ID are required" });
     }
 
@@ -25,15 +27,37 @@ router.post("/save-background-check", async (req, res) => {
     let backgroundCheckForm = await BackgroundCheck.findOne({ applicationId });
     
     if (backgroundCheckForm) {
-      // Update existing form
-      Object.assign(backgroundCheckForm, formData);
+      // Update existing form - merge formData properly
+      if (formData.applicantInfo) {
+        backgroundCheckForm.applicantInfo = { ...backgroundCheckForm.applicantInfo, ...formData.applicantInfo };
+      }
+      if (formData.employmentInfo) {
+        backgroundCheckForm.employmentInfo = { ...backgroundCheckForm.employmentInfo, ...formData.employmentInfo };
+      }
+      if (formData.consentAcknowledgment) {
+        backgroundCheckForm.consentAcknowledgment = { ...backgroundCheckForm.consentAcknowledgment, ...formData.consentAcknowledgment };
+      }
+      if (formData.notification) {
+        backgroundCheckForm.notification = { ...backgroundCheckForm.notification, ...formData.notification };
+      }
+      if (formData.applicantSignature) {
+        backgroundCheckForm.applicantSignature = formData.applicantSignature;
+      }
+      if (formData.applicantSignatureDate) {
+        backgroundCheckForm.applicantSignatureDate = formData.applicantSignatureDate;
+      }
       backgroundCheckForm.status = status;
     } else {
-      // Create new form
+      // Create new form with proper structure
       backgroundCheckForm = new BackgroundCheck({
         applicationId,
         employeeId,
-        ...formData,
+        applicantInfo: formData.applicantInfo || {},
+        employmentInfo: formData.employmentInfo || {},
+        consentAcknowledgment: formData.consentAcknowledgment || {},
+        notification: formData.notification || {},
+        applicantSignature: formData.applicantSignature || '',
+        applicantSignatureDate: formData.applicantSignatureDate || null,
         status
       });
     }
@@ -42,23 +66,14 @@ router.post("/save-background-check", async (req, res) => {
 
     // Update application progress
     if (status === "completed") {
-      // Ensure formsCompleted array exists
-      if (!application.formsCompleted) {
-        application.formsCompleted = [];
+      // Ensure completedForms array exists
+      if (!application.completedForms) {
+        application.completedForms = [];
       }
 
-      const existingFormIndex = application.formsCompleted.findIndex(
-        form => form.formName === "Background Check Form"
-      );
-      
-      if (existingFormIndex === -1) {
-        application.formsCompleted.push({
-          formName: "Background Check Form",
-          status: "completed"
-        });
-      } else {
-        application.formsCompleted[existingFormIndex].status = "completed";
-        application.formsCompleted[existingFormIndex].completedAt = new Date();
+      // Check if Background Check is already marked as completed
+      if (!application.completedForms.includes("Background Check")) {
+        application.completedForms.push("Background Check");
       }
       
       application.completionPercentage = application.calculateCompletionPercentage();
@@ -79,7 +94,7 @@ router.post("/save-background-check", async (req, res) => {
   }
 });
 
-// Get Background Check form
+// Get Background Check form by application ID
 router.get("/get-background-check/:applicationId", async (req, res) => {
   try {
     const { applicationId } = req.params;
@@ -97,6 +112,28 @@ router.get("/get-background-check/:applicationId", async (req, res) => {
 
   } catch (error) {
     console.error("Error getting background check form:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Get Background Check form by ID (for your frontend route)
+router.get("/get-background-check-by-id/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const backgroundCheck = await BackgroundCheck.findById(id);
+    
+    if (!backgroundCheck) {
+      return res.status(404).json({ message: "Background check form not found" });
+    }
+
+    res.status(200).json({
+      message: "Background check form retrieved successfully",
+      backgroundCheck
+    });
+
+  } catch (error) {
+    console.error("Error getting background check form by ID:", error);
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 });
@@ -132,9 +169,11 @@ router.put("/update-background-check-results/:applicationId", async (req, res) =
 // Save or update TB Symptom Screen form
 router.post("/save-tb-symptom-screen", async (req, res) => {
   try {
+    console.log("TB Symptom Screen request received:", JSON.stringify(req.body, null, 2));
     const { applicationId, employeeId, formData, status = "draft" } = req.body;
 
     if (!applicationId || !employeeId) {
+      console.log("Missing required fields:", { applicationId, employeeId });
       return res.status(400).json({ message: "Application ID and Employee ID are required" });
     }
 
@@ -148,17 +187,49 @@ router.post("/save-tb-symptom-screen", async (req, res) => {
     let tbScreenForm = await TBSymptomScreen.findOne({ applicationId });
     
     if (tbScreenForm) {
-      // Update existing form - avoid overwriting employeeId and applicationId
-      const { employeeId: formEmployeeId, applicationId: formApplicationId, ...safeFormData } = formData;
-      Object.assign(tbScreenForm, safeFormData);
+      // Update existing form - merge formData properly
+      if (formData.basicInfo) {
+        tbScreenForm.basicInfo = { ...tbScreenForm.basicInfo, ...formData.basicInfo };
+      }
+      if (formData.lastSkinTest) {
+        tbScreenForm.lastSkinTest = { ...tbScreenForm.lastSkinTest, ...formData.lastSkinTest };
+      }
+      if (formData.treatmentHistory) {
+        tbScreenForm.treatmentHistory = { ...tbScreenForm.treatmentHistory, ...formData.treatmentHistory };
+      }
+      if (formData.symptoms) {
+        tbScreenForm.symptoms = { ...tbScreenForm.symptoms, ...formData.symptoms };
+      }
+      if (formData.actionTaken) {
+        tbScreenForm.actionTaken = { ...tbScreenForm.actionTaken, ...formData.actionTaken };
+      }
+      if (formData.screeningDate) {
+        tbScreenForm.screeningDate = formData.screeningDate;
+      }
+      if (formData.screenerSignature) {
+        tbScreenForm.screenerSignature = formData.screenerSignature;
+      }
+      if (formData.clientSignature) {
+        tbScreenForm.clientSignature = formData.clientSignature;
+      }
+      if (formData.clientSignatureDate) {
+        tbScreenForm.clientSignatureDate = formData.clientSignatureDate;
+      }
       tbScreenForm.status = status;
     } else {
-      // Create new form - exclude conflicting fields from formData
-      const { employeeId: formEmployeeId, applicationId: formApplicationId, ...safeFormData } = formData;
+      // Create new form with proper structure
       tbScreenForm = new TBSymptomScreen({
         applicationId,
         employeeId,
-        ...safeFormData,
+        basicInfo: formData.basicInfo || {},
+        lastSkinTest: formData.lastSkinTest || {},
+        treatmentHistory: formData.treatmentHistory || {},
+        symptoms: formData.symptoms || {},
+        actionTaken: formData.actionTaken || {},
+        screeningDate: formData.screeningDate || null,
+        screenerSignature: formData.screenerSignature || '',
+        clientSignature: formData.clientSignature || '',
+        clientSignatureDate: formData.clientSignatureDate || null,
         status
       });
     }
@@ -167,24 +238,14 @@ router.post("/save-tb-symptom-screen", async (req, res) => {
 
     // Update application progress
     if (status === "completed") {
-      // Ensure formsCompleted array exists
-      if (!application.formsCompleted) {
-        application.formsCompleted = [];
+      // Ensure completedForms array exists
+      if (!application.completedForms) {
+        application.completedForms = [];
       }
       
-      const existingFormIndex = application.formsCompleted.findIndex(
-        form => form.formName === "TB Symptom Screen"
-      );
-      
-      if (existingFormIndex === -1) {
-        application.formsCompleted.push({
-          formName: "TB Symptom Screen",
-          status: "completed",
-          completedAt: new Date()
-        });
-      } else {
-        application.formsCompleted[existingFormIndex].status = "completed";
-        application.formsCompleted[existingFormIndex].completedAt = new Date();
+      // Check if TB Symptom Screen is already marked as completed
+      if (!application.completedForms.includes("TB Symptom Screen")) {
+        application.completedForms.push("TB Symptom Screen");
       }
       
       application.completionPercentage = application.calculateCompletionPercentage();
@@ -205,7 +266,7 @@ router.post("/save-tb-symptom-screen", async (req, res) => {
   }
 });
 
-// Get TB Symptom Screen form
+// Get TB Symptom Screen form by application ID
 router.get("/get-tb-symptom-screen/:applicationId", async (req, res) => {
   try {
     const { applicationId } = req.params;
@@ -223,6 +284,28 @@ router.get("/get-tb-symptom-screen/:applicationId", async (req, res) => {
 
   } catch (error) {
     console.error("Error getting TB symptom screen:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Get TB Symptom Screen form by ID (for your frontend route)
+router.get("/get-tb-symptom-screen-by-id/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const tbSymptomScreen = await TBSymptomScreen.findById(id);
+    
+    if (!tbSymptomScreen) {
+      return res.status(404).json({ message: "TB symptom screen not found" });
+    }
+
+    res.status(200).json({
+      message: "TB symptom screen retrieved successfully",
+      tbSymptomScreen
+    });
+
+  } catch (error) {
+    console.error("Error getting TB symptom screen by ID:", error);
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 });

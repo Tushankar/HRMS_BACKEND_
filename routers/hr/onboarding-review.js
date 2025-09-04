@@ -15,6 +15,10 @@ const BackgroundCheck = require("../../database/Models/BackgroundCheck");
 const TBSymptomScreen = require("../../database/Models/TBSymptomScreen");
 const OrientationChecklist = require("../../database/Models/OrientationChecklist");
 const JobDescriptionAcknowledgment = require("../../database/Models/JobDescriptionAcknowledgment");
+const PCAJobDescription = require("../../database/Models/PCAJobDescription");
+const CNAJobDescription = require("../../database/Models/CNAJobDescription");
+const LPNJobDescription = require("../../database/Models/LPNJobDescription");
+const RNJobDescription = require("../../database/Models/RNJobDescription");
 const User = require("../../database/Models/Users");
 
 const router = express.Router();
@@ -28,14 +32,20 @@ const getFormModel = (formType) => {
     'w9-form': W9Form,
     'emergency-contact': EmergencyContact,
     'direct-deposit': DirectDeposit,
+    'direct-deposit-form': DirectDeposit, // Added kebab-case mapping
     'misconduct-statement': MisconductStatement,
     'code-of-ethics': CodeOfEthics,
     'service-delivery-policy': ServiceDeliveryPolicy,
+    'service-delivery-policies': ServiceDeliveryPolicy, // Added plural mapping
     'non-compete-agreement': NonCompeteAgreement,
     'background-check': BackgroundCheck,
     'tb-symptom-screen': TBSymptomScreen,
     'orientation-checklist': OrientationChecklist,
-    'job-description': JobDescriptionAcknowledgment
+    'job-description': JobDescriptionAcknowledgment,
+    'personal-care': PCAJobDescription,
+    'certified-nursing-assistant': CNAJobDescription,
+    'licensed-practical-nurse': LPNJobDescription,
+    'registered-nurse': RNJobDescription
   };
   return models[formType];
 };
@@ -89,7 +99,11 @@ router.get("/application-detail/:applicationId", async (req, res) => {
       backgroundCheck,
       tbSymptomScreen,
       orientationChecklist,
-      jobDescriptions
+      jobDescriptions,
+      pcaJobDescription,
+      cnaJobDescription,
+      lpnJobDescription,
+      rnJobDescription
     ] = await Promise.all([
       EmploymentApplication.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
       I9Form.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
@@ -104,7 +118,11 @@ router.get("/application-detail/:applicationId", async (req, res) => {
       BackgroundCheck.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
       TBSymptomScreen.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
       OrientationChecklist.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      JobDescriptionAcknowledgment.find({ applicationId }).populate("hrFeedback.reviewedBy", "userName")
+      JobDescriptionAcknowledgment.find({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
+      PCAJobDescription.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
+      CNAJobDescription.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
+      LPNJobDescription.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
+      RNJobDescription.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName")
     ]);
 
     const response = {
@@ -128,6 +146,12 @@ router.get("/application-detail/:applicationId", async (req, res) => {
           CNA: jobDescriptions.find(jd => jd.jobDescriptionType === 'CNA'),
           LPN: jobDescriptions.find(jd => jd.jobDescriptionType === 'LPN'),
           RN: jobDescriptions.find(jd => jd.jobDescriptionType === 'RN')
+        },
+        jobDescriptionForms: {
+          pcaJobDescription,
+          cnaJobDescription,
+          lpnJobDescription,
+          rnJobDescription
         }
       }
     };
@@ -163,13 +187,30 @@ router.put("/review-form/:formType/:formId", async (req, res) => {
       return res.status(404).json({ message: "Form not found" });
     }
 
-    // Update form status and HR feedback
+    // Update form status and HR feedback - use correct field names based on form type
     form.status = status;
-    form.hrFeedback = {
-      comment: comment || "",
-      reviewedBy,
-      reviewedAt: new Date()
-    };
+    const jobDescriptionForms = ['personal-care', 'certified-nursing-assistant', 'licensed-practical-nurse', 'registered-nurse'];
+
+    // Handle case where hrFeedback might be an array from previous version
+    if (Array.isArray(form.hrFeedback)) {
+      form.hrFeedback = null; // Reset it so we can set it as object
+    }
+
+    if (jobDescriptionForms.includes(formType)) {
+      // Job description forms use 'notes' and 'timestamp'
+      form.hrFeedback = {
+        notes: comment || "",
+        reviewedBy,
+        timestamp: new Date()
+      };
+    } else {
+      // Other forms use 'comment' and 'reviewedAt'
+      form.hrFeedback = {
+        comment: comment || "",
+        reviewedBy,
+        reviewedAt: new Date()
+      };
+    }
 
     await form.save();
 
@@ -217,6 +258,92 @@ router.put("/review-application/:applicationId", async (req, res) => {
 
   } catch (error) {
     console.error("Error reviewing application:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Submit HR notes/feedback for a specific form
+router.post("/submit-notes", async (req, res) => {
+  try {
+    const { formType, formId, applicationId, comment, status, reviewedBy } = req.body;
+
+    // Validation
+    if (!formType || (!formId && !applicationId) || !comment || !reviewedBy) {
+      return res.status(400).json({ 
+        message: "Missing required fields: formType, formId/applicationId, comment, reviewedBy" 
+      });
+    }
+
+    if (status && !["approved", "rejected", "under_review"].includes(status)) {
+      return res.status(400).json({ 
+        message: "Invalid status. Use 'approved', 'rejected', or 'under_review'" 
+      });
+    }
+
+    const FormModel = getFormModel(formType);
+    if (!FormModel) {
+      return res.status(400).json({ message: "Invalid form type" });
+    }
+
+    // Find the form by ID or applicationId
+    let form;
+    if (formId) {
+      form = await FormModel.findById(formId);
+    } else {
+      form = await FormModel.findOne({ applicationId });
+    }
+
+    if (!form) {
+      return res.status(404).json({ message: "Form not found" });
+    }
+
+    // Update HR feedback - use correct field names based on form type
+    const jobDescriptionForms = ['personal-care', 'certified-nursing-assistant', 'licensed-practical-nurse', 'registered-nurse'];
+
+    // Handle case where hrFeedback might be an array from previous version
+    if (Array.isArray(form.hrFeedback)) {
+      form.hrFeedback = null; // Reset it so we can set it as object
+    }
+
+    if (jobDescriptionForms.includes(formType)) {
+      // Job description forms use 'notes' and 'timestamp'
+      form.hrFeedback = {
+        notes: comment,
+        reviewedBy,
+        timestamp: new Date()
+      };
+    } else {
+      // Other forms use 'comment' and 'reviewedAt'
+      form.hrFeedback = {
+        comment: comment,
+        reviewedBy,
+        reviewedAt: new Date()
+      };
+    }
+
+    // Update status if provided
+    if (status) {
+      form.status = status;
+    }
+
+    await form.save();
+
+    // If status is provided and form is approved/rejected, check application status
+    if (status && ["approved", "rejected"].includes(status)) {
+      await checkAndUpdateApplicationStatus(form.applicationId);
+    }
+
+    res.status(200).json({
+      message: "HR feedback submitted successfully",
+      form: {
+        _id: form._id,
+        status: form.status,
+        hrFeedback: form.hrFeedback
+      }
+    });
+
+  } catch (error) {
+    console.error("Error submitting HR notes:", error);
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 });

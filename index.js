@@ -45,6 +45,7 @@ const UploadFile = require("./routers/employee/uploadFile.js");
 const CreateEmployee = require("./routers/hr/create-employee.js");
 const UploadSignature = require("./routers/employee/uploadSignature.js");
 const Getchat = require("./routers/chat/getChatHistory.js");
+const UploadRouter = require("./routers/upload.js");
 
 // Onboarding Routes
 const OnboardingMain = require("./routers/onboarding/onboarding-main.js");
@@ -58,6 +59,7 @@ const JobDescription = require("./routers/onboarding/job-description.js");
 
 // HR Review Routes
 const OnboardingReview = require("./routers/hr/onboarding-review.js");
+const OnboardingManagement = require("./routers/hr/onboarding-management.js");
 
 // Apply Routes
 app.use("/auth", RegisterRoute);
@@ -70,6 +72,7 @@ app.use("/doc", UploadFile);
 app.use("/hr", CreateEmployee);
 app.use("/signature", UploadSignature);
 app.use("/chat", Getchat); 
+app.use("/upload", UploadRouter);
 
 // Apply Onboarding Routes
 app.use("/onboarding", OnboardingMain);
@@ -81,8 +84,12 @@ app.use("/onboarding", PolicyForms);
 app.use("/onboarding", ScreeningForms); 
 app.use("/onboarding", JobDescription);
 
+// Direct job description route (for simplified API)
+app.use("/job-description", JobDescription);
+
 // Apply HR Review Routes
 app.use("/hr/onboarding", OnboardingReview);
+app.use("/hr", OnboardingManagement);
 
 // WebSocket for Real-Time Chat
 const users = {}; // Store connected users { userId: WebSocket }

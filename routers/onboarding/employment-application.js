@@ -87,8 +87,8 @@ router.get("/get-employment-application/:applicationId", async (req, res) => {
       employeeId: employmentApp.employeeId,
       applicantInfo: employmentApp.applicantInfo || {},
       education: employmentApp.education || {},
-      employment: employmentApp.employment || [],
       references: employmentApp.references || [],
+      previousEmployments: employmentApp.previousEmployments || [], // This is the correct field
       militaryService: employmentApp.militaryService || {},
       legalQuestions: employmentApp.legalQuestions || {},
       signature: employmentApp.signature || '',

@@ -70,7 +70,7 @@ const CodeOfEthicsSchema = new mongoose.Schema(
     // },
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "approved", "rejected"],
+      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
       default: "draft",
     },
 

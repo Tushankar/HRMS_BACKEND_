@@ -63,7 +63,9 @@ const W9FormSchema = new mongoose.Schema(
     // Line 5 & 6: Address
     address: {
       street: { type: String },
-      cityStateZip: { type: String },
+      city: { type: String },
+      state: { type: String },
+      zip: { type: String },
     },
 
     // Line 7: Account number(s) (optional)
@@ -99,7 +101,7 @@ const W9FormSchema = new mongoose.Schema(
     // Internal status tracking
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "approved", "rejected"],
+      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
       default: "draft",
     },
 

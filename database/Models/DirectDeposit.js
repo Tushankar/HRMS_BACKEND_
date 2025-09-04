@@ -64,7 +64,7 @@ const DirectDepositFormSchema = new mongoose.Schema(
     // Internal status tracking
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "approved", "rejected"],
+      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
       default: "draft",
     },
 

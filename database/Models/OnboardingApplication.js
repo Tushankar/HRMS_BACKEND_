@@ -10,7 +10,7 @@ const OnboardingApplicationSchema = new mongoose.Schema(
     },
     applicationStatus: {
       type: String,
-      enum: ["draft", "submitted", "under_review", "approved", "rejected"],
+      enum: ["draft", "submitted", "hr_accepted", "under_review", "completed", "approved", "rejected"],
       default: "draft",
     },
     submittedAt: {
@@ -24,6 +24,28 @@ const OnboardingApplicationSchema = new mongoose.Schema(
       ref: "user",
     },
     reviewComments: {
+      type: String,
+    },
+    // HR Decision Tracking
+    hrAcceptedAt: {
+      type: Date,
+    },
+    hrAcceptedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
+    finalDecision: {
+      type: String,
+      enum: ["accept", "reject"],
+    },
+    finalDecisionAt: {
+      type: Date,
+    },
+    finalDecisionBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
+    finalDecisionComments: {
       type: String,
     },
     completionPercentage: {
@@ -46,6 +68,13 @@ OnboardingApplicationSchema.methods.calculateCompletionPercentage = function() {
   const totalForms = 17; 
   const completedFormsCount = this.completedForms.length;
   this.completionPercentage = Math.round((completedFormsCount / totalForms) * 100);
+  
+  // Auto-submit when all forms are completed
+  if (this.completionPercentage === 100 && this.applicationStatus === 'draft') {
+    this.applicationStatus = 'submitted';
+    this.submittedAt = new Date();
+  }
+  
   return this.completionPercentage;
 };
 
