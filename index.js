@@ -61,6 +61,9 @@ const JobDescription = require("./routers/onboarding/job-description.js");
 const OnboardingReview = require("./routers/hr/onboarding-review.js");
 const OnboardingManagement = require("./routers/hr/onboarding-management.js");
 
+// Kanban Task Management Routes
+const KanbanTasks = require("./routers/hr/kanban-tasks.js");
+
 // Apply Routes
 app.use("/auth", RegisterRoute);
 app.use("/auth", LoginRoute);
@@ -90,6 +93,9 @@ app.use("/job-description", JobDescription);
 // Apply HR Review Routes
 app.use("/hr/onboarding", OnboardingReview);
 app.use("/hr", OnboardingManagement);
+
+// Apply Kanban Task Management Routes
+app.use("/hr/kanban", KanbanTasks);
 
 // WebSocket for Real-Time Chat
 const users = {}; // Store connected users { userId: WebSocket }

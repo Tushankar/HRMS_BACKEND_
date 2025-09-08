@@ -54,6 +54,17 @@ const TaskSchema = new Mongoose.Schema(
       default: "To Do",
       enum: ["To Do"," In Progress", "In Review", "Complete" , "Reject"],
     },
+    applicationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "OnboardingApplication",
+      required: false,
+    },
+    approvalType: {
+      type: String,
+      enum: ["regular", "final_approved", "final_rejected"],
+      default: "regular",
+      required: false,
+    },
   },
   {
     timestamps: true,

@@ -213,20 +213,31 @@ router.get("/get-w4-form/:applicationId", async (req, res) => {
 // Save or update W-9 form
 router.post("/save-w9-form", async (req, res) => {
   try {
+    console.log("🔄 Processing W9 form save request...");
+    console.log("Request body:", JSON.stringify(req.body, null, 2));
+    
     const { applicationId, employeeId, formData, status = "draft" } = req.body;
 
     if (!applicationId || !employeeId) {
+      console.log("❌ Missing required fields: applicationId or employeeId");
       return res.status(400).json({ message: "Application ID and Employee ID are required" });
     }
+
+    console.log("✅ Required fields present:", { applicationId, employeeId, status });
 
     // Check if application exists
     const application = await OnboardingApplication.findById(applicationId);
     if (!application) {
+      console.log("❌ Application not found:", applicationId);
       return res.status(404).json({ message: "Onboarding application not found" });
     }
 
+    console.log("✅ Application found:", application._id);
+
     // Find existing form or create new one
     let w9Form = await W9Form.findOne({ applicationId });
+    
+    console.log("📋 Form Data received:", JSON.stringify(formData, null, 2));
     
     // Map frontend data to backend schema format
     const mappedFormData = {
@@ -234,11 +245,15 @@ router.post("/save-w9-form", async (req, res) => {
       taxClassification: mapTaxClassification(formData.taxClassification)
     };
     
+    console.log("🔄 Mapped form data:", JSON.stringify(mappedFormData, null, 2));
+    
     if (w9Form) {
+      console.log("📝 Updating existing W9 form:", w9Form._id);
       // Update existing form
       Object.assign(w9Form, mappedFormData);
       w9Form.status = status;
     } else {
+      console.log("✨ Creating new W9 form");
       // Create new form
       w9Form = new W9Form({
         applicationId,
@@ -248,7 +263,9 @@ router.post("/save-w9-form", async (req, res) => {
       });
     }
 
+    console.log("💾 Attempting to save W9 form...");
     await w9Form.save();
+    console.log("✅ W9 form saved successfully:", w9Form._id);
 
     // Update application progress
     if (status === "completed") {
@@ -275,7 +292,21 @@ router.post("/save-w9-form", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error saving W-9 form:", error);
+    console.error("❌ Error saving W-9 form:");
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    
+    // If it's a validation error, provide more specific details
+    if (error.name === 'ValidationError') {
+      console.error("Validation errors:", error.errors);
+      const validationMessages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        message: "Validation failed", 
+        errors: validationMessages,
+        details: error.errors 
+      });
+    }
+    
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 });
