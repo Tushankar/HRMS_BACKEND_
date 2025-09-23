@@ -1,9 +1,11 @@
 # 🚀 Complete Onboarding API Testing Guide
 
 ## 📋 Overview
+
 This document provides complete API testing instructions for the HRMS Onboarding System with **17 interactive forms** covering all PDF documents.
 
 ## 🔧 Prerequisites
+
 - Server running on `http://localhost:1111`
 - Employee ID: `67e0f8770c6feb6ba99d11d2`
 - Thunder Client or Postman installed
@@ -14,10 +16,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ## 📊 1. Main Application Management
 
 ### 1.1 Get/Create Application
+
 **Method:** `GET`  
 **URL:** `http://localhost:1111/onboarding/get-application/67e0f8770c6feb6ba99d11d2`
 
 **Expected Response:**
+
 ```json
 {
   "message": "Onboarding application retrieved successfully",
@@ -59,11 +63,13 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ## 📝 2. Employment Application (Exhibit 1a)
 
 ### 2.1 Save Employment Application
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-employment-application`  
 **Headers:** `Content-Type: application/json`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -133,6 +139,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ```
 
 ### 2.2 Get Employment Application
+
 **Method:** `GET`  
 **URL:** `http://localhost:1111/onboarding/get-employment-application/YOUR_APPLICATION_ID`
 
@@ -141,10 +148,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ## 🆔 3. Job Description Acknowledgments (Exhibits 1a, 1b, 1c, 1d)
 
 ### 3.1 Save RN Job Description (Exhibit 1d)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-job-description`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -181,10 +190,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ```
 
 ### 3.2 Supervisor Sign Job Description
+
 **Method:** `PUT`  
 **URL:** `http://localhost:1111/onboarding/supervisor-sign-job-description/JOB_DESC_ID`
 
 **Body:**
+
 ```json
 {
   "supervisorSignature": {
@@ -198,6 +209,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ```
 
 ### 3.3 Get Job Description by Type
+
 **Method:** `GET`  
 **URL:** `http://localhost:1111/onboarding/get-job-description/YOUR_APPLICATION_ID/RN`
 
@@ -208,10 +220,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ## 📋 4. I-9 Form (Exhibit 11)
 
 ### 4.1 Save I-9 Form
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-i9-form`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -244,10 +258,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ## 💰 5. Tax Forms
 
 ### 5.1 Save W-4 Form (Exhibit 12a)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-w4-form`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -285,10 +301,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ```
 
 ### 5.2 Save W-9 Form (Exhibit 12b)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-w9-form`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -326,10 +344,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ## 👥 6. Personal Information Forms
 
 ### 6.1 Save Emergency Contact (Exhibit 13)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-emergency-contact`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -377,10 +397,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ```
 
 ### 6.2 Save Direct Deposit (Exhibit 14)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-direct-deposit`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -420,10 +442,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ## 📜 7. Policy and Legal Forms
 
 ### 7.1 Save Misconduct Statement (Exhibit 2)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-misconduct-statement`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -456,10 +480,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ```
 
 ### 7.2 Save Code of Ethics (Exhibit 3)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-code-of-ethics`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -495,10 +521,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ```
 
 ### 7.3 Save Service Delivery Policy (Exhibit 4)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-service-delivery-policy`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -546,10 +574,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ```
 
 ### 7.4 Save Non-Compete Agreement (Exhibit 5)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-non-compete-agreement`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -594,10 +624,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ## 🔍 8. Screening Forms
 
 ### 8.1 Save Background Check (Exhibit 7)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-background-check`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -641,10 +673,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ```
 
 ### 8.2 Save TB Symptom Screen (Exhibit 9)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-tb-symptom-screen`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -685,10 +719,12 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ```
 
 ### 8.3 Save Orientation Checklist (Exhibit 6b)
+
 **Method:** `POST`  
 **URL:** `http://localhost:1111/onboarding/save-orientation-checklist`
 
 **Body:**
+
 ```json
 {
   "applicationId": "YOUR_APPLICATION_ID",
@@ -734,18 +770,22 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ## 📤 9. Application Submission & HR Functions
 
 ### 9.1 Submit Application to HR
+
 **Method:** `PUT`  
 **URL:** `http://localhost:1111/onboarding/submit-application/YOUR_APPLICATION_ID`
 
 ### 9.2 Get All Applications (HR View)
+
 **Method:** `GET`  
 **URL:** `http://localhost:1111/onboarding/get-all-applications`
 
 ### 9.3 Update Application Status (HR)
+
 **Method:** `PUT`  
 **URL:** `http://localhost:1111/onboarding/update-status/YOUR_APPLICATION_ID`
 
 **Body:**
+
 ```json
 {
   "status": "under_review",
@@ -766,6 +806,7 @@ After completing each form, check the progress:
 **URL:** `http://localhost:1111/onboarding/get-application/67e0f8770c6feb6ba99d11d2`
 
 **Completion Percentage Calculation:**
+
 - Total Forms: **17**
 - Each completed form: **~5.88%** increase
 - All forms completed: **100%**
@@ -775,6 +816,7 @@ After completing each form, check the progress:
 ## ✅ 11. Testing Checklist
 
 ### Core Functionality Tests:
+
 - [ ] Create/Get application
 - [ ] Save each form as draft
 - [ ] Complete each form
@@ -783,6 +825,7 @@ After completing each form, check the progress:
 - [ ] Update application status
 
 ### Form-Specific Tests:
+
 - [ ] Employment Application (1a)
 - [ ] Job Description PCA (1a)
 - [ ] Job Description CNA (1b)
@@ -802,6 +845,7 @@ After completing each form, check the progress:
 - [ ] Direct Deposit (14)
 
 ### Success Criteria:
+
 - ✅ All 17 forms save successfully
 - ✅ Draft functionality works
 - ✅ Completion percentage updates correctly
@@ -814,15 +858,19 @@ After completing each form, check the progress:
 ## 🐛 Common Issues & Solutions
 
 ### Issue: "Application not found"
+
 **Solution:** Make sure to use the correct APPLICATION_ID from step 1
 
 ### Issue: Forms not appearing in main response
+
 **Solution:** Server restart required after schema updates
 
 ### Issue: Completion percentage not updating
+
 **Solution:** Ensure `status: "completed"` is set in form data
 
 ### Issue: Server connection errors
+
 **Solution:** Verify server is running on port 1111
 
 ---
@@ -830,6 +878,7 @@ After completing each form, check the progress:
 ## 🎉 Expected Final Result
 
 After completing all 17 forms, your application should show:
+
 - `completionPercentage: 100`
 - `applicationStatus: "submitted"`
 - All form fields populated in the response

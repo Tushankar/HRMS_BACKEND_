@@ -1,9 +1,9 @@
-const axios = require('axios');
+const axios = require("axios");
 
 // Test the background check endpoint with the exact payload from frontend
 async function testBackgroundCheck() {
   try {
-    console.log('Testing Background Check Save API...\n');
+    console.log("Testing Background Check Save API...\n");
 
     // This mimics the exact payload sent from the frontend
     const payload = {
@@ -30,34 +30,37 @@ async function testBackgroundCheck() {
         signature: "Test Signature",
         date: new Date(),
       },
-      status: "draft"
+      status: "draft",
     };
 
-    console.log('Payload being sent:');
+    console.log("Payload being sent:");
     console.log(JSON.stringify(payload, null, 2));
-    console.log('\n---\n');
+    console.log("\n---\n");
 
-    const response = await axios.post('http://localhost:1111/onboarding/save-background-check', payload, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      withCredentials: true,
-    });
+    const response = await axios.post(
+      "http://localhost:1111/onboarding/save-background-check",
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      }
+    );
 
-    console.log('✅ Success! Response:');
-    console.log('Status:', response.status);
-    console.log('Data:', response.data);
-
+    console.log("✅ Success! Response:");
+    console.log("Status:", response.status);
+    console.log("Data:", response.data);
   } catch (error) {
-    console.log('❌ Error occurred:');
-    console.log('Status:', error.response?.status);
-    console.log('Status Text:', error.response?.statusText);
-    console.log('Error Message:', error.message);
-    console.log('Response Data:', error.response?.data);
-    
+    console.log("❌ Error occurred:");
+    console.log("Status:", error.response?.status);
+    console.log("Status Text:", error.response?.statusText);
+    console.log("Error Message:", error.message);
+    console.log("Response Data:", error.response?.data);
+
     if (error.response?.status === 400) {
-      console.log('\n🔍 This is the 400 error you\'re seeing!');
-      console.log('Response headers:', error.response.headers);
+      console.log("\n🔍 This is the 400 error you're seeing!");
+      console.log("Response headers:", error.response.headers);
     }
   }
 }

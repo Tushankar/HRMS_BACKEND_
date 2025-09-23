@@ -3,6 +3,7 @@
 ## 🧪 How to Test All 18 Onboarding Forms
 
 ### Prerequisites
+
 - Backend server running on `http://localhost:1111`
 - MongoDB connected
 - Testing tool: **Postman**, **Thunder Client**, or **curl**
@@ -12,6 +13,7 @@
 ## 📋 Complete Forms List (18 Forms)
 
 ### Required Forms (8):
+
 1. ✅ Employment Application
 2. ✅ I-9 Form
 3. ✅ W-4 Form
@@ -22,6 +24,7 @@
 8. ✅ TB Symptom Screen
 
 ### Optional Forms (5):
+
 9. ✅ W-9 Form
 10. ✅ Direct Deposit
 11. ✅ Service Delivery Policies
@@ -29,6 +32,7 @@
 13. ✅ Orientation Checklist
 
 ### Reference Documents (5):
+
 14. ℹ️ PCA Job Description (Reference only)
 15. ℹ️ CNA Job Description (Reference only)
 16. ℹ️ LPN Job Description (Reference only)
@@ -43,11 +47,13 @@
 ## 🚀 Quick Testing Steps
 
 ### Step 1: Test Server Connection
+
 ```bash
 curl http://localhost:1111/onboarding/get-all-applications
 ```
 
 ### Step 2: Create Test Employee (if needed)
+
 First, you need a valid employee ID from your existing users table.
 
 ### Step 3: Test Each Form Systematically
@@ -59,6 +65,7 @@ First, you need a valid employee ID from your existing users table.
 ### 1. Test Main Application Flow
 
 #### Create/Get Onboarding Application
+
 ```bash
 # Replace EMPLOYEE_ID with actual employee ID
 curl -X GET http://localhost:1111/onboarding/get-application/EMPLOYEE_ID
@@ -67,6 +74,7 @@ curl -X GET http://localhost:1111/onboarding/get-application/EMPLOYEE_ID
 ### 2. Test All 13 Interactive Forms
 
 #### Form 1: Employment Application
+
 ```bash
 # Save as Draft
 curl -X POST http://localhost:1111/onboarding/save-employment-application \
@@ -95,6 +103,7 @@ curl -X GET http://localhost:1111/onboarding/get-employment-application/APPLICAT
 ```
 
 #### Form 2: I-9 Form
+
 ```bash
 # Save I-9 Form
 curl -X POST http://localhost:1111/onboarding/save-i9-form \
@@ -117,6 +126,7 @@ curl -X GET http://localhost:1111/onboarding/get-i9-form/APPLICATION_ID
 ```
 
 #### Form 3: W-4 Form
+
 ```bash
 # Save W-4 Form
 curl -X POST http://localhost:1111/onboarding/save-w4-form \
@@ -139,6 +149,7 @@ curl -X GET http://localhost:1111/onboarding/get-w4-form/APPLICATION_ID
 ```
 
 #### Form 4: W-9 Form
+
 ```bash
 # Save W-9 Form
 curl -X POST http://localhost:1111/onboarding/save-w9-form \
@@ -160,6 +171,7 @@ curl -X GET http://localhost:1111/onboarding/get-w9-form/APPLICATION_ID
 ```
 
 #### Form 5: Emergency Contact
+
 ```bash
 # Save Emergency Contact
 curl -X POST http://localhost:1111/onboarding/save-emergency-contact \
@@ -185,6 +197,7 @@ curl -X GET http://localhost:1111/onboarding/get-emergency-contact/APPLICATION_I
 ```
 
 #### Form 6: Direct Deposit
+
 ```bash
 # Save Direct Deposit
 curl -X POST http://localhost:1111/onboarding/save-direct-deposit \
@@ -211,6 +224,7 @@ curl -X GET http://localhost:1111/onboarding/get-direct-deposit/APPLICATION_ID
 ```
 
 #### Form 7: Misconduct Statement
+
 ```bash
 # Save Misconduct Statement
 curl -X POST http://localhost:1111/onboarding/save-misconduct-statement \
@@ -236,6 +250,7 @@ curl -X GET http://localhost:1111/onboarding/get-misconduct-statement/APPLICATIO
 ```
 
 #### Form 8: Code of Ethics
+
 ```bash
 # Save Code of Ethics
 curl -X POST http://localhost:1111/onboarding/save-code-of-ethics \
@@ -262,6 +277,7 @@ curl -X GET http://localhost:1111/onboarding/get-code-of-ethics/APPLICATION_ID
 ```
 
 #### Form 9: Service Delivery Policy
+
 ```bash
 # Save Service Delivery Policy
 curl -X POST http://localhost:1111/onboarding/save-service-delivery-policy \
@@ -289,6 +305,7 @@ curl -X GET http://localhost:1111/onboarding/get-service-delivery-policy/APPLICA
 ```
 
 #### Form 10: Non-Compete Agreement
+
 ```bash
 # Save Non-Compete Agreement
 curl -X POST http://localhost:1111/onboarding/save-non-compete-agreement \
@@ -314,6 +331,7 @@ curl -X GET http://localhost:1111/onboarding/get-non-compete-agreement/APPLICATI
 ```
 
 #### Form 11: Background Check
+
 ```bash
 # Save Background Check
 curl -X POST http://localhost:1111/onboarding/save-background-check \
@@ -338,6 +356,7 @@ curl -X GET http://localhost:1111/onboarding/get-background-check/APPLICATION_ID
 ```
 
 #### Form 12: TB Symptom Screen
+
 ```bash
 # Save TB Symptom Screen
 curl -X POST http://localhost:1111/onboarding/save-tb-symptom-screen \
@@ -364,6 +383,7 @@ curl -X GET http://localhost:1111/onboarding/get-tb-symptom-screen/APPLICATION_I
 ```
 
 #### Form 13: Orientation Checklist
+
 ```bash
 # Save Orientation Checklist
 curl -X POST http://localhost:1111/onboarding/save-orientation-checklist \
@@ -393,12 +413,14 @@ curl -X GET http://localhost:1111/onboarding/get-orientation-checklist/APPLICATI
 ## 🎯 Advanced Testing
 
 ### Test Application Submission
+
 ```bash
 # Submit Application to HR
 curl -X PUT http://localhost:1111/onboarding/submit-application/APPLICATION_ID
 ```
 
 ### Test HR Functions
+
 ```bash
 # Update Application Status (HR)
 curl -X PUT http://localhost:1111/onboarding/update-status/APPLICATION_ID \
@@ -420,62 +442,70 @@ curl -X GET http://localhost:1111/onboarding/get-all-applications
 Create a file called `test-all-forms.js`:
 
 ```javascript
-const axios = require('axios');
+const axios = require("axios");
 
-const BASE_URL = 'http://localhost:1111/onboarding';
-const EMPLOYEE_ID = 'YOUR_EMPLOYEE_ID_HERE'; // Replace with actual employee ID
+const BASE_URL = "http://localhost:1111/onboarding";
+const EMPLOYEE_ID = "YOUR_EMPLOYEE_ID_HERE"; // Replace with actual employee ID
 
 async function testAllForms() {
   try {
-    console.log('🧪 Starting comprehensive onboarding forms test...\n');
+    console.log("🧪 Starting comprehensive onboarding forms test...\n");
 
     // Step 1: Create/Get Application
-    console.log('1. Creating onboarding application...');
-    const appResponse = await axios.get(`${BASE_URL}/get-application/${EMPLOYEE_ID}`);
+    console.log("1. Creating onboarding application...");
+    const appResponse = await axios.get(
+      `${BASE_URL}/get-application/${EMPLOYEE_ID}`
+    );
     const APPLICATION_ID = appResponse.data.data.application._id;
-    console.log('✅ Application created:', APPLICATION_ID);
+    console.log("✅ Application created:", APPLICATION_ID);
 
     // Step 2: Test all forms
     const forms = [
-      'employment-application',
-      'i9-form', 
-      'w4-form',
-      'w9-form',
-      'emergency-contact',
-      'direct-deposit',
-      'misconduct-statement',
-      'code-of-ethics',
-      'service-delivery-policy',
-      'non-compete-agreement',
-      'background-check',
-      'tb-symptom-screen',
-      'orientation-checklist'
+      "employment-application",
+      "i9-form",
+      "w4-form",
+      "w9-form",
+      "emergency-contact",
+      "direct-deposit",
+      "misconduct-statement",
+      "code-of-ethics",
+      "service-delivery-policy",
+      "non-compete-agreement",
+      "background-check",
+      "tb-symptom-screen",
+      "orientation-checklist",
     ];
 
     for (let i = 0; i < forms.length; i++) {
       const formName = forms[i];
       console.log(`${i + 2}. Testing ${formName}...`);
-      
+
       try {
         // Save form
         await axios.post(`${BASE_URL}/save-${formName}`, {
           applicationId: APPLICATION_ID,
           employeeId: EMPLOYEE_ID,
-          formData: { test: 'data' },
-          status: 'draft'
+          formData: { test: "data" },
+          status: "draft",
         });
 
         // Get form
         await axios.get(`${BASE_URL}/get-${formName}/${APPLICATION_ID}`);
         console.log(`✅ ${formName} - PASSED`);
       } catch (error) {
-        console.log(`❌ ${formName} - FAILED:`, error.response?.data?.message || error.message);
+        console.log(
+          `❌ ${formName} - FAILED:`,
+          error.response?.data?.message || error.message
+        );
       }
     }
 
-    console.log('\n🎉 Testing complete!');
+    console.log("\n🎉 Testing complete!");
   } catch (error) {
-    console.error('❌ Test failed:', error.response?.data?.message || error.message);
+    console.error(
+      "❌ Test failed:",
+      error.response?.data?.message || error.message
+    );
   }
 }
 
@@ -489,6 +519,7 @@ Run with: `node test-all-forms.js`
 ## 📊 Expected Results Checklist
 
 For each form, you should see:
+
 - ✅ `200 OK` status for POST requests (save)
 - ✅ `200 OK` status for GET requests (retrieve)
 - ✅ Form data properly saved in database
@@ -496,6 +527,7 @@ For each form, you should see:
 - ✅ Proper error messages for invalid data
 
 ### Success Indicators:
+
 1. **Server Response**: HTTP 200 status codes
 2. **Data Persistence**: Forms saved and retrievable
 3. **Progress Updates**: Completion percentage changes
@@ -507,12 +539,14 @@ For each form, you should see:
 ## 🐛 Troubleshooting
 
 ### Common Issues:
+
 1. **404 Error**: Check if route is properly registered
 2. **500 Error**: Check server logs for database connection issues
 3. **400 Error**: Check required fields in request body
 4. **Connection Refused**: Ensure server is running on port 1111
 
 ### Debug Commands:
+
 ```bash
 # Check server status
 curl http://localhost:1111/

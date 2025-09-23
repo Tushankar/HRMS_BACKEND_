@@ -1,9 +1,9 @@
 // Quick test to verify the fix
-const axios = require('axios');
+const axios = require("axios");
 
 async function testFixedEndpoint() {
   try {
-    console.log('🧪 Testing Background Check Save (Fixed Version)...\n');
+    console.log("🧪 Testing Background Check Save (Fixed Version)...\n");
 
     const payload = {
       applicationId: "68ac0fcb02be1191737b4070", // Valid application ID
@@ -29,26 +29,29 @@ async function testFixedEndpoint() {
         signature: "John A. Smith",
         date: new Date(),
       },
-      status: "draft"
+      status: "draft",
     };
 
-    console.log('📤 Sending request to save background check form...');
-    const response = await axios.post('http://localhost:1111/onboarding/save-background-check', payload, {
-      headers: { 'Content-Type': 'application/json' },
-      withCredentials: true,
-    });
+    console.log("📤 Sending request to save background check form...");
+    const response = await axios.post(
+      "http://localhost:1111/onboarding/save-background-check",
+      payload,
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
+    );
 
-    console.log('✅ SUCCESS! Background check form saved');
-    console.log('📋 Response:', {
+    console.log("✅ SUCCESS! Background check form saved");
+    console.log("📋 Response:", {
       status: response.status,
       message: response.data.message,
-      id: response.data.backgroundCheck._id
+      id: response.data.backgroundCheck._id,
     });
 
     return response.data.backgroundCheck._id;
-
   } catch (error) {
-    console.log('❌ ERROR:', error.response?.data || error.message);
+    console.log("❌ ERROR:", error.response?.data || error.message);
     return null;
   }
 }
@@ -56,7 +59,7 @@ async function testFixedEndpoint() {
 // Test updating an existing form
 async function testUpdateForm(formId) {
   try {
-    console.log('\n🔄 Testing form update...');
+    console.log("\n🔄 Testing form update...");
 
     const payload = {
       applicationId: "68ac0fcb02be1191737b4070",
@@ -82,19 +85,22 @@ async function testUpdateForm(formId) {
         signature: "John A. Smith",
         date: new Date(),
       },
-      status: "completed" // Changed to completed
+      status: "completed", // Changed to completed
     };
 
-    const response = await axios.post('http://localhost:1111/onboarding/save-background-check', payload, {
-      headers: { 'Content-Type': 'application/json' },
-      withCredentials: true,
-    });
+    const response = await axios.post(
+      "http://localhost:1111/onboarding/save-background-check",
+      payload,
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
+    );
 
-    console.log('✅ Form updated successfully!');
-    console.log('📋 Status changed to:', response.data.backgroundCheck.status);
-
+    console.log("✅ Form updated successfully!");
+    console.log("📋 Status changed to:", response.data.backgroundCheck.status);
   } catch (error) {
-    console.log('❌ Update failed:', error.response?.data || error.message);
+    console.log("❌ Update failed:", error.response?.data || error.message);
   }
 }
 
@@ -104,13 +110,15 @@ async function runTests() {
   if (formId) {
     await testUpdateForm(formId);
   }
-  
-  console.log('\n🎉 Tests completed! The background check form should now work properly.');
-  console.log('💡 Key fixes applied:');
-  console.log('   - Added fallback application ID when initialization fails');
-  console.log('   - Improved error handling with specific error messages');
-  console.log('   - Fixed duplicate function declarations in frontend');
-  console.log('   - Added debug logging in backend for troubleshooting');
+
+  console.log(
+    "\n🎉 Tests completed! The background check form should now work properly."
+  );
+  console.log("💡 Key fixes applied:");
+  console.log("   - Added fallback application ID when initialization fails");
+  console.log("   - Improved error handling with specific error messages");
+  console.log("   - Fixed duplicate function declarations in frontend");
+  console.log("   - Added debug logging in backend for troubleshooting");
 }
 
 runTests();

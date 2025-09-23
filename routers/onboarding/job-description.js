@@ -9,13 +9,13 @@ const OnboardingApplication = require("../../database/Models/OnboardingApplicati
 // Helper function to get the correct model based on job type
 const getJobDescriptionModel = (jobType) => {
   switch (jobType.toUpperCase()) {
-    case 'PCA':
+    case "PCA":
       return PCAJobDescription;
-    case 'CNA':
+    case "CNA":
       return CNAJobDescription;
-    case 'LPN':
+    case "LPN":
       return LPNJobDescription;
-    case 'RN':
+    case "RN":
       return RNJobDescription;
     default:
       throw new Error(`Invalid job description type: ${jobType}`);
@@ -35,7 +35,7 @@ router.post("/save-job-description", async (req, res) => {
       });
     }
 
-    const jobType = formData?.jobDescriptionType || 'RN';
+    const jobType = formData?.jobDescriptionType || "RN";
     const JobModel = getJobDescriptionModel(jobType);
 
     // Check if job description already exists
@@ -49,8 +49,10 @@ router.post("/save-job-description", async (req, res) => {
         // Update staff signature if provided
         if (formData.staffSignature !== undefined) {
           jobDesc.staffSignature = {
-            signature: formData.staffSignature.signature || '',
-            date: formData.staffSignature.date ? new Date(formData.staffSignature.date) : null,
+            signature: formData.staffSignature.signature || "",
+            date: formData.staffSignature.date
+              ? new Date(formData.staffSignature.date)
+              : null,
             digitalSignature: formData.staffSignature.digitalSignature || true,
           };
         }
@@ -58,11 +60,14 @@ router.post("/save-job-description", async (req, res) => {
         // Update supervisor signature if provided
         if (formData.supervisorSignature !== undefined) {
           jobDesc.supervisorSignature = {
-            signature: formData.supervisorSignature.signature || '',
-            supervisorName: formData.supervisorSignature.supervisorName || '',
-            supervisorTitle: formData.supervisorSignature.supervisorTitle || '',
-            date: formData.supervisorSignature.date ? new Date(formData.supervisorSignature.date) : null,
-            digitalSignature: formData.supervisorSignature.digitalSignature || true,
+            signature: formData.supervisorSignature.signature || "",
+            supervisorName: formData.supervisorSignature.supervisorName || "",
+            supervisorTitle: formData.supervisorSignature.supervisorTitle || "",
+            date: formData.supervisorSignature.date
+              ? new Date(formData.supervisorSignature.date)
+              : null,
+            digitalSignature:
+              formData.supervisorSignature.digitalSignature || true,
           };
         }
 
@@ -96,19 +101,24 @@ router.post("/save-job-description", async (req, res) => {
       if (formData) {
         if (formData.staffSignature !== undefined) {
           newJobDescData.staffSignature = {
-            signature: formData.staffSignature.signature || '',
-            date: formData.staffSignature.date ? new Date(formData.staffSignature.date) : null,
+            signature: formData.staffSignature.signature || "",
+            date: formData.staffSignature.date
+              ? new Date(formData.staffSignature.date)
+              : null,
             digitalSignature: formData.staffSignature.digitalSignature || true,
           };
         }
 
         if (formData.supervisorSignature !== undefined) {
           newJobDescData.supervisorSignature = {
-            signature: formData.supervisorSignature.signature || '',
-            supervisorName: formData.supervisorSignature.supervisorName || '',
-            supervisorTitle: formData.supervisorSignature.supervisorTitle || '',
-            date: formData.supervisorSignature.date ? new Date(formData.supervisorSignature.date) : null,
-            digitalSignature: formData.supervisorSignature.digitalSignature || true,
+            signature: formData.supervisorSignature.signature || "",
+            supervisorName: formData.supervisorSignature.supervisorName || "",
+            supervisorTitle: formData.supervisorSignature.supervisorTitle || "",
+            date: formData.supervisorSignature.date
+              ? new Date(formData.supervisorSignature.date)
+              : null,
+            digitalSignature:
+              formData.supervisorSignature.digitalSignature || true,
           };
         }
 
@@ -142,7 +152,8 @@ router.post("/save-job-description", async (req, res) => {
           application.completedForms.push(formKey);
         }
 
-        application.completionPercentage = application.calculateCompletionPercentage();
+        application.completionPercentage =
+          application.calculateCompletionPercentage();
         await application.save();
 
         return res.status(200).json({
@@ -159,7 +170,6 @@ router.post("/save-job-description", async (req, res) => {
       message: `${jobType} Job description saved as ${status || "draft"}`,
       data: { jobDescription: jobDesc },
     });
-
   } catch (error) {
     console.error("Error saving job description acknowledgment:", error);
     res.status(500).json({
@@ -191,7 +201,6 @@ router.get("/get-job-description/:applicationId/:jobType", async (req, res) => {
       success: true,
       data: { jobDescription: jobDesc },
     });
-
   } catch (error) {
     console.error("Error retrieving job description:", error);
     res.status(500).json({
@@ -216,17 +225,16 @@ router.get("/get-all-job-descriptions/:applicationId", async (req, res) => {
     ]);
 
     const jobDescriptions = [];
-    if (pcaJobDesc) jobDescriptions.push({ type: 'PCA', ...pcaJobDesc });
-    if (cnaJobDesc) jobDescriptions.push({ type: 'CNA', ...cnaJobDesc });
-    if (lpnJobDesc) jobDescriptions.push({ type: 'LPN', ...lpnJobDesc });
-    if (rnJobDesc) jobDescriptions.push({ type: 'RN', ...rnJobDesc });
+    if (pcaJobDesc) jobDescriptions.push({ type: "PCA", ...pcaJobDesc });
+    if (cnaJobDesc) jobDescriptions.push({ type: "CNA", ...cnaJobDesc });
+    if (lpnJobDesc) jobDescriptions.push({ type: "LPN", ...lpnJobDesc });
+    if (rnJobDesc) jobDescriptions.push({ type: "RN", ...rnJobDesc });
 
     res.status(200).json({
       success: true,
       count: jobDescriptions.length,
       data: { jobDescriptions },
     });
-
   } catch (error) {
     console.error("Error retrieving job descriptions:", error);
     res.status(500).json({
@@ -248,10 +256,10 @@ router.put("/supervisor-sign-job-description/:id", async (req, res) => {
     let jobType = null;
 
     const models = [
-      { model: PCAJobDescription, type: 'PCA' },
-      { model: CNAJobDescription, type: 'CNA' },
-      { model: LPNJobDescription, type: 'LPN' },
-      { model: RNJobDescription, type: 'RN' }
+      { model: PCAJobDescription, type: "PCA" },
+      { model: CNAJobDescription, type: "CNA" },
+      { model: LPNJobDescription, type: "LPN" },
+      { model: RNJobDescription, type: "RN" },
     ];
 
     for (const { model, type } of models) {
@@ -275,14 +283,17 @@ router.put("/supervisor-sign-job-description/:id", async (req, res) => {
     await jobDesc.save();
 
     // Update main application
-    const application = await OnboardingApplication.findById(jobDesc.applicationId);
+    const application = await OnboardingApplication.findById(
+      jobDesc.applicationId
+    );
     if (application) {
       const formKey = `jobDescription${jobType}`;
       if (!application.completedForms.includes(formKey)) {
         application.completedForms.push(formKey);
       }
 
-      application.completionPercentage = application.calculateCompletionPercentage();
+      application.completionPercentage =
+        application.calculateCompletionPercentage();
       await application.save();
     }
 
@@ -291,7 +302,6 @@ router.put("/supervisor-sign-job-description/:id", async (req, res) => {
       message: `${jobType} Job description completed with supervisor signature`,
       data: { jobDescription: jobDesc },
     });
-
   } catch (error) {
     console.error("Error with supervisor signature:", error);
     res.status(500).json({
@@ -306,7 +316,12 @@ router.put("/supervisor-sign-job-description/:id", async (req, res) => {
 router.post("/:applicationId/:jobType", async (req, res) => {
   try {
     const { applicationId, jobType } = req.params;
-    const { staffSignature, supervisorSignature, status = "draft", employeeId } = req.body;
+    const {
+      staffSignature,
+      supervisorSignature,
+      status = "draft",
+      employeeId,
+    } = req.body;
 
     console.log("Received job description submission:", {
       applicationId,
@@ -314,15 +329,17 @@ router.post("/:applicationId/:jobType", async (req, res) => {
       staffSignature,
       supervisorSignature,
       status,
-      employeeId
+      employeeId,
     });
 
     // Validate job type
-    const validJobTypes = ['PCA', 'CNA', 'LPN', 'RN'];
+    const validJobTypes = ["PCA", "CNA", "LPN", "RN"];
     if (!validJobTypes.includes(jobType.toUpperCase())) {
       return res.status(400).json({
         success: false,
-        message: `Invalid job type. Must be one of: ${validJobTypes.join(', ')}`
+        message: `Invalid job type. Must be one of: ${validJobTypes.join(
+          ", "
+        )}`,
       });
     }
 
@@ -336,15 +353,18 @@ router.post("/:applicationId/:jobType", async (req, res) => {
       if (staffSignature) {
         jobDesc.staffSignature = staffSignature;
       }
+      // Supervisor signature is HR-only. Ignore any supervisorSignature provided by employee submissions to prevent unauthorized overwrites.
       if (supervisorSignature) {
-        jobDesc.supervisorSignature = supervisorSignature;
+        console.log(
+          "⚠️  Ignoring supervisorSignature from employee submission - supervisor signatures must be set via HR workflows"
+        );
       }
       jobDesc.status = status;
       await jobDesc.save();
     } else {
       // For new records, we need employeeId
       let finalEmployeeId = employeeId;
-      
+
       if (!finalEmployeeId) {
         // Try to get employeeId from the OnboardingApplication
         const application = await OnboardingApplication.findById(applicationId);
@@ -353,25 +373,23 @@ router.post("/:applicationId/:jobType", async (req, res) => {
         } else {
           // Use a default test employeeId for development
           finalEmployeeId = "67e0f8770c6feb6ba99d11d2";
-          console.log("Using default employeeId for development:", finalEmployeeId);
+          console.log(
+            "Using default employeeId for development:",
+            finalEmployeeId
+          );
         }
       }
 
-      // Create new record - MUST include employeeId
+      // Create new record - MUST include employeeId. Do NOT initialize supervisorSignature here; keep DB schema intact but let HR set it later.
       const newJobDescData = {
         applicationId,
         employeeId: finalEmployeeId,
         staffSignature: staffSignature || {
           signature: "",
           date: null,
-          digitalSignature: false
+          digitalSignature: false,
         },
-        supervisorSignature: supervisorSignature || {
-          signature: "",
-          date: null,
-          digitalSignature: false
-        },
-        status
+        status,
       };
 
       jobDesc = new JobModel(newJobDescData);
@@ -386,23 +404,25 @@ router.post("/:applicationId/:jobType", async (req, res) => {
         if (!application.completedForms.includes(formKey)) {
           application.completedForms.push(formKey);
         }
-        application.completionPercentage = application.calculateCompletionPercentage();
+        application.completionPercentage =
+          application.calculateCompletionPercentage();
         await application.save();
       }
     }
 
     res.status(200).json({
       success: true,
-      message: `${jobType.toUpperCase()} Job Description ${status === 'completed' ? 'submitted' : 'saved'} successfully`,
-      data: jobDesc
+      message: `${jobType.toUpperCase()} Job Description ${
+        status === "completed" ? "submitted" : "saved"
+      } successfully`,
+      data: jobDesc,
     });
-
   } catch (error) {
     console.error("Error saving job description:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -420,21 +440,20 @@ router.get("/:applicationId/:jobType", async (req, res) => {
     if (!jobDesc) {
       return res.status(404).json({
         success: false,
-        message: `${jobType.toUpperCase()} Job Description not found`
+        message: `${jobType.toUpperCase()} Job Description not found`,
       });
     }
 
     res.status(200).json({
       success: true,
-      data: jobDesc
+      data: jobDesc,
     });
-
   } catch (error) {
     console.error("Error retrieving job description:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: error.message
+      error: error.message,
     });
   }
 });
