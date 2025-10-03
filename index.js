@@ -7,7 +7,7 @@ const connectDB = require("./database/conn");
 const http = require("http");
 const WebSocket = require("ws");
 const Message = require("./database/Models/Message.js"); // Import Message Model
-  
+
 const PORT = 1111;
 const app = express();
 connectDB();
@@ -20,16 +20,27 @@ const wss = new WebSocket.Server({ server });
 global.wss = wss;
 
 // Enhanced CORS configuration
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "https://cool-malabi-d4598b.netlify.app","https://meek-fox-fdb3c3.netlify.app", "https://hrmsmanagement.netlify.app"], // Include both frontend ports and production URL
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow all standard methods
-  allowedHeaders: ["Content-Type", "Authorization", "Accept"], // Allow common headers
-  exposedHeaders: ["Authorization"], // Expose headers if needed
-  credentials: true // Allow cookies and authorization headers
-}));
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:3000",
+      "https://cool-malabi-d4598b.netlify.app",
+      "https://meek-fox-fdb3c3.netlify.app",
+      "https://hrmsmanagement.netlify.app",
+    ], // Include both frontend ports and production URL
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow all standard methods
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"], // Allow common headers
+    exposedHeaders: ["Authorization"], // Expose headers if needed
+    credentials: true, // Allow cookies and authorization headers
+  })
+);
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 app.use(morgan("combined"));
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
@@ -76,7 +87,7 @@ app.use("/employee", UpdateProfile);
 app.use("/doc", UploadFile);
 app.use("/hr", CreateEmployee);
 app.use("/signature", UploadSignature);
-app.use("/chat", Getchat); 
+app.use("/chat", Getchat);
 app.use("/upload", UploadRouter);
 
 // Apply Onboarding Routes
@@ -86,7 +97,7 @@ app.use("/onboarding", I9Form);
 app.use("/onboarding", TaxForms);
 app.use("/onboarding", PersonalForms);
 app.use("/onboarding", PolicyForms);
-app.use("/onboarding", ScreeningForms); 
+app.use("/onboarding", ScreeningForms);
 app.use("/onboarding", JobDescription);
 
 // Direct job description route (for simplified API)
@@ -108,12 +119,23 @@ wss.on("connection", (ws) => {
   ws.on("message", async (message) => {
     try {
       const data = JSON.parse(message);
-      const { event, senderId, receiverId, content, offer, answer, candidate, messageId } = data;
+      const {
+        event,
+        senderId,
+        receiverId,
+        content,
+        offer,
+        answer,
+        candidate,
+        messageId,
+      } = data;
 
       if (event === "login") {
         if (!senderId) {
           console.error("Login failed: No senderId provided", data);
-          ws.send(JSON.stringify({ event: "login-error", message: "Invalid user ID" }));
+          ws.send(
+            JSON.stringify({ event: "login-error", message: "Invalid user ID" })
+          );
           return;
         }
         users[senderId] = ws;
@@ -125,12 +147,18 @@ wss.on("connection", (ws) => {
           console.error("Invalid message data:", data);
           return;
         }
-        const newMessage = new Message({ sender: senderId, receiver: receiverId, content });
+        const newMessage = new Message({
+          sender: senderId,
+          receiver: receiverId,
+          content,
+        });
         await newMessage.save();
 
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ event: "message", ...newMessage.toObject() }));
+            client.send(
+              JSON.stringify({ event: "message", ...newMessage.toObject() })
+            );
           }
         });
       } else if (event === "mark-read") {
@@ -143,17 +171,30 @@ wss.on("connection", (ws) => {
           console.error(`Message ${messageId} not found`);
           return;
         }
-        if (message.receiver.toString() === receiverId && message.status !== "read") {
+        if (
+          message.receiver.toString() === receiverId &&
+          message.status !== "read"
+        ) {
           message.status = "read";
           await message.save();
           wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
-              client.send(JSON.stringify({ event: "message-updated", ...message.toObject() }));
+              client.send(
+                JSON.stringify({
+                  event: "message-updated",
+                  ...message.toObject(),
+                })
+              );
             }
           });
         }
       } else if (event === "call") {
-        console.log("Processing call event. Sender:", senderId, "Receiver:", receiverId);
+        console.log(
+          "Processing call event. Sender:",
+          senderId,
+          "Receiver:",
+          receiverId
+        );
         console.log("Current users:", Object.keys(users));
         if (users[receiverId]) {
           users[receiverId].send(
@@ -165,7 +206,12 @@ wss.on("connection", (ws) => {
           );
         } else {
           console.error(`Receiver ${receiverId} not found in users`);
-          ws.send(JSON.stringify({ event: "call-error", message: "User not connected" }));
+          ws.send(
+            JSON.stringify({
+              event: "call-error",
+              message: "User not connected",
+            })
+          );
         }
       } else if (event === "answer") {
         if (users[receiverId]) {
