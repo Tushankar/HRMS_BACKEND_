@@ -86,8 +86,8 @@ router.put(
           }
         }
 
-        // Set new profile image path (relative to uploads directory)
-        updateData.profileImage = `profile-pictures/${req.file.filename}`;
+        // Set new profile image path (relative to server root, including uploads prefix)
+        updateData.profileImage = `uploads/profile-pictures/${req.file.filename}`;
       }
 
       // Update user in database
@@ -145,6 +145,41 @@ router.get("/profile", authMiddleware, async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to get profile",
+      error: error.message,
+    });
+  }
+});
+
+// Refresh JWT token with updated user data endpoint
+router.post("/refresh-token", authMiddleware, async (req, res) => {
+  try {
+    const jwt = require("jsonwebtoken");
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Create new JWT token with updated user data
+    const token = jwt.sign(
+      { user: user },
+      process.env.JWT_SECRET || "fallback-secret",
+      { expiresIn: "7d" }
+    );
+
+    res.status(200).json({
+      success: true,
+      token: token,
+      user: user,
+    });
+  } catch (error) {
+    console.error("Token refresh error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to refresh token",
       error: error.message,
     });
   }
