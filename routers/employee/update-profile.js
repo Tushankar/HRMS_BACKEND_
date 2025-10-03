@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const User = require("../../database/Models/User");
+const User = require("../../database/Models/Users");
 const authMiddleware = require("../auth/authMiddleware");
 
 const router = express.Router();
@@ -68,7 +68,7 @@ router.put(
       // Update text fields if provided
       if (userName) updateData.userName = userName;
       if (email) updateData.email = email;
-      if (phone) updateData.phone = phone;
+      if (phone) updateData.phoneNumber = Number(phone);
       if (country) updateData.country = country;
       if (address) updateData.address = address;
 
