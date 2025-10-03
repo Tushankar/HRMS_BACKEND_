@@ -44,6 +44,7 @@ const UpdateTask = require("./routers/hr/updateTask.js");
 const UploadFile = require("./routers/employee/uploadFile.js");
 const CreateEmployee = require("./routers/hr/create-employee.js");
 const UploadSignature = require("./routers/employee/uploadSignature.js");
+const UpdateProfile = require("./routers/employee/update-profile.js");
 const Getchat = require("./routers/chat/getChatHistory.js");
 const UploadRouter = require("./routers/upload.js");
 
@@ -71,6 +72,7 @@ app.use("/task", CreateTask);
 app.use("/task", GetTasks);
 app.use("/task", UpdateTask);
 app.use("/employee", GetAllEmployee);
+app.use("/employee", UpdateProfile);
 app.use("/doc", UploadFile);
 app.use("/hr", CreateEmployee);
 app.use("/signature", UploadSignature);
