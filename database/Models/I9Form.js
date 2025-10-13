@@ -111,6 +111,13 @@ const I9FormSchema = new mongoose.Schema(
       default: "draft",
     },
 
+    // Employee uploaded signed form
+    employeeUploadedForm: {
+      filename: { type: String },
+      filePath: { type: String },
+      uploadedAt: { type: Date },
+    },
+
     // HR Review and Feedback
     hrFeedback: {
       comment: {

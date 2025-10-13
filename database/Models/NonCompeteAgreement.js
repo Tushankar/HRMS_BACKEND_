@@ -49,6 +49,13 @@ const NonCompeteAgreementSchema = new mongoose.Schema(
       signatureDate: { type: Date },
     },
 
+    // Employee uploaded signed form
+    employeeUploadedForm: {
+      filename: { type: String },
+      filePath: { type: String },
+      uploadedAt: { type: Date },
+    },
+
     status: {
       type: String,
       enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],

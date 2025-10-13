@@ -13,26 +13,60 @@ router.post("/save-employment-application", async (req, res) => {
       return res.status(400).json({ message: "Application ID and Employee ID are required" });
     }
 
-    // Check if application exists
     const application = await OnboardingApplication.findById(applicationId);
     if (!application) {
       return res.status(404).json({ message: "Onboarding application not found" });
     }
 
-    // Find existing form or create new one
+    // =========== FIX STARTS HERE ===========
+    // Manually map flat formData from the frontend to the nested schema structure.
+    // Note: Employment Application does NOT include background check physical fields
+    // (height, weight, eyeColor, hairColor, etc.) - those are only in Background Check form
+    const mappedData = {
+      applicantInfo: {
+        firstName: formData.firstName,
+        middleName: formData.middleName,
+        lastName: formData.lastName,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+        phone: formData.phone,
+        email: formData.email,
+        ssn: formData.ssn,
+        positionApplied: formData.positionApplied,
+        desiredSalary: formData.desiredSalary,
+        dateAvailable: formData.dateAvailable,
+        employmentType: formData.employmentType,
+        citizenOfUS: formData.citizenOfUS,
+        authorizedToWork: formData.authorizedToWork,
+        workedForCompanyBefore: formData.workedForCompanyBefore,
+        convictedOfFelony: formData.convictedOfFelony,
+        felonyExplanation: formData.felonyExplanation,
+        // NOTE: Background check physical fields (height, weight, etc.) are NOT included here
+        // They are stored separately in the Background Check form only
+      },
+      education: formData.education,
+      references: formData.references,
+      previousEmployments: formData.previousEmployments,
+      militaryService: formData.militaryService,
+      signature: formData.signature,
+      date: formData.date,
+      status: status,
+    };
+    // =========== FIX ENDS HERE ===========
+
     let employmentApp = await EmploymentApplication.findOne({ applicationId });
-    
+
     if (employmentApp) {
-      // Update existing form
-      Object.assign(employmentApp, formData);
-      employmentApp.status = status;
+      // Update existing form by deep merging the new mapped data
+      employmentApp.set(mappedData);
     } else {
-      // Create new form
+      // Create new form with the correctly mapped data
       employmentApp = new EmploymentApplication({
         applicationId,
         employeeId,
-        ...formData,
-        status
+        ...mappedData,
       });
     }
 
@@ -79,6 +113,21 @@ router.get("/get-employment-application/:applicationId", async (req, res) => {
       return res.status(404).json({ message: "Employment application not found" });
     }
 
+    console.log("🟡 GET Employment Application - Raw data from DB:", {
+      id: employmentApp._id,
+      applicantInfoKeys: employmentApp.applicantInfo ? Object.keys(employmentApp.applicantInfo) : [],
+      applicantInfo: employmentApp.applicantInfo,
+      hasBackgroundFields: {
+        height: !!employmentApp.applicantInfo?.height,
+        weight: !!employmentApp.applicantInfo?.weight,
+        eyeColor: !!employmentApp.applicantInfo?.eyeColor,
+        hairColor: !!employmentApp.applicantInfo?.hairColor,
+        dateOfBirth: !!employmentApp.applicantInfo?.dateOfBirth,
+        sex: !!employmentApp.applicantInfo?.sex,
+        race: !!employmentApp.applicantInfo?.race,
+      }
+    });
+
     // The employment application model already matches frontend structure
     // Just return the data as-is, no flattening needed
     const flattenedApp = {
@@ -98,6 +147,19 @@ router.get("/get-employment-application/:applicationId", async (req, res) => {
       createdAt: employmentApp.createdAt,
       updatedAt: employmentApp.updatedAt
     };
+
+    console.log("🟢 GET Employment Application - Returning flattened data:", {
+      hasApplicantInfo: !!flattenedApp.applicantInfo,
+      backgroundFields: {
+        height: flattenedApp.applicantInfo?.height || "NOT SET",
+        weight: flattenedApp.applicantInfo?.weight || "NOT SET",
+        eyeColor: flattenedApp.applicantInfo?.eyeColor || "NOT SET",
+        hairColor: flattenedApp.applicantInfo?.hairColor || "NOT SET",
+        dateOfBirth: flattenedApp.applicantInfo?.dateOfBirth || "NOT SET",
+        sex: flattenedApp.applicantInfo?.sex || "NOT SET",
+        race: flattenedApp.applicantInfo?.race || "NOT SET",
+      }
+    });
 
     res.status(200).json({
       message: "Employment application retrieved successfully",

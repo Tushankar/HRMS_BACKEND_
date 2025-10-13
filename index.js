@@ -68,6 +68,10 @@ const PersonalForms = require("./routers/onboarding/personal-forms.js");
 const PolicyForms = require("./routers/onboarding/policy-forms.js");
 const ScreeningForms = require("./routers/onboarding/screening-forms.js");
 const JobDescription = require("./routers/onboarding/job-description.js");
+const WorkExperience = require("./routers/onboarding/work-experience.js");
+const Education = require("./routers/onboarding/education.js");
+const References = require("./routers/onboarding/references.js");
+const LegalDisclosures = require("./routers/onboarding/legal-disclosures.js");
 
 // HR Review Routes
 const OnboardingReview = require("./routers/hr/onboarding-review.js");
@@ -99,6 +103,10 @@ app.use("/onboarding", PersonalForms);
 app.use("/onboarding", PolicyForms);
 app.use("/onboarding", ScreeningForms);
 app.use("/onboarding", JobDescription);
+app.use("/onboarding", WorkExperience);
+app.use("/onboarding", Education);
+app.use("/onboarding", References);
+app.use("/onboarding", LegalDisclosures);
 
 // Direct job description route (for simplified API)
 app.use("/job-description", JobDescription);

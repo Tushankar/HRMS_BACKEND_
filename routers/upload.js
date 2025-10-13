@@ -7,8 +7,14 @@ const router = express.Router();
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '../uploads/signatures');
+console.log('📁 Uploads directory path:', uploadsDir);
+
 if (!fs.existsSync(uploadsDir)) {
+  console.log('📁 Creating uploads/signatures directory...');
   fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('✅ Directory created successfully');
+} else {
+  console.log('✅ Uploads/signatures directory already exists');
 }
 
 // Configure multer for signature uploads
@@ -40,10 +46,26 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
+// Test endpoint to verify route is working
+router.get('/test', (req, res) => {
+  console.log('✅ GET /upload/test - Route is working');
+  res.json({
+    success: true,
+    message: 'Upload route is working',
+    uploadsDir: uploadsDir,
+    dirExists: fs.existsSync(uploadsDir)
+  });
+});
+
 // Upload signature endpoint
 router.post('/signature', upload.single('signature'), (req, res) => {
   try {
+    console.log('📝 POST /upload/signature - Request received');
+    console.log('📝 Request body:', req.body);
+    console.log('📝 Request file:', req.file);
+    
     if (!req.file) {
+      console.error('❌ No file in request');
       return res.status(400).json({
         success: false,
         message: 'No signature file uploaded'
@@ -53,6 +75,10 @@ router.post('/signature', upload.single('signature'), (req, res) => {
     // Return the file path relative to uploads directory
     const filePath = `/uploads/signatures/${req.file.filename}`;
     
+    console.log('✅ Signature uploaded successfully');
+    console.log('📁 File saved to:', req.file.path);
+    console.log('🔗 File URL path:', filePath);
+    
     res.json({
       success: true,
       message: 'Signature uploaded successfully',
@@ -60,10 +86,11 @@ router.post('/signature', upload.single('signature'), (req, res) => {
       filename: req.file.filename
     });
   } catch (error) {
-    console.error('Error uploading signature:', error);
+    console.error('❌ Error uploading signature:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to upload signature'
+      message: 'Failed to upload signature',
+      error: error.message
     });
   }
 });
@@ -119,6 +146,30 @@ router.delete('/signature/:filename', (req, res) => {
       message: 'Failed to delete signature'
     });
   }
+});
+
+// Error handling middleware for multer
+router.use((error, req, res, next) => {
+  console.error('❌ Upload router error:', error);
+  if (error instanceof multer.MulterError) {
+    // Multer-specific errors
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        success: false,
+        message: 'File too large. Maximum size is 5MB'
+      });
+    }
+    return res.status(400).json({
+      success: false,
+      message: `Upload error: ${error.message}`
+    });
+  }
+  
+  // Other errors
+  res.status(500).json({
+    success: false,
+    message: error.message || 'An error occurred during upload'
+  });
 });
 
 module.exports = router;

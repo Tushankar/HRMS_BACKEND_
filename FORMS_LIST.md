@@ -2,7 +2,13 @@
 
 Based on the documents in the "Fwd_ Onboarding Application" folder, the following forms are implemented in the backend:
 
-## 1. Employment Application (Exhibit 1a)
+## 1. Personal Information Form
+- **File**: `PersonalInformation.js`
+- **Description**: Comprehensive personal information including basic details, contact info, emergency contacts, and government ID
+- **Required**: Yes
+- **Status**: ✅ Implemented
+
+## 2. Employment Application (Exhibit 1a)
 - **File**: `EmploymentApplication.js`
 - **Description**: Main employment application with personal info, work history, education, references
 - **Required**: Yes
@@ -119,14 +125,15 @@ These are reference documents, not forms to be filled:
 ## Form Categories
 
 ### ✅ **Essential Forms** (Must be completed before employment)
-1. Employment Application
-2. I-9 Form
-3. W-4 Form
-4. Emergency Contact
-5. Staff Statement of Misconduct
-6. Code of Ethics
-7. Background Check Form
-8. TB Symptom Screen
+1. Personal Information
+2. Employment Application
+3. I-9 Form
+4. W-4 Form
+5. Emergency Contact
+6. Staff Statement of Misconduct
+7. Code of Ethics
+8. Background Check Form
+9. TB Symptom Screen
 
 ### ⭐ **Position-Specific Forms** (Required for certain roles)
 1. W-9 Form (contractors)
@@ -141,9 +148,9 @@ These are reference documents, not forms to be filled:
 
 ## Implementation Status Summary
 
-- **✅ Forms Implemented**: 13 fillable forms
-- **📋 Total Forms**: 13 interactive forms + 5 reference documents
-- **🔄 API Endpoints**: 26+ endpoints (GET/POST for each form + management endpoints)
+- **✅ Forms Implemented**: 14 fillable forms
+- **📋 Total Forms**: 14 interactive forms + 4 reference documents = 18 total forms
+- **🔄 API Endpoints**: 28+ endpoints (GET/POST for each form + management endpoints)
 - **📊 Progress Tracking**: Automatic completion percentage calculation
 - **💾 Draft Saving**: All forms support draft functionality
 - **👥 HR Review**: Complete review and approval workflow
@@ -169,18 +176,19 @@ The frontend should implement:
 
 The following MongoDB collections will be created:
 1. `onboardingapplications` - Main application tracking
-2. `employmentapplications` - Employment applications
-3. `i9forms` - I-9 forms
-4. `w4forms` - W-4 forms  
-5. `w9forms` - W-9 forms
-6. `emergencycontacts` - Emergency contact forms
-7. `directdeposits` - Direct deposit forms
-8. `misconductstatements` - Misconduct statements
-7. `codeofethics` - Code of ethics forms
-8. `servicedeliverypolices` - Service delivery policies
-9. `noncompeteagreements` - Non-compete agreements
-10. `backgroundchecks` - Background check forms
-11. `tbsymptomscreens` - TB symptom screens
-12. `orientationchecklists` - Orientation checklists
+2. `personalinformations` - Personal information forms
+3. `employmentapplications` - Employment applications
+4. `i9forms` - I-9 forms
+5. `w4forms` - W-4 forms  
+6. `w9forms` - W-9 forms
+7. `emergencycontacts` - Emergency contact forms
+8. `directdeposits` - Direct deposit forms
+9. `misconductstatements` - Misconduct statements
+10. `codeofethics` - Code of ethics forms
+11. `servicedeliverypolices` - Service delivery policies
+12. `noncompeteagreements` - Non-compete agreements
+13. `backgroundchecks` - Background check forms
+14. `tbsymptomscreens` - TB symptom screens
+15. `orientationchecklists` - Orientation checklists
 
 Each collection has proper indexing on `applicationId` and `employeeId` for efficient queries.

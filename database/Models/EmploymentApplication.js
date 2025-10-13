@@ -38,6 +38,15 @@ const EmploymentApplicationSchema = new mongoose.Schema(
       },
       convictedOfFelony: { type: String },
       felonyExplanation: { type: String },
+
+      // Background Check Fields - Added to Employment Application
+      dateOfBirth: { type: Date },
+      height: { type: String },
+      weight: { type: String },
+      sex: { type: String },
+      eyeColor: { type: String },
+      hairColor: { type: String },
+      race: { type: String },
     },
 
     // Education

@@ -52,6 +52,13 @@ const BackgroundCheckSchema = new mongoose.Schema(
     applicantSignature: { type: String },
     applicantSignatureDate: { type: Date },
 
+    // Employee uploaded signed form
+    employeeUploadedForm: {
+      filename: { type: String },
+      filePath: { type: String },
+      uploadedAt: { type: Date },
+    },
+
     // DBHDD Notification Cover Sheet
     notification: {
       providerName: { type: String },

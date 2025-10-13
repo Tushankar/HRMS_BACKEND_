@@ -58,6 +58,12 @@ const PCAJobDescriptionSchema = new mongoose.Schema(
       date: { type: Date },
       digitalSignature: { type: Boolean, default: false },
     },
+    // Employee uploaded signed document
+    employeeUploadedForm: {
+      filename: { type: String },
+      filePath: { type: String },
+      uploadedAt: { type: Date },
+    },
     // Form Status
     status: {
       type: String,

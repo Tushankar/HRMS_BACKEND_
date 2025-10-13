@@ -62,6 +62,24 @@ const CodeOfEthicsSchema = new mongoose.Schema(
     // Signature
     employeeSignature: { type: String },
     signatureDate: { type: Date },
+    
+    // HR uploaded template
+    hrUploadedTemplate: {
+      filename: { type: String },
+      filePath: { type: String },
+      uploadedAt: { type: Date },
+      uploadedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
+    },
+    
+    // Employee uploaded signed form
+    employeeUploadedForm: {
+      filename: { type: String },
+      filePath: { type: String },
+      uploadedAt: { type: Date },
+    },
     // Supervisor Acknowledgment
     // supervisorInfo: {
     //   supervisorName: { type: String },

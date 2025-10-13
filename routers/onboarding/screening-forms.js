@@ -1,8 +1,17 @@
 const express = require("express");
 const BackgroundCheck = require("../../database/Models/BackgroundCheck");
+const BackgroundCheckTemplate = require("../../database/Models/BackgroundCheckTemplate");
 const TBSymptomScreen = require("../../database/Models/TBSymptomScreen");
 const OrientationChecklist = require("../../database/Models/OrientationChecklist");
 const OnboardingApplication = require("../../database/Models/OnboardingApplication");
+const multer = require("multer");
+const path = require("path");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
+});
+const upload = multer({ storage });
 
 const router = express.Router();
 
@@ -10,10 +19,43 @@ const router = express.Router();
 router.post("/save-background-check", async (req, res) => {
   try {
     console.log(
-      "Background check request received:",
+      "🔵 Background check SAVE request received:",
       JSON.stringify(req.body, null, 2)
     );
+    console.log("🔵 Request headers:", req.headers.authorization ? "Bearer token present" : "No token");
     const { applicationId, employeeId, formData, status = "draft" } = req.body;
+
+    console.log("🟡 Parsed request data:");
+    console.log("   - applicationId:", applicationId);
+    console.log("   - employeeId:", employeeId);
+    console.log("   - status:", status);
+    console.log("   - formData keys:", formData ? Object.keys(formData) : "formData is null/undefined");
+
+    if (formData) {
+      console.log("🟡 FormData detailed structure:");
+      console.log("   - applicantInfo:", formData.applicantInfo);
+      console.log("   - employmentInfo:", formData.employmentInfo);
+      console.log("   - applicantSignature:", formData.applicantSignature);
+      console.log("   - applicantSignatureDate:", formData.applicantSignatureDate);
+
+      if (formData.applicantInfo) {
+        console.log("🟡 ApplicantInfo field values:");
+        console.log("   - lastName:", formData.applicantInfo.lastName);
+        console.log("   - firstName:", formData.applicantInfo.firstName);
+        console.log("   - height:", formData.applicantInfo.height);
+        console.log("   - weight:", formData.applicantInfo.weight);
+        console.log("   - eyeColor:", formData.applicantInfo.eyeColor);
+        console.log("   - hairColor:", formData.applicantInfo.hairColor);
+        console.log("   - sex:", formData.applicantInfo.sex);
+        console.log("   - race:", formData.applicantInfo.race);
+      }
+
+      if (formData.employmentInfo) {
+        console.log("🟡 EmploymentInfo field values:");
+        console.log("   - provider:", formData.employmentInfo.provider);
+        console.log("   - positionAppliedFor:", formData.employmentInfo.positionAppliedFor);
+      }
+    }
 
     if (!applicationId || !employeeId) {
       console.log("Missing required fields:", { applicationId, employeeId });
@@ -34,30 +76,71 @@ router.post("/save-background-check", async (req, res) => {
     let backgroundCheckForm = await BackgroundCheck.findOne({ applicationId });
 
     if (backgroundCheckForm) {
+      console.log("🟡 UPDATING existing background check form");
+      console.log("🟡 Existing applicantInfo BEFORE merge:", backgroundCheckForm.applicantInfo);
+      console.log("🟡 Incoming applicantInfo to merge:", formData.applicantInfo);
+      
       // Update existing form - merge formData properly
       if (formData.applicantInfo) {
-        backgroundCheckForm.applicantInfo = {
-          ...backgroundCheckForm.applicantInfo,
-          ...formData.applicantInfo,
+        // Deep merge for address object
+        const existingAddress = backgroundCheckForm.applicantInfo?.address || {};
+        const incomingAddress = formData.applicantInfo.address || {};
+        
+        // Ensure all fields are set, even if empty strings
+        // This prevents Mongoose from skipping fields with empty values
+        const mergedApplicantInfo = {
+          lastName: formData.applicantInfo.lastName ?? backgroundCheckForm.applicantInfo?.lastName ?? "",
+          firstName: formData.applicantInfo.firstName ?? backgroundCheckForm.applicantInfo?.firstName ?? "",
+          middleInitial: formData.applicantInfo.middleInitial ?? backgroundCheckForm.applicantInfo?.middleInitial ?? "",
+          socialSecurityNumber: formData.applicantInfo.socialSecurityNumber ?? backgroundCheckForm.applicantInfo?.socialSecurityNumber ?? "",
+          height: formData.applicantInfo.height ?? backgroundCheckForm.applicantInfo?.height ?? "",
+          weight: formData.applicantInfo.weight ?? backgroundCheckForm.applicantInfo?.weight ?? "",
+          eyeColor: formData.applicantInfo.eyeColor ?? backgroundCheckForm.applicantInfo?.eyeColor ?? "",
+          hairColor: formData.applicantInfo.hairColor ?? backgroundCheckForm.applicantInfo?.hairColor ?? "",
+          dateOfBirth: formData.applicantInfo.dateOfBirth ?? backgroundCheckForm.applicantInfo?.dateOfBirth ?? null,
+          sex: formData.applicantInfo.sex ?? backgroundCheckForm.applicantInfo?.sex ?? "",
+          race: formData.applicantInfo.race ?? backgroundCheckForm.applicantInfo?.race ?? "",
+          address: {
+            street: incomingAddress.street ?? existingAddress.street ?? "",
+            city: incomingAddress.city ?? existingAddress.city ?? "",
+            state: incomingAddress.state ?? existingAddress.state ?? "",
+            zipCode: incomingAddress.zipCode ?? existingAddress.zipCode ?? "",
+          },
         };
+        
+        backgroundCheckForm.applicantInfo = mergedApplicantInfo;
+        
+        // Mark the nested object as modified for Mongoose to track changes
+        backgroundCheckForm.markModified('applicantInfo');
+        
+        console.log("🟡 Merged applicantInfo AFTER merge:", backgroundCheckForm.applicantInfo);
+        console.log("🟡 Physical fields after merge:", {
+          height: backgroundCheckForm.applicantInfo.height,
+          weight: backgroundCheckForm.applicantInfo.weight,
+          eyeColor: backgroundCheckForm.applicantInfo.eyeColor,
+          hairColor: backgroundCheckForm.applicantInfo.hairColor,
+        });
       }
       if (formData.employmentInfo) {
         backgroundCheckForm.employmentInfo = {
           ...backgroundCheckForm.employmentInfo,
           ...formData.employmentInfo,
         };
+        backgroundCheckForm.markModified('employmentInfo');
       }
       if (formData.consentAcknowledgment) {
         backgroundCheckForm.consentAcknowledgment = {
           ...backgroundCheckForm.consentAcknowledgment,
           ...formData.consentAcknowledgment,
         };
+        backgroundCheckForm.markModified('consentAcknowledgment');
       }
       if (formData.notification) {
         backgroundCheckForm.notification = {
           ...backgroundCheckForm.notification,
           ...formData.notification,
         };
+        backgroundCheckForm.markModified('notification');
       }
       if (formData.applicantSignature) {
         backgroundCheckForm.applicantSignature = formData.applicantSignature;
@@ -68,11 +151,43 @@ router.post("/save-background-check", async (req, res) => {
       }
       backgroundCheckForm.status = status;
     } else {
+      console.log("🟢 CREATING new background check form");
+      console.log("🟢 Incoming applicantInfo:", formData.applicantInfo);
+      console.log("🟢 Physical fields in new form:", {
+        height: formData.applicantInfo?.height,
+        weight: formData.applicantInfo?.weight,
+        eyeColor: formData.applicantInfo?.eyeColor,
+        hairColor: formData.applicantInfo?.hairColor,
+      });
+      
+      // Ensure all fields are explicitly set, even if empty
+      const newApplicantInfo = {
+        lastName: formData.applicantInfo?.lastName || "",
+        firstName: formData.applicantInfo?.firstName || "",
+        middleInitial: formData.applicantInfo?.middleInitial || "",
+        socialSecurityNumber: formData.applicantInfo?.socialSecurityNumber || "",
+        height: formData.applicantInfo?.height || "",
+        weight: formData.applicantInfo?.weight || "",
+        eyeColor: formData.applicantInfo?.eyeColor || "",
+        hairColor: formData.applicantInfo?.hairColor || "",
+        dateOfBirth: formData.applicantInfo?.dateOfBirth || null,
+        sex: formData.applicantInfo?.sex || "",
+        race: formData.applicantInfo?.race || "",
+        address: {
+          street: formData.applicantInfo?.address?.street || "",
+          city: formData.applicantInfo?.address?.city || "",
+          state: formData.applicantInfo?.address?.state || "",
+          zipCode: formData.applicantInfo?.address?.zipCode || "",
+        },
+      };
+      
+      console.log("🟢 Normalized applicantInfo for new form:", newApplicantInfo);
+      
       // Create new form with proper structure
       backgroundCheckForm = new BackgroundCheck({
         applicationId,
         employeeId,
-        applicantInfo: formData.applicantInfo || {},
+        applicantInfo: newApplicantInfo,
         employmentInfo: formData.employmentInfo || {},
         consentAcknowledgment: formData.consentAcknowledgment || {},
         notification: formData.notification || {},
@@ -82,10 +197,36 @@ router.post("/save-background-check", async (req, res) => {
       });
     }
 
+    console.log("🟢 Saving background check form to database...");
+    console.log("🟢 Form data structure before save:", {
+      _id: backgroundCheckForm._id,
+      applicationId: backgroundCheckForm.applicationId,
+      employeeId: backgroundCheckForm.employeeId,
+      applicantInfo: backgroundCheckForm.applicantInfo,
+      employmentInfo: backgroundCheckForm.employmentInfo,
+      signature: backgroundCheckForm.applicantSignature,
+      signatureDate: backgroundCheckForm.applicantSignatureDate,
+      status: backgroundCheckForm.status,
+    });
+
     await backgroundCheckForm.save();
+
+    console.log("🟢 Background check form saved successfully!");
+    console.log("🟢 Saved form ID:", backgroundCheckForm._id);
+    console.log("🟢 Final saved data:", backgroundCheckForm.toObject());
+    console.log("🟢 VERIFICATION - Physical fields in DB:", {
+      height: backgroundCheckForm.applicantInfo?.height,
+      weight: backgroundCheckForm.applicantInfo?.weight,
+      eyeColor: backgroundCheckForm.applicantInfo?.eyeColor,
+      hairColor: backgroundCheckForm.applicantInfo?.hairColor,
+      sex: backgroundCheckForm.applicantInfo?.sex,
+      race: backgroundCheckForm.applicantInfo?.race,
+      dateOfBirth: backgroundCheckForm.applicantInfo?.dateOfBirth,
+    });
 
     // Update application progress
     if (status === "completed") {
+      console.log("🟢 Updating application progress (form completed)");
       // Ensure completedForms array exists
       if (!application.completedForms) {
         application.completedForms = [];
@@ -94,17 +235,33 @@ router.post("/save-background-check", async (req, res) => {
       // Check if Background Check is already marked as completed
       if (!application.completedForms.includes("Background Check")) {
         application.completedForms.push("Background Check");
+        console.log("🟢 Added 'Background Check' to completed forms list");
+      } else {
+        console.log("🟢 'Background Check' already in completed forms list");
       }
 
       application.completionPercentage =
         application.calculateCompletionPercentage();
       await application.save();
+      console.log("🟢 Application progress updated:", {
+        completedForms: application.completedForms,
+        completionPercentage: application.completionPercentage
+      });
+    } else {
+      console.log("📝 Form saved as draft - no progress update needed");
     }
 
     const message =
       status === "draft"
         ? "Background check form saved as draft"
         : "Background check form completed";
+
+    console.log("🟢 Sending response:", {
+      message,
+      backgroundCheckId: backgroundCheckForm._id,
+      completionPercentage: application.completionPercentage,
+      status: status
+    });
 
     res.status(200).json({
       message,
@@ -116,6 +273,65 @@ router.post("/save-background-check", async (req, res) => {
     res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// HR upload Background Check template
+router.post("/hr-upload-background-check-template", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    await BackgroundCheckTemplate.updateMany({}, { isActive: false });
+    const template = new BackgroundCheckTemplate({
+      filename: req.file.originalname,
+      filePath: req.file.path,
+      uploadedBy: req.body.uploadedBy || null,
+      isActive: true,
+    });
+    await template.save();
+    res.status(200).json({ message: "Template uploaded successfully", template });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+
+router.get("/get-background-check-template", async (req, res) => {
+  try {
+    const template = await BackgroundCheckTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+    if (!template) return res.status(404).json({ message: "No template found" });
+    res.status(200).json({ message: "Template retrieved successfully", template });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+
+router.post("/employee-upload-signed-background-check", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    const { applicationId, employeeId } = req.body;
+    if (!applicationId) return res.status(400).json({ message: "Application ID is required" });
+    let backgroundCheck = await BackgroundCheck.findOne({ applicationId });
+    if (!backgroundCheck) backgroundCheck = new BackgroundCheck({ applicationId, employeeId });
+    backgroundCheck.employeeUploadedForm = {
+      filename: req.file.originalname,
+      filePath: req.file.path,
+      uploadedAt: new Date(),
+    };
+    backgroundCheck.status = "submitted";
+    await backgroundCheck.save();
+    res.status(200).json({ message: "Signed form uploaded successfully", backgroundCheck });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+
+router.get("/hr-get-all-background-check-submissions", async (req, res) => {
+  try {
+    const submissions = await BackgroundCheck.find({ "employeeUploadedForm.filePath": { $exists: true, $ne: null } })
+      .populate("employeeId", "firstName lastName email")
+      .sort({ "employeeUploadedForm.uploadedAt": -1 });
+    res.status(200).json({ message: "Submissions retrieved successfully", submissions });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 });
 
@@ -131,6 +347,23 @@ router.get("/get-background-check/:applicationId", async (req, res) => {
         .status(404)
         .json({ message: "Background check form not found" });
     }
+
+    console.log("🟢 GET Background Check - Retrieved RAW data:", {
+      _id: backgroundCheck._id,
+      applicationId: backgroundCheck.applicationId,
+      hasApplicantInfo: !!backgroundCheck.applicantInfo,
+      applicantInfoKeys: backgroundCheck.applicantInfo ? Object.keys(backgroundCheck.applicantInfo) : [],
+      applicantInfoRAW: backgroundCheck.applicantInfo,
+      backgroundFields: {
+        height: backgroundCheck.applicantInfo?.height || "NOT SET",
+        weight: backgroundCheck.applicantInfo?.weight || "NOT SET",
+        eyeColor: backgroundCheck.applicantInfo?.eyeColor || "NOT SET",
+        hairColor: backgroundCheck.applicantInfo?.hairColor || "NOT SET",
+        dateOfBirth: backgroundCheck.applicantInfo?.dateOfBirth || "NOT SET",
+        sex: backgroundCheck.applicantInfo?.sex || "NOT SET",
+        race: backgroundCheck.applicantInfo?.race || "NOT SET",
+      }
+    });
 
     res.status(200).json({
       message: "Background check form retrieved successfully",

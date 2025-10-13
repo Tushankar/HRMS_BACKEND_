@@ -29,6 +29,13 @@ const ServiceDeliveryPolicySchema = new mongoose.Schema(
     supervisorSignature: { type: String },
     supervisorSignatureDate: { type: Date },
 
+    // Employee uploaded signed document
+    employeeUploadedForm: {
+      filename: { type: String },
+      filePath: { type: String },
+      uploadedAt: { type: Date },
+    },
+
     status: {
       type: String,
       enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],

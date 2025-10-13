@@ -64,8 +64,8 @@ const OnboardingApplicationSchema = new mongoose.Schema(
 
 // Method to calculate completion percentage
 OnboardingApplicationSchema.methods.calculateCompletionPercentage = function() {
-  // Total forms: 13 interactive forms + 4 job description acknowledgments = 17 forms
-  const totalForms = 17; 
+  // Total forms: 15 interactive forms + 4 job description acknowledgments + 1 work experience = 20 forms
+  const totalForms = 20; 
   const completedFormsCount = this.completedForms.length;
   this.completionPercentage = Math.round((completedFormsCount / totalForms) * 100);
   
