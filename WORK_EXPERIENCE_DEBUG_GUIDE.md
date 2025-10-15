@@ -1,17 +1,20 @@
 # 🔧 Work Experience Save Issue - Debugging Guide
 
 ## 🎯 Issue
+
 Cannot save work experience data to the backend.
 
 ## ✅ Fixes Applied
 
 ### Backend (`work-experience.js`):
+
 1. ✅ Added detailed logging at every step
 2. ✅ Added validation error logging
 3. ✅ Added success/failure indicators
 4. ✅ Added data structure logging
 
 ### Frontend (`WorkExperience.jsx`):
+
 1. ✅ Added detailed request logging
 2. ✅ Added payload inspection
 3. ✅ Added response status logging
@@ -20,6 +23,7 @@ Cannot save work experience data to the backend.
 ## 🧪 Testing Steps
 
 ### Step 1: Restart Backend Server
+
 ```bash
 cd backend
 # Stop the server (Ctrl+C)
@@ -30,12 +34,15 @@ node index.js
 ```
 
 ### Step 2: Open Work Experience Form
+
 1. Navigate to the Work Experience page
 2. Open browser console (F12)
 3. Open backend terminal
 
 ### Step 3: Fill in ONE Work Experience Entry
+
 Fill in at least:
+
 - Company Name: `Test Company`
 - Job Title: `Software Developer`
 - Employment Type: `Full-time`
@@ -43,9 +50,11 @@ Fill in at least:
 - End Date: `2023-12-31`
 
 ### Step 4: Click "Save as Draft"
+
 Watch BOTH consoles:
 
 **Frontend Console** should show:
+
 ```
 💼 [WorkExperience Frontend] Save initiated with status: draft
 💼 [WorkExperience Frontend] Current state:
@@ -58,6 +67,7 @@ Watch BOTH consoles:
 ```
 
 **Backend Terminal** should show:
+
 ```
 💼 [WorkExperience] Save request received
 💼 Request body: { ... }
@@ -77,57 +87,72 @@ Watch BOTH consoles:
 ## 🔍 Common Issues & Solutions
 
 ### Issue 1: 400 Bad Request - Missing employeeId
-**Symptom**: 
+
+**Symptom**:
+
 ```
 ❌ [WorkExperience] Missing employeeId
 ```
 
-**Solution**: 
+**Solution**:
+
 - Check if user is logged in
 - Check localStorage for userInfo
 - Verify user cookie exists
 
 ### Issue 2: 400 Bad Request - Invalid workExperiences
-**Symptom**: 
+
+**Symptom**:
+
 ```
 ❌ [WorkExperience] Invalid workExperiences format
 ```
 
-**Solution**: 
+**Solution**:
+
 - Check that workExperiences is an array
 - Verify at least one experience is filled out
 - Check console for payload structure
 
 ### Issue 3: 404 Not Found - Endpoint Not Found
-**Symptom**: 
+
+**Symptom**:
+
 ```
 POST http://localhost:1111/onboarding/work-experience/save 404 (Not Found)
 ```
 
-**Solution**: 
+**Solution**:
+
 1. Check backend is running on port 1111
 2. Verify the route is registered in `index.js`
 3. Restart backend server
 
 ### Issue 4: 500 Internal Server Error
-**Symptom**: 
+
+**Symptom**:
+
 ```
 ❌ [WorkExperience] Error saving work experience: [error message]
 ```
 
-**Solution**: 
+**Solution**:
+
 - Check backend error stack trace
 - Verify MongoDB is running
 - Check database connection
 - Verify all model fields are correct
 
 ### Issue 5: CORS Error
-**Symptom**: 
+
+**Symptom**:
+
 ```
 Access to fetch at 'http://localhost:1111/...' from origin 'http://localhost:5173' has been blocked by CORS
 ```
 
-**Solution**: 
+**Solution**:
+
 - Check CORS is enabled in backend
 - Verify frontend URL is whitelisted
 - Restart backend server
@@ -135,6 +160,7 @@ Access to fetch at 'http://localhost:1111/...' from origin 'http://localhost:517
 ## 📊 Expected Data Flow
 
 ### 1. Frontend Collects Data
+
 ```javascript
 {
   employeeId: "68cd667621dec4327dd0d419",
@@ -152,6 +178,7 @@ Access to fetch at 'http://localhost:1111/...' from origin 'http://localhost:517
 ```
 
 ### 2. Backend Validates & Saves
+
 ```javascript
 // Finds or creates OnboardingApplication
 // Finds or creates WorkExperience document
@@ -161,6 +188,7 @@ Access to fetch at 'http://localhost:1111/...' from origin 'http://localhost:517
 ```
 
 ### 3. Frontend Updates State
+
 ```javascript
 // Sets applicationId
 // Shows success alert
@@ -177,22 +205,28 @@ Access to fetch at 'http://localhost:1111/...' from origin 'http://localhost:517
 ## 🚨 If Still Not Working
 
 ### Check 1: Backend Route Registration
+
 Open `backend/index.js` and verify:
+
 ```javascript
 const WorkExperience = require("./routers/onboarding/work-experience.js");
 app.use("/onboarding", WorkExperience);
 ```
 
 ### Check 2: MongoDB Connection
+
 In backend terminal, look for:
+
 ```
 MongoDB connected successfully
 ```
 
 ### Check 3: Model Definition
+
 Check `backend/database/Models/WorkExperience.js` exists and is properly defined.
 
 ### Check 4: Network Tab
+
 1. Open browser DevTools → Network tab
 2. Click "Save as Draft"
 3. Find the `/work-experience/save` request
@@ -203,7 +237,9 @@ Check `backend/database/Models/WorkExperience.js` exists and is properly defined
    - Response Body
 
 ### Check 5: Environment Variables
+
 Verify `HRMS/.env` has:
+
 ```
 VITE__BASEURL=http://localhost:1111
 ```
@@ -224,6 +260,7 @@ If it's still not working, please share:
 ## 🎉 Expected Final Result
 
 After saving, when you:
+
 1. **Refresh the page** → Data should load back
 2. **Check backend terminal** → Should see "Found saved work experiences"
 3. **Check MongoDB** → Should have document in `workexperiences` collection

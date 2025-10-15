@@ -27,6 +27,7 @@ const EmploymentApplicationSchema = new mongoose.Schema(
       email: { type: String },
       ssn: { type: String },
       positionApplied: { type: String },
+      positionType: { type: String }, // Position Type: PCA, CNA, LPN, RN, etc.
       desiredSalary: { type: String },
       dateAvailable: { type: Date },
       employmentType: { type: String },
@@ -124,18 +125,25 @@ const EmploymentApplicationSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
 
     // HR Review and Feedback
     hrFeedback: {
       comment: { type: String },
-      reviewedBy: { 
+      reviewedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "user" 
+        ref: "user",
       },
-      reviewedAt: { type: Date }
+      reviewedAt: { type: Date },
     },
   },
   { timestamps: true }

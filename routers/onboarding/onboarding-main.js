@@ -25,6 +25,8 @@ const WorkExperience = require("../../database/Models/WorkExperience");
 const Education = require("../../database/Models/Education");
 const References = require("../../database/Models/References");
 const LegalDisclosures = require("../../database/Models/LegalDisclosures");
+const PositionType = require("../../database/Models/PositionType");
+const OrientationPresentation = require("../../database/Models/OrientationPresentation");
 const User = require("../../database/Models/Users");
 const { isFormEditable } = require("../../utils/formUtils");
 
@@ -118,7 +120,9 @@ router.get("/get-application/:employeeId", async (req, res) => {
       education,
       references,
       legalDisclosures,
+      positionType,
       employmentApp,
+      orientationPresentation,
       i9Form,
       w4Form,
       w9Form,
@@ -142,7 +146,9 @@ router.get("/get-application/:employeeId", async (req, res) => {
       Education.findOne({ applicationId: application._id }),
       References.findOne({ applicationId: application._id }),
       LegalDisclosures.findOne({ applicationId: application._id }),
+      PositionType.findOne({ applicationId: application._id }),
       EmploymentApplication.findOne({ applicationId: application._id }),
+      OrientationPresentation.findOne({ applicationId: application._id }),
       I9Form.findOne({ applicationId: application._id }),
       W4Form.findOne({ applicationId: application._id }),
       W9Form.findOne({ applicationId: application._id }),
@@ -540,11 +546,29 @@ router.get("/get-application/:employeeId", async (req, res) => {
               ),
             }
           : null,
+        positionType: positionType
+          ? {
+              ...positionType.toObject(),
+              isEditable: isFormEditable(
+                positionType.status,
+                application.applicationStatus
+              ),
+            }
+          : null,
         employmentApplication: employmentAppFlattened
           ? {
               ...employmentAppFlattened,
               isEditable: isFormEditable(
                 employmentAppFlattened.status,
+                application.applicationStatus
+              ),
+            }
+          : null,
+        orientationPresentation: orientationPresentation
+          ? {
+              ...orientationPresentation.toObject(),
+              isEditable: isFormEditable(
+                orientationPresentation.status,
                 application.applicationStatus
               ),
             }
@@ -848,6 +872,10 @@ router.put("/final-approve/:applicationId", async (req, res) => {
         { applicationId },
         { status: "approved" }
       ),
+      WorkExperience.updateMany({ applicationId }, { status: "approved" }),
+      Education.updateMany({ applicationId }, { status: "approved" }),
+      References.updateMany({ applicationId }, { status: "approved" }),
+      LegalDisclosures.updateMany({ applicationId }, { status: "approved" }),
       EmploymentApplication.updateMany(
         { applicationId },
         { status: "approved" }
@@ -864,13 +892,11 @@ router.put("/final-approve/:applicationId", async (req, res) => {
         { status: "approved" }
       ),
       NonCompeteAgreement.updateMany({ applicationId }, { status: "approved" }),
+      PositionType.updateMany({ applicationId }, { status: "approved" }),
+      OrientationPresentation.updateMany({ applicationId }, { status: "approved" }),
       BackgroundCheck.updateMany({ applicationId }, { status: "approved" }),
       TBSymptomScreen.updateMany({ applicationId }, { status: "approved" }),
       OrientationChecklist.updateMany(
-        { applicationId },
-        { status: "approved" }
-      ),
-      JobDescriptionAcknowledgment.updateMany(
         { applicationId },
         { status: "approved" }
       ),
@@ -928,7 +954,7 @@ router.put("/submit-application/:applicationId", async (req, res) => {
     for (const form of requiredForms) {
       const formData = await form.model.findOne({
         applicationId,
-        status: "completed",
+        status: { $in: ["submitted", "completed"] },
       });
       if (!formData) {
         incompleteforms.push(form.name);
@@ -950,6 +976,22 @@ router.put("/submit-application/:applicationId", async (req, res) => {
         { status: "submitted" }
       ),
       ProfessionalExperience.updateMany(
+        { applicationId, status: "completed" },
+        { status: "submitted" }
+      ),
+      WorkExperience.updateMany(
+        { applicationId, status: "completed" },
+        { status: "submitted" }
+      ),
+      Education.updateMany(
+        { applicationId, status: "completed" },
+        { status: "submitted" }
+      ),
+      References.updateMany(
+        { applicationId, status: "completed" },
+        { status: "submitted" }
+      ),
+      LegalDisclosures.updateMany(
         { applicationId, status: "completed" },
         { status: "submitted" }
       ),
@@ -993,6 +1035,14 @@ router.put("/submit-application/:applicationId", async (req, res) => {
         { applicationId, status: "completed" },
         { status: "submitted" }
       ),
+      PositionType.updateMany(
+        { applicationId, status: "completed" },
+        { status: "submitted" }
+      ),
+      OrientationPresentation.updateMany(
+        { applicationId, status: "completed" },
+        { status: "submitted" }
+      ),
       BackgroundCheck.updateMany(
         { applicationId, status: "completed" },
         { status: "submitted" }
@@ -1002,10 +1052,6 @@ router.put("/submit-application/:applicationId", async (req, res) => {
         { status: "submitted" }
       ),
       OrientationChecklist.updateMany(
-        { applicationId, status: "completed" },
-        { status: "submitted" }
-      ),
-      JobDescriptionAcknowledgment.updateMany(
         { applicationId, status: "completed" },
         { status: "submitted" }
       ),
@@ -1083,6 +1129,8 @@ router.post("/debug-fix-forms/:applicationId", async (req, res) => {
         { applicationId },
         { status: "completed" }
       ),
+      PositionType.updateMany({ applicationId }, { status: "completed" }),
+      OrientationPresentation.updateMany({ applicationId }, { status: "completed" }),
       BackgroundCheck.updateMany({ applicationId }, { status: "completed" }),
       TBSymptomScreen.updateMany({ applicationId }, { status: "completed" }),
       OrientationChecklist.updateMany(
@@ -1197,6 +1245,8 @@ router.post("/submit-notes", async (req, res) => {
       ServiceDeliveryPolicy: ServiceDeliveryPolicy,
       ServiceDeliveryPolicies: ServiceDeliveryPolicy, // Added plural mapping
       NonCompeteAgreement: NonCompeteAgreement,
+      PositionType: PositionType,
+      OrientationPresentation: OrientationPresentation,
       BackgroundCheck: BackgroundCheck,
       BackgroundCheckForm: BackgroundCheck, // Added mapping for frontend form type
       TBSymptomScreen: TBSymptomScreen,

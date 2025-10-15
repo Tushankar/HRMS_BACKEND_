@@ -72,6 +72,10 @@ const WorkExperience = require("./routers/onboarding/work-experience.js");
 const Education = require("./routers/onboarding/education.js");
 const References = require("./routers/onboarding/references.js");
 const LegalDisclosures = require("./routers/onboarding/legal-disclosures.js");
+const PositionType = require("./routers/onboarding/position-type.js");
+const OrientationPresentation = require("./routers/onboarding/orientation-presentation.js");
+const PCATrainingQuestions = require("./routers/onboarding/pcaTrainingQuestions.js");
+const TrainingVideo = require("./routers/onboarding/trainingVideo.js");
 
 // HR Review Routes
 const OnboardingReview = require("./routers/hr/onboarding-review.js");
@@ -107,6 +111,10 @@ app.use("/onboarding", WorkExperience);
 app.use("/onboarding", Education);
 app.use("/onboarding", References);
 app.use("/onboarding", LegalDisclosures);
+app.use("/onboarding", PositionType);
+app.use("/onboarding", OrientationPresentation);
+app.use("/onboarding/pca-training", PCATrainingQuestions);
+app.use("/onboarding/training-video", TrainingVideo);
 
 // Direct job description route (for simplified API)
 app.use("/job-description", JobDescription);

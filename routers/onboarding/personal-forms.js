@@ -56,22 +56,22 @@ router.post("/save-emergency-contact", async (req, res) => {
     await emergencyContactForm.save();
 
     // Update application progress
-    if (status === "completed") {
+    if (status === "submitted" || status === "completed") {
       // Ensure completedForms array exists
       if (!application.completedForms) {
         application.completedForms = [];
       }
       
       // Check if Emergency Contact is already marked as completed
-      if (!application.completedForms.includes("Emergency Contact")) {
-        application.completedForms.push("Emergency Contact");
+      if (!application.completedForms.includes("emergencyContact")) {
+        application.completedForms.push("emergencyContact");
       }
       
       application.completionPercentage = application.calculateCompletionPercentage();
       await application.save();
     }
 
-    const message = status === "draft" ? "Emergency contact form saved as draft" : "Emergency contact form completed";
+    const message = status === "draft" ? "Emergency contact form saved as draft" : "Emergency contact form submitted successfully";
 
     res.status(200).json({
       message,
@@ -144,22 +144,22 @@ router.post("/save-direct-deposit", async (req, res) => {
     await directDepositForm.save();
 
     // Update application progress
-    if (status === "completed") {
+    if (status === "submitted" || status === "completed") {
       // Ensure completedForms array exists
       if (!application.completedForms) {
         application.completedForms = [];
       }
       
       // Check if Direct Deposit is already marked as completed
-      if (!application.completedForms.includes("Direct Deposit")) {
-        application.completedForms.push("Direct Deposit");
+      if (!application.completedForms.includes("directDeposit")) {
+        application.completedForms.push("directDeposit");
       }
       
       application.completionPercentage = application.calculateCompletionPercentage();
       await application.save();
     }
 
-    const message = status === "draft" ? "Direct deposit form saved as draft" : "Direct deposit form completed";
+    const message = status === "draft" ? "Direct deposit form saved as draft" : "Direct deposit form submitted successfully";
 
     res.status(200).json({
       message,

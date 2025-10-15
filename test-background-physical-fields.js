@@ -7,7 +7,7 @@ const testPhysicalFields = async () => {
     console.log("🔍 Testing Background Check Physical Fields...\n");
 
     const baseURL = "http://localhost:1111"; // Change to your backend URL
-    // const baseURL = "https://hrms-backend-vneb.onrender.com";
+    // const baseURL = "http://localhost:1111";
 
     // Use an existing application ID from your database
     // Replace with actual IDs from your system
@@ -24,13 +24,13 @@ const testPhysicalFields = async () => {
         firstName: "Physical",
         middleInitial: "F",
         socialSecurityNumber: "123-45-6789",
-        
+
         // ✨ THESE ARE THE CRITICAL FIELDS ✨
         height: "5'10\"",
         weight: "175 lbs",
         eyeColor: "Blue",
         hairColor: "Blonde",
-        
+
         dateOfBirth: new Date("1990-05-15"),
         sex: "M",
         race: "Caucasian",
@@ -79,15 +79,27 @@ const testPhysicalFields = async () => {
       );
 
       console.log("✅ Save Response:", saveResponse.data.message);
-      
+
       // Check saved data
       const savedData = saveResponse.data.backgroundCheck;
       console.log("\n🔍 Verifying saved physical fields:");
-      console.log("   Height:", savedData.applicantInfo?.height || "❌ NOT SAVED");
-      console.log("   Weight:", savedData.applicantInfo?.weight || "❌ NOT SAVED");
-      console.log("   Eye Color:", savedData.applicantInfo?.eyeColor || "❌ NOT SAVED");
-      console.log("   Hair Color:", savedData.applicantInfo?.hairColor || "❌ NOT SAVED");
-      
+      console.log(
+        "   Height:",
+        savedData.applicantInfo?.height || "❌ NOT SAVED"
+      );
+      console.log(
+        "   Weight:",
+        savedData.applicantInfo?.weight || "❌ NOT SAVED"
+      );
+      console.log(
+        "   Eye Color:",
+        savedData.applicantInfo?.eyeColor || "❌ NOT SAVED"
+      );
+      console.log(
+        "   Hair Color:",
+        savedData.applicantInfo?.hairColor || "❌ NOT SAVED"
+      );
+
       if (
         savedData.applicantInfo?.height &&
         savedData.applicantInfo?.weight &&
@@ -98,9 +110,11 @@ const testPhysicalFields = async () => {
       } else {
         console.log("\n❌ Some physical fields are missing!");
       }
-
     } catch (saveError) {
-      console.error("❌ Error saving form:", saveError.response?.data || saveError.message);
+      console.error(
+        "❌ Error saving form:",
+        saveError.response?.data || saveError.message
+      );
       return;
     }
 
@@ -117,15 +131,27 @@ const testPhysicalFields = async () => {
       );
 
       console.log("✅ Get Response:", getResponse.data.message);
-      
+
       // Check retrieved data
       const retrievedData = getResponse.data.backgroundCheck;
       console.log("\n🔍 Verifying retrieved physical fields:");
-      console.log("   Height:", retrievedData.applicantInfo?.height || "❌ NOT FOUND");
-      console.log("   Weight:", retrievedData.applicantInfo?.weight || "❌ NOT FOUND");
-      console.log("   Eye Color:", retrievedData.applicantInfo?.eyeColor || "❌ NOT FOUND");
-      console.log("   Hair Color:", retrievedData.applicantInfo?.hairColor || "❌ NOT FOUND");
-      
+      console.log(
+        "   Height:",
+        retrievedData.applicantInfo?.height || "❌ NOT FOUND"
+      );
+      console.log(
+        "   Weight:",
+        retrievedData.applicantInfo?.weight || "❌ NOT FOUND"
+      );
+      console.log(
+        "   Eye Color:",
+        retrievedData.applicantInfo?.eyeColor || "❌ NOT FOUND"
+      );
+      console.log(
+        "   Hair Color:",
+        retrievedData.applicantInfo?.hairColor || "❌ NOT FOUND"
+      );
+
       if (
         retrievedData.applicantInfo?.height &&
         retrievedData.applicantInfo?.weight &&
@@ -136,9 +162,11 @@ const testPhysicalFields = async () => {
       } else {
         console.log("\n❌ Some physical fields are missing after retrieval!");
       }
-
     } catch (getError) {
-      console.error("❌ Error retrieving form:", getError.response?.data || getError.message);
+      console.error(
+        "❌ Error retrieving form:",
+        getError.response?.data || getError.message
+      );
       return;
     }
 
@@ -182,15 +210,27 @@ const testPhysicalFields = async () => {
       );
 
       console.log("✅ Update Response:", updateResponse.data.message);
-      
+
       // Check updated data
       const updatedData = updateResponse.data.backgroundCheck;
       console.log("\n🔍 Verifying updated physical fields:");
-      console.log("   Height:", updatedData.applicantInfo?.height || "❌ NOT UPDATED");
-      console.log("   Weight:", updatedData.applicantInfo?.weight || "❌ NOT UPDATED");
-      console.log("   Eye Color:", updatedData.applicantInfo?.eyeColor || "❌ NOT UPDATED");
-      console.log("   Hair Color:", updatedData.applicantInfo?.hairColor || "❌ NOT UPDATED");
-      
+      console.log(
+        "   Height:",
+        updatedData.applicantInfo?.height || "❌ NOT UPDATED"
+      );
+      console.log(
+        "   Weight:",
+        updatedData.applicantInfo?.weight || "❌ NOT UPDATED"
+      );
+      console.log(
+        "   Eye Color:",
+        updatedData.applicantInfo?.eyeColor || "❌ NOT UPDATED"
+      );
+      console.log(
+        "   Hair Color:",
+        updatedData.applicantInfo?.hairColor || "❌ NOT UPDATED"
+      );
+
       if (
         updatedData.applicantInfo?.height === "6'2\"" &&
         updatedData.applicantInfo?.weight === "190 lbs" &&
@@ -201,16 +241,17 @@ const testPhysicalFields = async () => {
       } else {
         console.log("\n❌ Physical fields were not updated correctly!");
       }
-
     } catch (updateError) {
-      console.error("❌ Error updating form:", updateError.response?.data || updateError.message);
+      console.error(
+        "❌ Error updating form:",
+        updateError.response?.data || updateError.message
+      );
       return;
     }
 
     console.log("\n" + "=".repeat(70));
     console.log("🎉 Test completed! Check the logs above for any issues.");
     console.log("=".repeat(70) + "\n");
-
   } catch (error) {
     console.error("❌ Test failed:", error.message);
     if (error.response) {

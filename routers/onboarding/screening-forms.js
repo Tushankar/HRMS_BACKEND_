@@ -324,6 +324,25 @@ router.post("/employee-upload-signed-background-check", upload.single("file"), a
   }
 });
 
+router.post("/employee-upload-cpr-certificate", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    const { applicationId, employeeId } = req.body;
+    if (!applicationId) return res.status(400).json({ message: "Application ID is required" });
+    let backgroundCheck = await BackgroundCheck.findOne({ applicationId });
+    if (!backgroundCheck) backgroundCheck = new BackgroundCheck({ applicationId, employeeId });
+    backgroundCheck.cprFirstAidCertificate = {
+      filename: req.file.originalname,
+      filePath: req.file.path,
+      uploadedAt: new Date(),
+    };
+    await backgroundCheck.save();
+    res.status(200).json({ message: "CPR/First Aid certificate uploaded successfully", backgroundCheck });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+
 router.get("/hr-get-all-background-check-submissions", async (req, res) => {
   try {
     const submissions = await BackgroundCheck.find({ "employeeUploadedForm.filePath": { $exists: true, $ne: null } })

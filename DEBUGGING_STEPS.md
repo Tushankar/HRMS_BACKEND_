@@ -7,11 +7,13 @@ You mentioned you **entered the data** in the Height, Weight, Eye Color, and Hai
 ## 📝 Step-by-Step Testing Process
 
 ### Step 1: Clear Console and Refresh
+
 1. Open the Background Check form
 2. **Clear your browser console** (right-click → Clear console)
 3. **Refresh the page**
 
 ### Step 2: Fill in ONE Field and Watch Console
+
 1. Click in the **Height** field
 2. Type: `5'10"`
 3. **Immediately check the console** for this log:
@@ -25,7 +27,9 @@ You mentioned you **entered the data** in the Height, Weight, Eye Color, and Hai
 **If you DO see this log** → Continue to Step 3.
 
 ### Step 3: Fill in ALL Physical Fields
+
 Fill in:
+
 - Height: `5'10"`
 - Weight: `175`
 - Eye Color: `Blue`
@@ -34,7 +38,9 @@ Fill in:
 After each field, verify you see the `⭐ PHYSICAL FIELD CHANGED` log.
 
 ### Step 4: Fill in Required Fields
+
 The form requires:
+
 - ✅ Last Name (should already be filled from Employment App)
 - ✅ First Name (should already be filled from Employment App)
 - ✅ Social Security Number (should already be filled from Employment App)
@@ -43,6 +49,7 @@ The form requires:
 **Draw a signature** in the signature pad.
 
 ### Step 5: Submit the Form
+
 1. Click **"Save & Next"** button
 2. Watch the console for:
    ```
@@ -60,7 +67,9 @@ The form requires:
 **If these show your values** → Continue to Step 6.
 
 ### Step 6: Check Backend Response
+
 After clicking Save, look for:
+
 ```
 🔴 Payload structure:
 actualBackgroundFieldValues: {
@@ -72,6 +81,7 @@ actualBackgroundFieldValues: {
 ```
 
 Then look for:
+
 ```
 🟢 Save response received: { data: { ... } }
 ```
@@ -81,6 +91,7 @@ Then look for:
 **If you see success** → Continue to Step 7.
 
 ### Step 7: Refresh and Verify
+
 1. **Refresh the page**
 2. Check console for:
    ```
@@ -96,9 +107,11 @@ Then look for:
 ## 🚨 Common Issues
 
 ### Issue 1: onChange Not Firing
+
 **Symptom**: No `⭐ PHYSICAL FIELD CHANGED` log when typing
 
 **Causes**:
+
 - Field is `readOnly={true}` when it shouldn't be
 - Field is `disabled`
 - HR View mode is active (check URL for `?hr=true`)
@@ -106,6 +119,7 @@ Then look for:
 **Solution**: Check the input field props in the code
 
 ### Issue 2: Form State Not Updating
+
 **Symptom**: `⭐ PHYSICAL FIELD CHANGED` logs show correct value, but `⭐ PHYSICAL FIELDS AT SUBMIT` shows empty
 
 **Cause**: React state update timing issue
@@ -113,18 +127,22 @@ Then look for:
 **Solution**: Try typing slower, or adding a small delay before submitting
 
 ### Issue 3: Validation Fails
+
 **Symptom**: Error toast saying "Please fill in all required fields"
 
 **Cause**: Missing signature or other required fields
 
-**Solution**: 
+**Solution**:
+
 - Draw a signature in the signature pad
 - Check all required fields are filled
 
 ### Issue 4: Backend Error
+
 **Symptom**: 400, 404, or 500 error in console
 
 **Causes**:
+
 - Application ID not found
 - Employee ID not found
 - Invalid payload
@@ -132,11 +150,13 @@ Then look for:
 **Solution**: Share the exact error message and I'll help debug
 
 ### Issue 5: Data Doesn't Persist
+
 **Symptom**: Form saves successfully but data disappears on refresh
 
 **Cause**: Backend isn't actually saving to database (check backend logs)
 
-**Solution**: 
+**Solution**:
+
 1. Check backend console for `🟢 VERIFICATION - Physical fields in DB:`
 2. If fields show as empty there, the issue is in the backend save logic
 
@@ -197,12 +217,14 @@ curl http://localhost:1111/onboarding/get-background-check/68cd668621dec4327dd0d
 If it's still not working, please share:
 
 1. **Console logs** showing:
+
    - The `⭐ PHYSICAL FIELD CHANGED` logs
    - The `⭐ PHYSICAL FIELDS AT SUBMIT` logs
    - The `🔴 Payload structure` logs
    - Any error messages
 
 2. **Backend logs** showing:
+
    - The `🟡 ApplicantInfo field values` logs
    - The `🟢 VERIFICATION - Physical fields in DB` logs
    - Any error messages

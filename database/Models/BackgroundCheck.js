@@ -59,6 +59,13 @@ const BackgroundCheckSchema = new mongoose.Schema(
       uploadedAt: { type: Date },
     },
 
+    // CPR/First Aid Certificate (Optional)
+    cprFirstAidCertificate: {
+      filename: { type: String },
+      filePath: { type: String },
+      uploadedAt: { type: Date },
+    },
+
     // DBHDD Notification Cover Sheet
     notification: {
       providerName: { type: String },
