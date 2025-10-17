@@ -14,56 +14,6 @@ const ProfessionalExperienceSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Work Experience (Array of experiences)
-    workExperience: [{
-      companyName: { type: String },
-      jobTitle: { type: String },
-      employmentType: { 
-        type: String,
-        enum: ["Full-time", "Part-time", "Contract", "Internship", "Freelance"]
-      },
-      startDate: { type: Date },
-      endDate: { type: Date },
-      currentlyWorking: { type: Boolean, default: false },
-      location: { type: String }, // City, State, Country
-      supervisorName: { type: String },
-      supervisorContact: { type: String }, // Email or Phone
-      responsibilities: { type: String }, // textarea
-      reasonForLeaving: { type: String },
-      documentPath: { type: String } // Upload path for offer/relieving letter
-    }],
-
-    // Job Preferences
-    expectedSalary: { type: String },
-    salaryType: { 
-      type: String,
-      enum: ["per hour", "per annum"],
-      default: "per annum"
-    },
-    preferredWorkLocation: { type: String },
-    willingToRelocate: { type: Boolean },
-    availabilityToStart: { type: Date },
-    employmentTypePreference: { 
-      type: String,
-      enum: ["Full-time", "Part-time", "Contract", "Remote"]
-    },
-
-    // References (Array of references)
-    references: [{
-      name: { type: String },
-      relationship: { type: String },
-      company: { type: String },
-      contactNumber: { type: String },
-      email: { type: String }
-    }],
-
-    // Legal Questions
-    workedWithCompanyBefore: { type: Boolean },
-    legallyAuthorizedToWork: { type: Boolean },
-    requireVisaSponsorship: { type: Boolean },
-    convictedOfFelony: { type: Boolean },
-    felonyExplanation: { type: String },
-
     // Military Service
     hasMilitaryService: { type: Boolean, default: false },
     militaryService: {
@@ -85,7 +35,14 @@ const ProfessionalExperienceSchema = new mongoose.Schema(
     // Internal status tracking
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
 
@@ -96,7 +53,7 @@ const ProfessionalExperienceSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",
       },
-      reviewedAt: { type: Date }
+      reviewedAt: { type: Date },
     },
   },
   {
@@ -104,4 +61,7 @@ const ProfessionalExperienceSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("ProfessionalExperience", ProfessionalExperienceSchema);
+module.exports = mongoose.model(
+  "ProfessionalExperience",
+  ProfessionalExperienceSchema
+);

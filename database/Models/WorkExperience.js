@@ -70,6 +70,33 @@ const WorkExperienceSchema = new mongoose.Schema(
         },
       },
     ],
+
+    // Job Preferences (shown only if hasPreviousWorkExperience is true)
+    expectedSalary: { type: String },
+    salaryType: {
+      type: String,
+      enum: ["per hour", "per annum"],
+      default: "per annum",
+    },
+    preferredWorkLocation: { type: String },
+    willingToRelocate: { type: Boolean },
+    availabilityToStart: { type: Date },
+    employmentTypePreference: {
+      type: String,
+      enum: ["Full-time", "Part-time", "Contract", "Remote"],
+    },
+
+    // References (shown only if hasPreviousWorkExperience is true)
+    references: [
+      {
+        name: { type: String },
+        relationship: { type: String },
+        company: { type: String },
+        contactNumber: { type: String },
+        email: { type: String },
+      },
+    ],
+
     status: {
       type: String,
       enum: [
