@@ -23,21 +23,35 @@ const EmergencyContactFormSchema = new mongoose.Schema(
     employeeName1: { type: String },
     contactAddress1: { type: String },
     phoneNumber1: { type: String },
-    
+
     // Emergency Contact 2 (Optional)
     employeeName2: { type: String },
     contactAddress2: { type: String },
     phoneNumber2: { type: String },
-    
+
     // Emergency Contact 3 (Optional)
     employeeName3: { type: String },
     contactAddress3: { type: String },
     phoneNumber3: { type: String },
 
+    // Employee Uploaded Form
+    employeeUploadedForm: {
+      filename: { type: String },
+      filePath: { type: String },
+      uploadedAt: { type: Date },
+    },
+
     // Internal status tracking
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
 

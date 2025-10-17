@@ -95,12 +95,27 @@ const TBSymptomScreenSchema = new mongoose.Schema(
 
     // Signatures
     screenerSignature: { type: String },
+    screenerSignatureImage: { type: String },
     clientSignature: { type: String },
     clientSignatureDate: { type: Date },
 
+    // Employee uploaded signed document
+    employeeUploadedForm: {
+      filename: { type: String },
+      filePath: { type: String },
+      uploadedAt: { type: Date },
+    },
+
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
 

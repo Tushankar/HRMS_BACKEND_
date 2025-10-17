@@ -546,4 +546,351 @@ router.post("/remove-cpr-certificate-upload", async (req, res) => {
   }
 });
 
+// ========== TB SYMPTOM SCREEN FORM ENDPOINTS ==========
+
+const TBSymptomScreenTemplate = require("../../database/Models/TBSymptomScreenTemplate");
+
+// HR upload TB Symptom Screen template
+router.post(
+  "/hr-upload-tb-symptom-screen-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const { uploadedBy } = req.body;
+
+      // Deactivate previous templates
+      await TBSymptomScreenTemplate.updateMany({}, { isActive: false });
+
+      // Create new template
+      const template = new TBSymptomScreenTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: uploadedBy || null,
+        isActive: true,
+      });
+
+      await template.save();
+
+      res.status(200).json({
+        message: "TB Symptom Screen template uploaded successfully",
+        template,
+      });
+    } catch (error) {
+      console.error("Error uploading template:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
+  }
+);
+
+// Get active TB Symptom Screen template
+router.get("/get-tb-symptom-screen-template", async (req, res) => {
+  try {
+    const template = await TBSymptomScreenTemplate.findOne({
+      isActive: true,
+    }).sort({ createdAt: -1 });
+
+    if (!template) {
+      return res.status(404).json({ message: "No template found" });
+    }
+
+    res.status(200).json({
+      message: "Template retrieved successfully",
+      template,
+    });
+  } catch (error) {
+    console.error("Error getting template:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Save TB Symptom Screen form status
+router.post("/save-tb-symptom-screen", async (req, res) => {
+  try {
+    const {
+      applicationId,
+      employeeId,
+      formData = {},
+      status = "draft",
+      hrFeedback,
+    } = req.body;
+
+    if (!applicationId || !employeeId) {
+      return res.status(400).json({
+        message: "Application ID and Employee ID are required",
+      });
+    }
+
+    const updateData = { status };
+
+    // Only update form data if provided
+    if (Object.keys(formData).length > 0) {
+      Object.assign(updateData, formData);
+    }
+
+    if (hrFeedback) {
+      updateData.hrFeedback = hrFeedback;
+    }
+
+    const tbSymptomScreen = await TBSymptomScreen.findOneAndUpdate(
+      { applicationId, employeeId },
+      updateData,
+      { new: true, upsert: true, validateBeforeSave: status !== "draft" }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "TB Symptom Screen form saved successfully",
+      tbSymptomScreen,
+    });
+  } catch (error) {
+    console.error("Error saving TB Symptom Screen form:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
+// Get TB Symptom Screen form
+router.get("/get-tb-symptom-screen/:applicationId", async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+
+    const tbSymptomScreen = await TBSymptomScreen.findOne({ applicationId });
+
+    if (!tbSymptomScreen) {
+      return res.status(404).json({
+        message: "TB Symptom Screen form not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      tbSymptomScreen,
+    });
+  } catch (error) {
+    console.error("Error getting TB Symptom Screen form:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
+// Employee upload signed TB Symptom Screen
+router.post(
+  "/employee-upload-signed-tb-symptom-screen",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const { applicationId, employeeId } = req.body;
+
+      if (!applicationId || !employeeId) {
+        return res.status(400).json({
+          message: "Application ID and Employee ID are required",
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const tbSymptomScreen = await TBSymptomScreen.findOneAndUpdate(
+        { applicationId, employeeId },
+        {
+          employeeUploadedForm: {
+            filename: req.file.originalname,
+            filePath: req.file.path,
+            uploadedAt: new Date(),
+          },
+          status: "submitted",
+        },
+        { new: true, upsert: true }
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "TB Symptom Screen document uploaded successfully",
+        tbSymptomScreen,
+      });
+    } catch (error) {
+      console.error("Error uploading TB Symptom Screen document:", error);
+      res.status(500).json({
+        message: "Internal server error",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// Remove uploaded TB Symptom Screen document
+router.post("/remove-tb-symptom-screen-upload", async (req, res) => {
+  try {
+    const { applicationId, employeeId } = req.body;
+
+    if (!applicationId || !employeeId) {
+      return res.status(400).json({
+        message: "Application ID and Employee ID are required",
+      });
+    }
+
+    const tbSymptomScreen = await TBSymptomScreen.findOne({
+      applicationId,
+      employeeId,
+    });
+
+    if (!tbSymptomScreen) {
+      return res.status(404).json({
+        message: "TB Symptom Screen form not found",
+      });
+    }
+
+    // Delete the file from the file system
+    if (tbSymptomScreen.employeeUploadedForm?.filePath) {
+      try {
+        const filePath = path.join(
+          __dirname,
+          "../../",
+          tbSymptomScreen.employeeUploadedForm.filePath
+        );
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (fileError) {
+        console.warn(
+          "Warning: Could not delete file from disk:",
+          fileError.message
+        );
+      }
+    }
+
+    // Clear the uploaded form from the database
+    tbSymptomScreen.employeeUploadedForm = null;
+    tbSymptomScreen.status = "draft";
+
+    await tbSymptomScreen.save();
+
+    res.status(200).json({
+      success: true,
+      message: "TB Symptom Screen document removed successfully",
+      tbSymptomScreen,
+    });
+  } catch (error) {
+    console.error("Error removing TB Symptom Screen document:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
+// HR get all TB Symptom Screen submissions
+router.get("/hr-get-all-tb-symptom-screen-submissions", async (req, res) => {
+  try {
+    const submissions = await TBSymptomScreen.find({
+      "employeeUploadedForm.filename": { $exists: true },
+    })
+      .populate("employeeId", "firstName lastName email")
+      .sort({ "employeeUploadedForm.uploadedAt": -1 });
+
+    res.status(200).json({
+      success: true,
+      submissions,
+    });
+  } catch (error) {
+    console.error("Error getting TB Symptom Screen submissions:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
+// Get individual TB Symptom Screen submission by ID
+router.get("/get-tb-symptom-screen-submission/:id", async (req, res) => {
+  try {
+    const submission = await TBSymptomScreen.findById(req.params.id).populate(
+      "employeeId",
+      "firstName lastName email"
+    );
+
+    if (!submission) {
+      return res.status(404).json({
+        message: "TB Symptom Screen submission not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      submission,
+    });
+  } catch (error) {
+    console.error("Error getting TB Symptom Screen submission:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
+// HR clear/delete TB Symptom Screen submission
+router.delete(
+  "/hr-clear-tb-symptom-screen-submission/:id",
+  async (req, res) => {
+    try {
+      const submission = await TBSymptomScreen.findById(req.params.id);
+
+      if (!submission) {
+        return res.status(404).json({
+          message: "TB Symptom Screen submission not found",
+        });
+      }
+
+      // Delete the file from the file system
+      if (submission.employeeUploadedForm?.filePath) {
+        try {
+          const filePath = path.join(
+            __dirname,
+            "../../",
+            submission.employeeUploadedForm.filePath
+          );
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (fileError) {
+          console.warn(
+            "Warning: Could not delete file from disk:",
+            fileError.message
+          );
+        }
+      }
+
+      // Clear the uploaded form from the database
+      submission.employeeUploadedForm = null;
+      submission.status = "draft";
+
+      await submission.save();
+
+      res.status(200).json({
+        success: true,
+        message: "TB Symptom Screen submission cleared successfully",
+      });
+    } catch (error) {
+      console.error("Error clearing TB Symptom Screen submission:", error);
+      res.status(500).json({
+        message: "Internal server error",
+        error: error.message,
+      });
+    }
+  }
+);
+
 module.exports = router;
