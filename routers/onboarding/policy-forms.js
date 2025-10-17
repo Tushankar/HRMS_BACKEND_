@@ -1,4 +1,6 @@
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
 const MisconductStatement = require("../../database/Models/MisconductStatement");
 const CodeOfEthics = require("../../database/Models/CodeOfEthics");
 const CodeOfEthicsTemplate = require("../../database/Models/CodeOfEthicsTemplate");
@@ -23,7 +25,6 @@ const CNAJobDescriptionTemplate = require("../../database/Models/CNAJobDescripti
 const PCAJobDescription = require("../../database/Models/PCAJobDescription");
 const PCAJobDescriptionTemplate = require("../../database/Models/PCAJobDescriptionTemplate");
 const multer = require("multer");
-const path = require("path");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -40,7 +41,31 @@ const router = express.Router();
 // Save or update Misconduct Statement form
 router.post("/save-misconduct-statement", async (req, res) => {
   try {
-    const { applicationId, employeeId, formData, status = "draft" } = req.body;
+    const {
+      applicationId,
+      employeeId,
+      formData,
+      hrFeedback,
+      status = "draft",
+    } = req.body;
+
+    // Handle HR feedback-only update
+    if (!formData && hrFeedback) {
+      let misconductForm = await MisconductStatement.findOne({ applicationId });
+      if (!misconductForm) {
+        return res
+          .status(404)
+          .json({ message: "Misconduct statement not found" });
+      }
+      misconductForm.hrFeedback = hrFeedback;
+      misconductForm.status = status || "under_review";
+      await misconductForm.save();
+      return res.status(200).json({
+        success: true,
+        message: "HR feedback saved successfully",
+        misconductStatement: misconductForm,
+      });
+    }
 
     if (!applicationId || !employeeId) {
       return res
@@ -112,7 +137,7 @@ router.post("/save-misconduct-statement", async (req, res) => {
       });
     }
 
-    await misconductForm.save();
+    await misconductForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {
@@ -181,7 +206,31 @@ router.get("/get-misconduct-statement/:applicationId", async (req, res) => {
 // Save or update Code of Ethics form
 router.post("/save-code-of-ethics", async (req, res) => {
   try {
-    const { applicationId, employeeId, formData, status = "draft" } = req.body;
+    const {
+      applicationId,
+      employeeId,
+      formData,
+      hrFeedback,
+      status = "draft",
+    } = req.body;
+
+    // Handle HR feedback-only update
+    if (!formData && hrFeedback) {
+      let codeOfEthicsForm = await CodeOfEthics.findOne({ applicationId });
+      if (!codeOfEthicsForm) {
+        return res
+          .status(404)
+          .json({ message: "Code of ethics form not found" });
+      }
+      codeOfEthicsForm.hrFeedback = hrFeedback;
+      codeOfEthicsForm.status = status || "under_review";
+      await codeOfEthicsForm.save();
+      return res.status(200).json({
+        success: true,
+        message: "HR feedback saved successfully",
+        codeOfEthics: codeOfEthicsForm,
+      });
+    }
 
     if (!applicationId || !employeeId) {
       return res
@@ -224,7 +273,7 @@ router.post("/save-code-of-ethics", async (req, res) => {
       });
     }
 
-    await codeOfEthicsForm.save();
+    await codeOfEthicsForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {
@@ -292,41 +341,49 @@ router.get("/get-code-of-ethics/:applicationId", async (req, res) => {
 });
 
 // HR upload Code of Ethics template
-router.post("/hr-upload-code-of-ethics-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+router.post(
+  "/hr-upload-code-of-ethics-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const { uploadedBy } = req.body;
+
+      // Deactivate previous templates
+      await CodeOfEthicsTemplate.updateMany({}, { isActive: false });
+
+      // Create new template
+      const template = new CodeOfEthicsTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: uploadedBy || null,
+        isActive: true,
+      });
+
+      await template.save();
+
+      res.status(200).json({
+        message: "Code of Ethics template uploaded successfully",
+        template,
+      });
+    } catch (error) {
+      console.error("Error uploading template:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
     }
-
-    const { uploadedBy } = req.body;
-
-    // Deactivate previous templates
-    await CodeOfEthicsTemplate.updateMany({}, { isActive: false });
-
-    // Create new template
-    const template = new CodeOfEthicsTemplate({
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedBy: uploadedBy || null,
-      isActive: true,
-    });
-
-    await template.save();
-
-    res.status(200).json({
-      message: "Code of Ethics template uploaded successfully",
-      template,
-    });
-  } catch (error) {
-    console.error("Error uploading template:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
   }
-});
+);
 
 // Get active Code of Ethics template
 router.get("/get-code-of-ethics-template", async (req, res) => {
   try {
-    const template = await CodeOfEthicsTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+    const template = await CodeOfEthicsTemplate.findOne({
+      isActive: true,
+    }).sort({ createdAt: -1 });
 
     if (!template) {
       return res.status(404).json({ message: "No template found" });
@@ -338,48 +395,108 @@ router.get("/get-code-of-ethics-template", async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting template:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // Employee upload signed Code of Ethics form
-router.post("/employee-upload-signed-code-of-ethics", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
+router.post(
+  "/employee-upload-signed-code-of-ethics",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
 
+      const { applicationId, employeeId } = req.body;
+
+      if (!applicationId) {
+        return res.status(400).json({ message: "Application ID is required" });
+      }
+
+      let codeOfEthics = await CodeOfEthics.findOne({ applicationId });
+
+      if (!codeOfEthics) {
+        codeOfEthics = new CodeOfEthics({
+          applicationId,
+          employeeId,
+        });
+      }
+
+      codeOfEthics.employeeUploadedForm = {
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedAt: new Date(),
+      };
+      codeOfEthics.status = "submitted";
+
+      await codeOfEthics.save();
+
+      res.status(200).json({
+        message: "Signed Code of Ethics form uploaded successfully",
+        codeOfEthics,
+      });
+    } catch (error) {
+      console.error("Error uploading signed form:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
+  }
+);
+
+// Remove employee uploaded Code of Ethics form
+router.post("/remove-code-of-ethics-upload", async (req, res) => {
+  try {
     const { applicationId, employeeId } = req.body;
 
     if (!applicationId) {
       return res.status(400).json({ message: "Application ID is required" });
     }
 
-    let codeOfEthics = await CodeOfEthics.findOne({ applicationId });
+    const codeOfEthics = await CodeOfEthics.findOne({ applicationId });
 
-    if (!codeOfEthics) {
-      codeOfEthics = new CodeOfEthics({
-        applicationId,
-        employeeId,
-      });
+    if (!codeOfEthics || !codeOfEthics.employeeUploadedForm) {
+      return res.status(404).json({ message: "No uploaded form found" });
     }
 
-    codeOfEthics.employeeUploadedForm = {
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedAt: new Date(),
-    };
-    codeOfEthics.status = "submitted";
+    // Delete the file from the file system
+    if (codeOfEthics.employeeUploadedForm.filePath) {
+      try {
+        const filePath = path.join(
+          __dirname,
+          "../../",
+          codeOfEthics.employeeUploadedForm.filePath
+        );
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (fileError) {
+        console.warn(
+          "Warning: Could not delete file from disk:",
+          fileError.message
+        );
+      }
+    }
+
+    // Clear the uploaded form from the database
+    codeOfEthics.employeeUploadedForm = null;
+    codeOfEthics.status = "draft";
 
     await codeOfEthics.save();
 
     res.status(200).json({
-      message: "Signed Code of Ethics form uploaded successfully",
+      message: "Uploaded form removed successfully",
       codeOfEthics,
     });
   } catch (error) {
-    console.error("Error uploading signed form:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    console.error("Error removing uploaded form:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
@@ -398,14 +515,22 @@ router.get("/hr-get-all-code-of-ethics-submissions", async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting submissions:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // Save or update Service Delivery Policy form
 router.post("/save-service-delivery-policy", async (req, res) => {
   try {
-    const { applicationId, employeeId, formData, status = "draft" } = req.body;
+    const {
+      applicationId,
+      employeeId,
+      formData,
+      hrFeedback,
+      status = "draft",
+    } = req.body;
 
     if (!applicationId || !employeeId) {
       return res
@@ -419,6 +544,27 @@ router.post("/save-service-delivery-policy", async (req, res) => {
       return res
         .status(404)
         .json({ message: "Onboarding application not found" });
+    }
+
+    // Find existing form
+    let serviceDeliveryForm = await ServiceDeliveryPolicy.findOne({
+      applicationId,
+    });
+
+    // Handle HR feedback-only update
+    if (!formData && hrFeedback) {
+      if (!serviceDeliveryForm) {
+        return res
+          .status(404)
+          .json({ message: "Service delivery policy form not found" });
+      }
+      serviceDeliveryForm.hrFeedback = hrFeedback;
+      serviceDeliveryForm.status = "under_review";
+      await serviceDeliveryForm.save();
+      return res.status(200).json({
+        message: "HR feedback saved successfully",
+        serviceDeliveryPolicy: serviceDeliveryForm,
+      });
     }
 
     // Map form data to schema fields for Service Delivery Policy
@@ -439,11 +585,6 @@ router.post("/save-service-delivery-policy", async (req, res) => {
       status,
     };
 
-    // Find existing form or create new one
-    let serviceDeliveryForm = await ServiceDeliveryPolicy.findOne({
-      applicationId,
-    });
-
     if (serviceDeliveryForm) {
       // Update existing form with mapped data
       Object.assign(serviceDeliveryForm, mappedData);
@@ -456,7 +597,7 @@ router.post("/save-service-delivery-policy", async (req, res) => {
       });
     }
 
-    await serviceDeliveryForm.save();
+    await serviceDeliveryForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {
@@ -529,39 +670,47 @@ router.get("/get-service-delivery-policy/:applicationId", async (req, res) => {
 });
 
 // HR upload Service Delivery Policy template
-router.post("/hr-upload-service-delivery-policy-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+router.post(
+  "/hr-upload-service-delivery-policy-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const { uploadedBy } = req.body;
+
+      await ServiceDeliveryPolicyTemplate.updateMany({}, { isActive: false });
+
+      const template = new ServiceDeliveryPolicyTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: uploadedBy || null,
+        isActive: true,
+      });
+
+      await template.save();
+
+      res.status(200).json({
+        message: "Service Delivery Policy template uploaded successfully",
+        template,
+      });
+    } catch (error) {
+      console.error("Error uploading template:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
     }
-
-    const { uploadedBy } = req.body;
-
-    await ServiceDeliveryPolicyTemplate.updateMany({}, { isActive: false });
-
-    const template = new ServiceDeliveryPolicyTemplate({
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedBy: uploadedBy || null,
-      isActive: true,
-    });
-
-    await template.save();
-
-    res.status(200).json({
-      message: "Service Delivery Policy template uploaded successfully",
-      template,
-    });
-  } catch (error) {
-    console.error("Error uploading template:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
   }
-});
+);
 
 // Get active Service Delivery Policy template
 router.get("/get-service-delivery-policy-template", async (req, res) => {
   try {
-    const template = await ServiceDeliveryPolicyTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+    const template = await ServiceDeliveryPolicyTemplate.findOne({
+      isActive: true,
+    }).sort({ createdAt: -1 });
 
     if (!template) {
       return res.status(404).json({ message: "No template found" });
@@ -573,74 +722,167 @@ router.get("/get-service-delivery-policy-template", async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting template:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // Employee upload signed Service Delivery Policy form
-router.post("/employee-upload-signed-service-delivery-policy", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
+router.post(
+  "/employee-upload-signed-service-delivery-policy",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
 
+      const { applicationId, employeeId } = req.body;
+
+      if (!applicationId) {
+        return res.status(400).json({ message: "Application ID is required" });
+      }
+
+      let serviceDeliveryPolicy = await ServiceDeliveryPolicy.findOne({
+        applicationId,
+      });
+
+      if (!serviceDeliveryPolicy) {
+        serviceDeliveryPolicy = new ServiceDeliveryPolicy({
+          applicationId,
+          employeeId,
+        });
+      }
+
+      serviceDeliveryPolicy.employeeUploadedForm = {
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedAt: new Date(),
+      };
+      serviceDeliveryPolicy.status = "submitted";
+
+      await serviceDeliveryPolicy.save();
+
+      res.status(200).json({
+        message: "Signed Service Delivery Policy form uploaded successfully",
+        serviceDeliveryPolicy,
+      });
+    } catch (error) {
+      console.error("Error uploading signed form:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
+  }
+);
+
+// Remove employee uploaded Service Delivery Policy form
+router.post("/remove-service-delivery-policy-upload", async (req, res) => {
+  try {
     const { applicationId, employeeId } = req.body;
 
     if (!applicationId) {
       return res.status(400).json({ message: "Application ID is required" });
     }
 
-    let serviceDeliveryPolicy = await ServiceDeliveryPolicy.findOne({ applicationId });
+    const serviceDeliveryPolicy = await ServiceDeliveryPolicy.findOne({
+      applicationId,
+    });
 
-    if (!serviceDeliveryPolicy) {
-      serviceDeliveryPolicy = new ServiceDeliveryPolicy({
-        applicationId,
-        employeeId,
-      });
+    if (!serviceDeliveryPolicy || !serviceDeliveryPolicy.employeeUploadedForm) {
+      return res.status(404).json({ message: "No uploaded document found" });
     }
 
-    serviceDeliveryPolicy.employeeUploadedForm = {
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedAt: new Date(),
-    };
-    serviceDeliveryPolicy.status = "submitted";
+    // Delete the file from the file system
+    if (serviceDeliveryPolicy.employeeUploadedForm.filePath) {
+      try {
+        const filePath = path.join(
+          __dirname,
+          "../../",
+          serviceDeliveryPolicy.employeeUploadedForm.filePath
+        );
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (fileError) {
+        console.warn(
+          "Warning: Could not delete file from disk:",
+          fileError.message
+        );
+      }
+    }
+
+    // Clear the uploaded form from the database
+    serviceDeliveryPolicy.employeeUploadedForm = null;
+    serviceDeliveryPolicy.status = "draft";
 
     await serviceDeliveryPolicy.save();
 
     res.status(200).json({
-      message: "Signed Service Delivery Policy form uploaded successfully",
+      message: "Uploaded document removed successfully",
       serviceDeliveryPolicy,
     });
   } catch (error) {
-    console.error("Error uploading signed form:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    console.error("Error removing uploaded document:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // Get all employees' uploaded Service Delivery Policy forms (for HR)
-router.get("/hr-get-all-service-delivery-policy-submissions", async (req, res) => {
-  try {
-    const submissions = await ServiceDeliveryPolicy.find({
-      "employeeUploadedForm.filePath": { $exists: true, $ne: null },
-    })
-      .populate("employeeId", "firstName lastName email")
-      .sort({ "employeeUploadedForm.uploadedAt": -1 });
+router.get(
+  "/hr-get-all-service-delivery-policy-submissions",
+  async (req, res) => {
+    try {
+      const submissions = await ServiceDeliveryPolicy.find({
+        "employeeUploadedForm.filePath": { $exists: true, $ne: null },
+      })
+        .populate("employeeId", "firstName lastName email")
+        .sort({ "employeeUploadedForm.uploadedAt": -1 });
 
-    res.status(200).json({
-      message: "Service Delivery Policy submissions retrieved successfully",
-      submissions,
-    });
-  } catch (error) {
-    console.error("Error getting submissions:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+      res.status(200).json({
+        message: "Service Delivery Policy submissions retrieved successfully",
+        submissions,
+      });
+    } catch (error) {
+      console.error("Error getting submissions:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
   }
-});
+);
 
 // Save or update Non-Compete Agreement form
 router.post("/save-non-compete-agreement", async (req, res) => {
   try {
-    const { applicationId, employeeId, formData, status = "draft" } = req.body;
+    const {
+      applicationId,
+      employeeId,
+      formData,
+      hrFeedback,
+      status = "draft",
+    } = req.body;
+
+    // Handle HR feedback-only update
+    if (!formData && hrFeedback) {
+      let nonCompeteForm = await NonCompeteAgreement.findOne({ applicationId });
+      if (!nonCompeteForm) {
+        return res
+          .status(404)
+          .json({ message: "Non-compete agreement not found" });
+      }
+      nonCompeteForm.hrFeedback = hrFeedback;
+      nonCompeteForm.status = status || "under_review";
+      await nonCompeteForm.save();
+      return res.status(200).json({
+        success: true,
+        message: "HR feedback saved successfully",
+        nonCompeteAgreement: nonCompeteForm,
+      });
+    }
 
     if (!applicationId || !employeeId) {
       return res
@@ -705,7 +947,7 @@ router.post("/save-non-compete-agreement", async (req, res) => {
       });
     }
 
-    await nonCompeteForm.save();
+    await nonCompeteForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {
@@ -743,61 +985,148 @@ router.post("/save-non-compete-agreement", async (req, res) => {
 });
 
 // HR upload Non-Compete Agreement template
-router.post("/hr-upload-non-compete-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    await NonCompeteTemplate.updateMany({}, { isActive: false });
-    const template = new NonCompeteTemplate({
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedBy: req.body.uploadedBy || null,
-      isActive: true,
-    });
-    await template.save();
-    res.status(200).json({ message: "Template uploaded successfully", template });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+router.post(
+  "/hr-upload-non-compete-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "No file uploaded" });
+      await NonCompeteTemplate.updateMany({}, { isActive: false });
+      const template = new NonCompeteTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: req.body.uploadedBy || null,
+        isActive: true,
+      });
+      await template.save();
+      res
+        .status(200)
+        .json({ message: "Template uploaded successfully", template });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
   }
-});
+);
 
 router.get("/get-non-compete-template", async (req, res) => {
   try {
-    const template = await NonCompeteTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (!template) return res.status(404).json({ message: "No template found" });
-    res.status(200).json({ message: "Template retrieved successfully", template });
+    const template = await NonCompeteTemplate.findOne({ isActive: true }).sort({
+      createdAt: -1,
+    });
+    if (!template)
+      return res.status(404).json({ message: "No template found" });
+    res
+      .status(200)
+      .json({ message: "Template retrieved successfully", template });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
-router.post("/employee-upload-signed-non-compete", upload.single("file"), async (req, res) => {
+router.post(
+  "/employee-upload-signed-non-compete",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "No file uploaded" });
+      const { applicationId, employeeId } = req.body;
+      if (!applicationId)
+        return res.status(400).json({ message: "Application ID is required" });
+      let nonCompete = await NonCompeteAgreement.findOne({ applicationId });
+      if (!nonCompete)
+        nonCompete = new NonCompeteAgreement({ applicationId, employeeId });
+      nonCompete.employeeUploadedForm = {
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedAt: new Date(),
+      };
+      nonCompete.status = "submitted";
+      await nonCompete.save();
+      res
+        .status(200)
+        .json({ message: "Signed form uploaded successfully", nonCompete });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
+  }
+);
+
+// Remove employee uploaded Non-Compete Agreement form
+router.post("/remove-non-compete-upload", async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
     const { applicationId, employeeId } = req.body;
-    if (!applicationId) return res.status(400).json({ message: "Application ID is required" });
-    let nonCompete = await NonCompeteAgreement.findOne({ applicationId });
-    if (!nonCompete) nonCompete = new NonCompeteAgreement({ applicationId, employeeId });
-    nonCompete.employeeUploadedForm = {
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedAt: new Date(),
-    };
-    nonCompete.status = "submitted";
+
+    if (!applicationId) {
+      return res.status(400).json({ message: "Application ID is required" });
+    }
+
+    const nonCompete = await NonCompeteAgreement.findOne({
+      applicationId,
+    });
+
+    if (!nonCompete || !nonCompete.employeeUploadedForm) {
+      return res.status(404).json({ message: "No uploaded form found" });
+    }
+
+    // Delete the file from the file system
+    if (nonCompete.employeeUploadedForm.filePath) {
+      try {
+        const filePath = path.join(
+          __dirname,
+          "../../",
+          nonCompete.employeeUploadedForm.filePath
+        );
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (fileError) {
+        console.warn(
+          "Warning: Could not delete file from disk:",
+          fileError.message
+        );
+      }
+    }
+
+    // Clear the uploaded form from the database
+    nonCompete.employeeUploadedForm = null;
+    nonCompete.status = "draft";
+
     await nonCompete.save();
-    res.status(200).json({ message: "Signed form uploaded successfully", nonCompete });
+
+    res.status(200).json({
+      message: "Uploaded form removed successfully",
+      nonCompete,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    console.error("Error removing uploaded form:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 router.get("/hr-get-all-non-compete-submissions", async (req, res) => {
   try {
-    const submissions = await NonCompeteAgreement.find({ "employeeUploadedForm.filePath": { $exists: true, $ne: null } })
+    const submissions = await NonCompeteAgreement.find({
+      "employeeUploadedForm.filePath": { $exists: true, $ne: null },
+    })
       .populate("employeeId", "firstName lastName email")
       .sort({ "employeeUploadedForm.uploadedAt": -1 });
-    res.status(200).json({ message: "Submissions retrieved successfully", submissions });
+    res
+      .status(200)
+      .json({ message: "Submissions retrieved successfully", submissions });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
@@ -872,7 +1201,7 @@ router.delete("/hr-clear-code-of-ethics-submission/:id", async (req, res) => {
   try {
     await CodeOfEthics.findByIdAndUpdate(req.params.id, {
       $unset: { employeeUploadedForm: "" },
-      status: "draft"
+      status: "draft",
     });
     res.json({ success: true });
   } catch (error) {
@@ -881,24 +1210,27 @@ router.delete("/hr-clear-code-of-ethics-submission/:id", async (req, res) => {
 });
 
 // HR clear Service Delivery Policy submission
-router.delete("/hr-clear-service-delivery-policy-submission/:id", async (req, res) => {
-  try {
-    await ServiceDeliveryPolicy.findByIdAndUpdate(req.params.id, {
-      $unset: { employeeUploadedForm: "" },
-      status: "draft"
-    });
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+router.delete(
+  "/hr-clear-service-delivery-policy-submission/:id",
+  async (req, res) => {
+    try {
+      await ServiceDeliveryPolicy.findByIdAndUpdate(req.params.id, {
+        $unset: { employeeUploadedForm: "" },
+        status: "draft",
+      });
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
-});
+);
 
 // HR clear Non-Compete Agreement submission
 router.delete("/hr-clear-non-compete-submission/:id", async (req, res) => {
   try {
     const result = await NonCompeteAgreement.findByIdAndUpdate(req.params.id, {
       $unset: { employeeUploadedForm: "" },
-      status: "draft"
+      status: "draft",
     });
     if (!result) {
       return res.status(404).json({ message: "Form not found" });
@@ -915,7 +1247,7 @@ router.delete("/hr-clear-background-check-submission/:id", async (req, res) => {
     const BackgroundCheck = require("../../database/Models/BackgroundCheck");
     const result = await BackgroundCheck.findByIdAndUpdate(req.params.id, {
       $unset: { employeeUploadedForm: "" },
-      status: "draft"
+      status: "draft",
     });
     if (!result) {
       return res.status(404).json({ message: "Form not found" });
@@ -927,228 +1259,339 @@ router.delete("/hr-clear-background-check-submission/:id", async (req, res) => {
 });
 
 // ============ EMPLOYMENT APPLICATION TEMPLATE ROUTES ============
-router.post("/hr-upload-employment-application-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    const EmploymentApplicationTemplate = require("../../database/Models/EmploymentApplicationTemplate");
-    await EmploymentApplicationTemplate.updateMany({}, { isActive: false });
-    const template = new EmploymentApplicationTemplate({
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedBy: req.body.uploadedBy || null,
-      isActive: true,
-    });
-    await template.save();
-    res.status(200).json({ message: "Template uploaded successfully", template });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+router.post(
+  "/hr-upload-employment-application-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "No file uploaded" });
+      const EmploymentApplicationTemplate = require("../../database/Models/EmploymentApplicationTemplate");
+      await EmploymentApplicationTemplate.updateMany({}, { isActive: false });
+      const template = new EmploymentApplicationTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: req.body.uploadedBy || null,
+        isActive: true,
+      });
+      await template.save();
+      res
+        .status(200)
+        .json({ message: "Template uploaded successfully", template });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
   }
-});
+);
 
 router.get("/get-employment-application-template", async (req, res) => {
   try {
     const EmploymentApplicationTemplate = require("../../database/Models/EmploymentApplicationTemplate");
-    const template = await EmploymentApplicationTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (!template) return res.status(404).json({ message: "No template found" });
-    res.status(200).json({ message: "Template retrieved successfully", template });
+    const template = await EmploymentApplicationTemplate.findOne({
+      isActive: true,
+    }).sort({ createdAt: -1 });
+    if (!template)
+      return res.status(404).json({ message: "No template found" });
+    res
+      .status(200)
+      .json({ message: "Template retrieved successfully", template });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // ============ I-9 FORM TEMPLATE ROUTES ============
-router.post("/hr-upload-i9-form-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    await I9FormTemplate.updateMany({}, { isActive: false });
-    const template = new I9FormTemplate({
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedBy: req.body.uploadedBy || null,
-      isActive: true,
-    });
-    await template.save();
-    res.status(200).json({ message: "Template uploaded successfully", template });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+router.post(
+  "/hr-upload-i9-form-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "No file uploaded" });
+      await I9FormTemplate.updateMany({}, { isActive: false });
+      const template = new I9FormTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: req.body.uploadedBy || null,
+        isActive: true,
+      });
+      await template.save();
+      res
+        .status(200)
+        .json({ message: "Template uploaded successfully", template });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
   }
-});
-
-router.get("/get-i9-form-template", async (req, res) => {
-  try {
-    const template = await I9FormTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (!template) return res.status(404).json({ message: "No template found" });
-    res.status(200).json({ message: "Template retrieved successfully", template });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
-  }
-});
+);
 
 // ============ W-4 FORM TEMPLATE ROUTES ============
-router.post("/hr-upload-w4-form-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    await W4FormTemplate.updateMany({}, { isActive: false });
-    const template = new W4FormTemplate({
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedBy: req.body.uploadedBy || null,
-      isActive: true,
-    });
-    await template.save();
-    res.status(200).json({ message: "Template uploaded successfully", template });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+router.post(
+  "/hr-upload-w4-form-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "No file uploaded" });
+      await W4FormTemplate.updateMany({}, { isActive: false });
+      const template = new W4FormTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: req.body.uploadedBy || null,
+        isActive: true,
+      });
+      await template.save();
+      res
+        .status(200)
+        .json({ message: "Template uploaded successfully", template });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
   }
-});
+);
 
 router.get("/get-w4-form-template", async (req, res) => {
   try {
-    const template = await W4FormTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (!template) return res.status(404).json({ message: "No template found" });
-    res.status(200).json({ message: "Template retrieved successfully", template });
+    const template = await W4FormTemplate.findOne({ isActive: true }).sort({
+      createdAt: -1,
+    });
+    if (!template)
+      return res.status(404).json({ message: "No template found" });
+    res
+      .status(200)
+      .json({ message: "Template retrieved successfully", template });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // ============ W-9 FORM TEMPLATE ROUTES ============
-router.post("/hr-upload-w9-form-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    await W9FormTemplate.updateMany({}, { isActive: false });
-    const template = new W9FormTemplate({
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedBy: req.body.uploadedBy || null,
-      isActive: true,
-    });
-    await template.save();
-    res.status(200).json({ message: "Template uploaded successfully", template });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+router.post(
+  "/hr-upload-w9-form-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "No file uploaded" });
+      await W9FormTemplate.updateMany({}, { isActive: false });
+      const template = new W9FormTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: req.body.uploadedBy || null,
+        isActive: true,
+      });
+      await template.save();
+      res
+        .status(200)
+        .json({ message: "Template uploaded successfully", template });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
   }
-});
+);
 
 router.get("/get-w9-form-template", async (req, res) => {
   try {
-    const template = await W9FormTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (!template) return res.status(404).json({ message: "No template found" });
-    res.status(200).json({ message: "Template retrieved successfully", template });
+    const template = await W9FormTemplate.findOne({ isActive: true }).sort({
+      createdAt: -1,
+    });
+    if (!template)
+      return res.status(404).json({ message: "No template found" });
+    res
+      .status(200)
+      .json({ message: "Template retrieved successfully", template });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // ============ RN JOB DESCRIPTION TEMPLATE ROUTES ============
-router.post("/hr-upload-rn-job-description-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    await RNJobDescriptionTemplate.updateMany({}, { isActive: false });
-    const template = new RNJobDescriptionTemplate({
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedBy: req.body.uploadedBy || null,
-      isActive: true,
-    });
-    await template.save();
-    res.status(200).json({ message: "Template uploaded successfully", template });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+router.post(
+  "/hr-upload-rn-job-description-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "No file uploaded" });
+      await RNJobDescriptionTemplate.updateMany({}, { isActive: false });
+      const template = new RNJobDescriptionTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: req.body.uploadedBy || null,
+        isActive: true,
+      });
+      await template.save();
+      res
+        .status(200)
+        .json({ message: "Template uploaded successfully", template });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
   }
-});
+);
 
 router.get("/get-rn-job-description-template", async (req, res) => {
   try {
-    const template = await RNJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (!template) return res.status(404).json({ message: "No template found" });
-    res.status(200).json({ message: "Template retrieved successfully", template });
+    const template = await RNJobDescriptionTemplate.findOne({
+      isActive: true,
+    }).sort({ createdAt: -1 });
+    if (!template)
+      return res.status(404).json({ message: "No template found" });
+    res
+      .status(200)
+      .json({ message: "Template retrieved successfully", template });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // ============ LPN JOB DESCRIPTION TEMPLATE ROUTES ============
-router.post("/hr-upload-lpn-job-description-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    await LPNJobDescriptionTemplate.updateMany({}, { isActive: false });
-    const template = new LPNJobDescriptionTemplate({
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedBy: req.body.uploadedBy || null,
-      isActive: true,
-    });
-    await template.save();
-    res.status(200).json({ message: "Template uploaded successfully", template });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+router.post(
+  "/hr-upload-lpn-job-description-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "No file uploaded" });
+      await LPNJobDescriptionTemplate.updateMany({}, { isActive: false });
+      const template = new LPNJobDescriptionTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: req.body.uploadedBy || null,
+        isActive: true,
+      });
+      await template.save();
+      res
+        .status(200)
+        .json({ message: "Template uploaded successfully", template });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
   }
-});
+);
 
 router.get("/get-lpn-job-description-template", async (req, res) => {
   try {
-    const template = await LPNJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (!template) return res.status(404).json({ message: "No template found" });
-    res.status(200).json({ message: "Template retrieved successfully", template });
+    const template = await LPNJobDescriptionTemplate.findOne({
+      isActive: true,
+    }).sort({ createdAt: -1 });
+    if (!template)
+      return res.status(404).json({ message: "No template found" });
+    res
+      .status(200)
+      .json({ message: "Template retrieved successfully", template });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // ============ CNA JOB DESCRIPTION TEMPLATE ROUTES ============
-router.post("/hr-upload-cna-job-description-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    await CNAJobDescriptionTemplate.updateMany({}, { isActive: false });
-    const template = new CNAJobDescriptionTemplate({
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedBy: req.body.uploadedBy || null,
-      isActive: true,
-    });
-    await template.save();
-    res.status(200).json({ message: "Template uploaded successfully", template });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+router.post(
+  "/hr-upload-cna-job-description-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "No file uploaded" });
+      await CNAJobDescriptionTemplate.updateMany({}, { isActive: false });
+      const template = new CNAJobDescriptionTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: req.body.uploadedBy || null,
+        isActive: true,
+      });
+      await template.save();
+      res
+        .status(200)
+        .json({ message: "Template uploaded successfully", template });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
   }
-});
+);
 
 router.get("/get-cna-job-description-template", async (req, res) => {
   try {
-    const template = await CNAJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (!template) return res.status(404).json({ message: "No template found" });
-    res.status(200).json({ message: "Template retrieved successfully", template });
+    const template = await CNAJobDescriptionTemplate.findOne({
+      isActive: true,
+    }).sort({ createdAt: -1 });
+    if (!template)
+      return res.status(404).json({ message: "No template found" });
+    res
+      .status(200)
+      .json({ message: "Template retrieved successfully", template });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // ============ PCA JOB DESCRIPTION TEMPLATE ROUTES ============
-router.post("/hr-upload-pca-job-description-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    await PCAJobDescriptionTemplate.updateMany({}, { isActive: false });
-    const template = new PCAJobDescriptionTemplate({
-      filename: req.file.originalname,
-      filePath: req.file.path,
-      uploadedBy: req.body.uploadedBy || null,
-      isActive: true,
-    });
-    await template.save();
-    res.status(200).json({ message: "Template uploaded successfully", template });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+router.post(
+  "/hr-upload-pca-job-description-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file)
+        return res.status(400).json({ message: "No file uploaded" });
+      await PCAJobDescriptionTemplate.updateMany({}, { isActive: false });
+      const template = new PCAJobDescriptionTemplate({
+        filename: req.file.originalname,
+        filePath: req.file.path,
+        uploadedBy: req.body.uploadedBy || null,
+        isActive: true,
+      });
+      await template.save();
+      res
+        .status(200)
+        .json({ message: "Template uploaded successfully", template });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
   }
-});
+);
 
 router.get("/get-pca-job-description-template", async (req, res) => {
   try {
-    const template = await PCAJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
-    if (!template) return res.status(404).json({ message: "No template found" });
-    res.status(200).json({ message: "Template retrieved successfully", template });
+    const template = await PCAJobDescriptionTemplate.findOne({
+      isActive: true,
+    }).sort({ createdAt: -1 });
+    if (!template)
+      return res.status(404).json({ message: "No template found" });
+    res
+      .status(200)
+      .json({ message: "Template retrieved successfully", template });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 

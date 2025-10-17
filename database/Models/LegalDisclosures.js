@@ -57,6 +57,35 @@ const LegalDisclosuresSchema = new mongoose.Schema(
       required: true,
       default: false,
     },
+    // Legal Questions
+    usaCitizen: {
+      type: Boolean,
+      default: false,
+    },
+    workedForCompanyBefore: {
+      type: Boolean,
+      default: false,
+    },
+    workedForCompanyWhen: {
+      type: String,
+      default: "",
+    },
+    legallyAuthorizedToWorkUS: {
+      type: Boolean,
+      default: false,
+    },
+    requiresVisaSponsorship: {
+      type: Boolean,
+      default: false,
+    },
+    convictedOfFelony: {
+      type: Boolean,
+      default: false,
+    },
+    convictionExplanation: {
+      type: String,
+      default: "",
+    },
     applicantSignature: {
       type: String,
       required: true,
@@ -67,8 +96,23 @@ const LegalDisclosuresSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["draft", "completed"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
+    },
+    hrFeedback: {
+      comment: { type: String },
+      reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
+      reviewedAt: { type: Date },
     },
   },
   {

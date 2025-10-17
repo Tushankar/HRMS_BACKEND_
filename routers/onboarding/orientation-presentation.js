@@ -143,4 +143,53 @@ router.get("/orientation-presentation/get/:applicationId", async (req, res) => {
   }
 });
 
+// Save HR feedback for orientation presentation
+router.post("/save-orientation-presentation", async (req, res) => {
+  try {
+    let { applicationId, employeeId, hrFeedback, status } = req.body;
+
+    if (!employeeId) {
+      return res.status(400).json({ success: false, message: "Employee ID is required" });
+    }
+
+    if (!applicationId || !applicationId.match(/^[0-9a-fA-F]{24}$/)) {
+      let application = await OnboardingApplication.findOne({ employeeId });
+      if (!application) {
+        application = new OnboardingApplication({ employeeId, applicationStatus: "draft" });
+        await application.save();
+      }
+      applicationId = application._id;
+    }
+
+    let presentation = await OrientationPresentation.findOne({ applicationId });
+
+    if (presentation) {
+      if (hrFeedback) {
+        presentation.hrFeedback = hrFeedback;
+      }
+      if (status) {
+        presentation.status = status;
+      }
+      await presentation.save();
+    } else {
+      presentation = new OrientationPresentation({
+        applicationId,
+        employeeId,
+        hrFeedback: hrFeedback || {},
+        status: status || "draft",
+      });
+      await presentation.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "HR feedback saved successfully",
+      data: presentation,
+    });
+  } catch (error) {
+    console.error("Error saving HR feedback:", error);
+    res.status(500).json({ success: false, message: "Failed to save HR feedback", error: error.message });
+  }
+});
+
 module.exports = router;

@@ -12,56 +12,83 @@ const WorkExperienceSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-    workExperiences: [{
-      companyName: {
-        type: String,
-        required: true,
+    hasPreviousWorkExperience: {
+      type: Boolean,
+      default: false,
+    },
+    workExperiences: [
+      {
+        companyName: {
+          type: String,
+          required: false, // Changed to false since it's optional when no experience
+        },
+        jobTitle: {
+          type: String,
+          required: false, // Changed to false since it's optional when no experience
+        },
+        employmentType: {
+          type: String,
+          enum: [
+            "Full-time",
+            "Part-time",
+            "Contract",
+            "Internship",
+            "Freelance",
+          ],
+          required: false, // Changed to false since it's optional when no experience
+        },
+        startDate: {
+          type: Date,
+          required: false, // Changed to false since it's optional when no experience
+        },
+        endDate: {
+          type: Date,
+        },
+        currentlyWorkingHere: {
+          type: Boolean,
+          default: false,
+        },
+        location: {
+          type: String,
+          required: false, // Changed to false since it's optional when no experience
+        },
+        supervisorName: {
+          type: String,
+        },
+        supervisorContact: {
+          type: String,
+        },
+        keyResponsibilities: {
+          type: String,
+          required: false, // Changed to false since it's optional when no experience
+        },
+        reasonForLeaving: {
+          type: String,
+        },
+        proofDocument: {
+          type: String, // File path for uploaded proof
+        },
       },
-      jobTitle: {
-        type: String,
-        required: true,
-      },
-      employmentType: {
-        type: String,
-        enum: ["Full-time", "Part-time", "Contract", "Internship", "Freelance"],
-        required: true,
-      },
-      startDate: {
-        type: Date,
-        required: true,
-      },
-      endDate: {
-        type: Date,
-      },
-      currentlyWorkingHere: {
-        type: Boolean,
-        default: false,
-      },
-      location: {
-        type: String,
-        required: true,
-      },
-      supervisorName: {
-        type: String,
-      },
-      supervisorContact: {
-        type: String,
-      },
-      keyResponsibilities: {
-        type: String,
-        required: true,
-      },
-      reasonForLeaving: {
-        type: String,
-      },
-      proofDocument: {
-        type: String, // File path for uploaded proof
-      },
-    }],
+    ],
     status: {
       type: String,
-      enum: ["draft", "completed"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
+    },
+    hrFeedback: {
+      comment: { type: String },
+      reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
+      reviewedAt: { type: Date },
     },
   },
   {

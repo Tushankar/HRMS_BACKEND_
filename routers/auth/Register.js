@@ -16,6 +16,14 @@ appRouter.post("/register", async (req, res) => {
       userRole
     } = req.body;
 
+    // Validate required fields
+    if (!fullName || !email || !country || !phoneNumber || !password || !address || !dateOfBirth) {
+      return res.status(400).json({
+        message: "All fields are required",
+        status: "Error",
+      });
+    }
+
     // check if emaill exists
     const checkEmailExists = await Users.findOne({ email });
     if (checkEmailExists)
@@ -36,20 +44,21 @@ appRouter.post("/register", async (req, res) => {
       address,
       password: hashedPassword,
       dateOfBirth: dateOfBirth,
-      userRole
+      userRole: userRole || "employee"
     });
     // save user to database
     await newUser.save();
     // return user details
-    res
-      .json({
-        message: "Account created successfully",
-        status: "Success",
-      })
-      .status(200);
+    res.status(200).json({
+      message: "Account created successfully",
+      status: "Success",
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: error, status: "Server Error" });
+    console.error("Registration error:", error);
+    res.status(500).json({ 
+      message: error.message || "Internal Server Error", 
+      status: "Server Error" 
+    });
   }
 });
 // Update User API

@@ -8,12 +8,19 @@ router.post("/work-experience/save", async (req, res) => {
   try {
     console.log("💼 [WorkExperience] Save request received");
     console.log("💼 Request body:", JSON.stringify(req.body, null, 2));
-    
-    let { applicationId, employeeId, workExperiences, status } = req.body;
+
+    let {
+      applicationId,
+      employeeId,
+      workExperiences,
+      status,
+      hasPreviousWorkExperience,
+    } = req.body;
 
     console.log("💼 Parsed data:");
     console.log("   - applicationId:", applicationId);
     console.log("   - employeeId:", employeeId);
+    console.log("   - hasPreviousWorkExperience:", hasPreviousWorkExperience);
     console.log("   - workExperiences count:", workExperiences?.length);
     console.log("   - status:", status);
 
@@ -36,19 +43,34 @@ router.post("/work-experience/save", async (req, res) => {
     }
 
     // If applicationId is invalid or not provided, find or create one
-    if (!applicationId || applicationId === 'work-experience' || !applicationId.match(/^[0-9a-fA-F]{24}$/)) {
-      console.log("⚠️ [WorkExperience] Invalid applicationId, looking for existing application");
+    if (
+      !applicationId ||
+      applicationId === "work-experience" ||
+      !applicationId.match(/^[0-9a-fA-F]{24}$/)
+    ) {
+      console.log(
+        "⚠️ [WorkExperience] Invalid applicationId, looking for existing application"
+      );
       let application = await OnboardingApplication.findOne({ employeeId });
       if (!application) {
-        console.log("📝 [WorkExperience] Creating new application for employee:", employeeId);
+        console.log(
+          "📝 [WorkExperience] Creating new application for employee:",
+          employeeId
+        );
         application = new OnboardingApplication({
           employeeId,
           applicationStatus: "draft",
         });
         await application.save();
-        console.log("✅ [WorkExperience] New application created:", application._id);
+        console.log(
+          "✅ [WorkExperience] New application created:",
+          application._id
+        );
       } else {
-        console.log("✅ [WorkExperience] Found existing application:", application._id);
+        console.log(
+          "✅ [WorkExperience] Found existing application:",
+          application._id
+        );
       }
       applicationId = application._id;
     }
@@ -60,20 +82,32 @@ router.post("/work-experience/save", async (req, res) => {
       console.log("🔄 [WorkExperience] Updating existing work experience");
       console.log("   - Old count:", workExp.workExperiences?.length);
       console.log("   - New count:", workExperiences.length);
+      console.log("   - Has previous experience:", hasPreviousWorkExperience);
+      workExp.hasPreviousWorkExperience =
+        hasPreviousWorkExperience !== undefined
+          ? hasPreviousWorkExperience
+          : false;
       workExp.workExperiences = workExperiences;
       workExp.status = status || "draft";
-      await workExp.save();
+      await workExp.save({ validateBeforeSave: status !== "draft" });
       console.log("✅ [WorkExperience] Work experience updated");
     } else {
       console.log("📝 [WorkExperience] Creating new work experience document");
       workExp = new WorkExperience({
         applicationId,
         employeeId,
+        hasPreviousWorkExperience:
+          hasPreviousWorkExperience !== undefined
+            ? hasPreviousWorkExperience
+            : false,
         workExperiences,
         status: status || "draft",
       });
-      await workExp.save();
-      console.log("✅ [WorkExperience] New work experience created:", workExp._id);
+      await workExp.save({ validateBeforeSave: status !== "draft" });
+      console.log(
+        "✅ [WorkExperience] New work experience created:",
+        workExp._id
+      );
     }
 
     // Update OnboardingApplication if completed
@@ -85,9 +119,13 @@ router.post("/work-experience/save", async (req, res) => {
           application.completedForms.push("workExperience");
           console.log("✅ [WorkExperience] Added to completed forms");
         }
-        application.completionPercentage = application.calculateCompletionPercentage();
+        application.completionPercentage =
+          application.calculateCompletionPercentage();
         await application.save();
-        console.log("✅ [WorkExperience] Application updated, completion:", application.completionPercentage + "%");
+        console.log(
+          "✅ [WorkExperience] Application updated, completion:",
+          application.completionPercentage + "%"
+        );
       }
     }
 
@@ -96,8 +134,9 @@ router.post("/work-experience/save", async (req, res) => {
       _id: workExp._id,
       applicationId: workExp.applicationId,
       employeeId: workExp.employeeId,
+      hasPreviousWorkExperience: workExp.hasPreviousWorkExperience,
       experiencesCount: workExp.workExperiences?.length,
-      status: workExp.status
+      status: workExp.status,
     });
 
     res.status(200).json({

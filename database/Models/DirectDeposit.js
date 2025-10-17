@@ -31,7 +31,7 @@ const DirectDepositFormSchema = new mongoose.Schema(
     account1DepositType: { type: String },
     account1PercentageNet: { type: String },
     account1SpecificAmount: { type: String },
-    
+
     // Account 2
     account2Action: { type: String },
     account2Type: { type: String },
@@ -42,7 +42,7 @@ const DirectDepositFormSchema = new mongoose.Schema(
     account2DepositType: { type: String },
     account2PercentageNet: { type: String },
     account2SpecificAmount: { type: String },
-    
+
     // Account 3
     account3Action: { type: String },
     account3Type: { type: String },
@@ -64,7 +64,14 @@ const DirectDepositFormSchema = new mongoose.Schema(
     // Internal status tracking
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
 
@@ -80,6 +87,14 @@ const DirectDepositFormSchema = new mongoose.Schema(
       reviewedAt: {
         type: Date,
       },
+    },
+
+    // Document Upload Fields
+    employeeUploadedForm: {
+      fileName: { type: String },
+      filePath: { type: String },
+      uploadedAt: { type: Date },
+      fileSize: { type: Number },
     },
   },
   {

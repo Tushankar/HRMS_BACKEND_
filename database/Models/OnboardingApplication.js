@@ -64,12 +64,10 @@ const OnboardingApplicationSchema = new mongoose.Schema(
 
 // Method to calculate completion percentage
 OnboardingApplicationSchema.methods.calculateCompletionPercentage = function() {
-  // Total forms: 25 forms (including position type and orientation presentation)
-  const totalForms = 25; 
+  const totalForms = 20;
   const completedFormsCount = this.completedForms.length;
   this.completionPercentage = Math.round((completedFormsCount / totalForms) * 100);
   
-  // Auto-submit when all forms are completed
   if (this.completionPercentage === 100 && this.applicationStatus === 'draft') {
     this.applicationStatus = 'submitted';
     this.submittedAt = new Date();

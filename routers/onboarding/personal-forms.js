@@ -239,117 +239,7 @@ router.get("/get-emergency-contact/:id", async (req, res) => {
   }
 });
 
-// Save or update Background Check form
-router.post("/save-background-check", async (req, res) => {
-  try {
-    const { applicationId, employeeId, formData, status = "draft" } = req.body;
-
-    if (!applicationId || !employeeId) {
-      return res.status(400).json({ message: "Application ID and Employee ID are required" });
-    }
-
-    // Check if application exists
-    const application = await OnboardingApplication.findById(applicationId);
-    if (!application) {
-      return res.status(404).json({ message: "Onboarding application not found" });
-    }
-
-    // Validate formData structure
-    if (!formData) {
-      return res.status(400).json({ message: "Form data is required" });
-    }
-
-    // Find existing form or create new one
-    let backgroundCheckForm = await BackgroundCheck.findOne({ applicationId });
-    
-    if (backgroundCheckForm) {
-      // Update existing form
-      backgroundCheckForm.applicantInfo = {
-        lastName: formData.lastName,
-        firstName: formData.firstName,
-        middleInitial: formData.middleInitial,
-        socialSecurityNumber: formData.socialSecurityNo,
-        dateOfBirth: formData.dateOfBirth,
-        height: formData.height,
-        weight: formData.weight,
-        sex: formData.sex,
-        eyeColor: formData.eyeColor,
-        hairColor: formData.hairColor,
-        race: formData.race,
-        address: {
-          street: formData.streetAddress,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zip,
-        },
-      };
-      backgroundCheckForm.employmentInfo = {
-        provider: formData.provider,
-        positionAppliedFor: formData.positionAppliedFor,
-      };
-      backgroundCheckForm.applicantSignature = formData.signature;
-      backgroundCheckForm.applicantSignatureDate = formData.date;
-      backgroundCheckForm.status = status;
-    } else {
-      // Create new form
-      backgroundCheckForm = new BackgroundCheck({
-        applicationId,
-        employeeId,
-        applicantInfo: {
-          lastName: formData.lastName,
-          firstName: formData.firstName,
-          middleInitial: formData.middleInitial,
-          socialSecurityNumber: formData.socialSecurityNo,
-          dateOfBirth: formData.dateOfBirth,
-          height: formData.height,
-          weight: formData.weight,
-          sex: formData.sex,
-          eyeColor: formData.eyeColor,
-          hairColor: formData.hairColor,
-          race: formData.race,
-          address: {
-            street: formData.streetAddress,
-            city: formData.city,
-            state: formData.state,
-            zipCode: formData.zip,
-          },
-        },
-        employmentInfo: {
-          provider: formData.provider,
-          positionAppliedFor: formData.positionAppliedFor,
-        },
-        applicantSignature: formData.signature,
-        applicantSignatureDate: formData.date,
-        status
-      });
-    }
-
-    await backgroundCheckForm.save();
-
-    // Update application progress
-    if (status === "completed") {
-      // Ensure completedForms array exists
-      if (!application.completedForms) {
-        application.completedForms = [];
-      }
-      
-      // Check if Background Check is already marked as completed
-      if (!application.completedForms.includes("Background Check")) {
-        application.completedForms.push("Background Check");
-        await application.save();
-      }
-    }
-
-    res.status(200).json({
-      message: "Background check form saved successfully",
-      backgroundCheck: backgroundCheckForm
-    });
-
-  } catch (error) {
-    console.error("Error saving background check form:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
-  }
-});
+// Background Check route moved to screening-forms.js
 
 // Get Background Check form by ID
 router.get("/get-background-check-by-id/:id", async (req, res) => {
@@ -433,7 +323,8 @@ router.post("/save-personal-information", async (req, res) => {
       });
     }
 
-    await personalInfoForm.save();
+    // Use validateBeforeSave: false for draft to skip validation
+    await personalInfoForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {
@@ -543,7 +434,8 @@ router.post("/save-professional-experience", async (req, res) => {
       });
     }
 
-    await professionalExpForm.save();
+    // Use validateBeforeSave: false for draft to skip validation
+    await professionalExpForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {
