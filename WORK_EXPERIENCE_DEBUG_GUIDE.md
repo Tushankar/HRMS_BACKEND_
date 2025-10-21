@@ -119,7 +119,7 @@ Watch BOTH consoles:
 **Symptom**:
 
 ```
-POST https://hrms-backend-vneb.onrender.com/onboarding/work-experience/save 404 (Not Found)
+POST https://hrms-backend-h16p.onrender.com/onboarding/work-experience/save 404 (Not Found)
 ```
 
 **Solution**:
@@ -148,7 +148,7 @@ POST https://hrms-backend-vneb.onrender.com/onboarding/work-experience/save 404 
 **Symptom**:
 
 ```
-Access to fetch at 'https://hrms-backend-vneb.onrender.com/...' from origin 'http://localhost:5173' has been blocked by CORS
+Access to fetch at 'https://hrms-backend-h16p.onrender.com/...' from origin 'http://localhost:5173' has been blocked by CORS
 ```
 
 **Solution**:
@@ -241,7 +241,7 @@ Check `backend/database/Models/WorkExperience.js` exists and is properly defined
 Verify `HRMS/.env` has:
 
 ```
-VITE__BASEURL=https://hrms-backend-vneb.onrender.com
+VITE__BASEURL=https://hrms-backend-h16p.onrender.com
 ```
 
 ## 📝 What to Share if Still Broken

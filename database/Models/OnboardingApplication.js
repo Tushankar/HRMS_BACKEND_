@@ -10,7 +10,15 @@ const OnboardingApplicationSchema = new mongoose.Schema(
     },
     applicationStatus: {
       type: String,
-      enum: ["draft", "submitted", "hr_accepted", "under_review", "completed", "approved", "rejected"],
+      enum: [
+        "draft",
+        "submitted",
+        "hr_accepted",
+        "under_review",
+        "completed",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
     submittedAt: {
@@ -48,14 +56,29 @@ const OnboardingApplicationSchema = new mongoose.Schema(
     finalDecisionComments: {
       type: String,
     },
+    // HR Notes to Employee (visible in employee dashboard)
+    hrNotesToEmployee: {
+      note: {
+        type: String,
+      },
+      sentAt: {
+        type: Date,
+      },
+      sentBy: {
+        type: String,
+        default: "HR",
+      },
+    },
     completionPercentage: {
       type: Number,
       default: 0,
     },
     // Forms completion tracking
-    completedForms: [{
-      type: String,
-    }],
+    completedForms: [
+      {
+        type: String,
+      },
+    ],
   },
   {
     timestamps: true,
@@ -63,17 +86,26 @@ const OnboardingApplicationSchema = new mongoose.Schema(
 );
 
 // Method to calculate completion percentage
-OnboardingApplicationSchema.methods.calculateCompletionPercentage = function() {
-  const totalForms = 20;
-  const completedFormsCount = this.completedForms.length;
-  this.completionPercentage = Math.round((completedFormsCount / totalForms) * 100);
-  
-  if (this.completionPercentage === 100 && this.applicationStatus === 'draft') {
-    this.applicationStatus = 'submitted';
-    this.submittedAt = new Date();
-  }
-  
-  return this.completionPercentage;
-};
+OnboardingApplicationSchema.methods.calculateCompletionPercentage =
+  function () {
+    const totalForms = 20;
+    const completedFormsCount = this.completedForms.length;
+    this.completionPercentage = Math.round(
+      (completedFormsCount / totalForms) * 100
+    );
 
-module.exports = mongoose.model("OnboardingApplication", OnboardingApplicationSchema);
+    if (
+      this.completionPercentage === 100 &&
+      this.applicationStatus === "draft"
+    ) {
+      this.applicationStatus = "submitted";
+      this.submittedAt = new Date();
+    }
+
+    return this.completionPercentage;
+  };
+
+module.exports = mongoose.model(
+  "OnboardingApplication",
+  OnboardingApplicationSchema
+);

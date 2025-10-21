@@ -1181,7 +1181,14 @@ router.post("/save-job-description-hr-notes", async (req, res) => {
 // Save job description status (draft/completed)
 router.post("/job-description/save-status", async (req, res) => {
   try {
-    const { applicationId, employeeId, positionType, status } = req.body;
+    const {
+      applicationId,
+      employeeId,
+      positionType,
+      status,
+      employeeSignature,
+      signatureDate,
+    } = req.body;
 
     if (!applicationId || !employeeId || !positionType) {
       return res.status(400).json({
@@ -1195,12 +1202,21 @@ router.post("/job-description/save-status", async (req, res) => {
 
     if (jobDesc) {
       jobDesc.status = status || "draft";
+      // Save signature and date if provided
+      if (employeeSignature) {
+        jobDesc.employeeSignature = employeeSignature;
+      }
+      if (signatureDate) {
+        jobDesc.signatureDate = signatureDate;
+      }
       await jobDesc.save({ validateBeforeSave: status !== "draft" });
     } else {
       jobDesc = new JobModel({
         applicationId,
         employeeId,
         status: status || "draft",
+        employeeSignature: employeeSignature || "",
+        signatureDate: signatureDate || "",
       });
       await jobDesc.save({ validateBeforeSave: status !== "draft" });
     }

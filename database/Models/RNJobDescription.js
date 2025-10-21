@@ -53,8 +53,8 @@ const RNJobDescriptionSchema = new mongoose.Schema(
     },
     supervisorSignature: {
       signature: { type: String },
-    //   supervisorName: { type: String },
-    //   supervisorTitle: { type: String },
+      //   supervisorName: { type: String },
+      //   supervisorTitle: { type: String },
       date: { type: Date },
       digitalSignature: { type: Boolean, default: false },
     },
@@ -64,10 +64,27 @@ const RNJobDescriptionSchema = new mongoose.Schema(
       filePath: { type: String },
       uploadedAt: { type: Date },
     },
+    // Employee digital signature and date
+    employeeSignature: {
+      type: String,
+      default: "",
+    },
+    signatureDate: {
+      type: String,
+      default: "",
+    },
     // Form Status
     status: {
       type: String,
-      enum: ["draft", "staff_signed", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "staff_signed",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
     // HR Review and Feedback

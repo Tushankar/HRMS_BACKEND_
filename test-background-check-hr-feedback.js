@@ -10,10 +10,11 @@ async function testBackgroundCheckHRFeedback() {
       applicationId: "68ac0fcb02be1191737b4070", // Valid application ID
       employeeId: "67e0f8770c6feb6ba99d11d2", // Valid employee ID
       hrFeedback: {
-        comment: "Test HR feedback - please review and submit corrected information",
-        reviewedAt: new Date()
+        comment:
+          "Test HR feedback - please review and submit corrected information",
+        reviewedAt: new Date(),
       },
-      status: "under_review"
+      status: "under_review",
     };
 
     console.log("📤 Payload being sent:");
@@ -21,7 +22,7 @@ async function testBackgroundCheckHRFeedback() {
     console.log("\n---\n");
 
     const response = await axios.post(
-      "https://hrms-backend-vneb.onrender.com/onboarding/save-background-check",
+      "https://hrms-backend-h16p.onrender.com/onboarding/save-background-check",
       payload,
       {
         headers: {

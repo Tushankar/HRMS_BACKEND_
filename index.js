@@ -77,6 +77,7 @@ const OrientationPresentation = require("./routers/onboarding/orientation-presen
 const PCATrainingQuestions = require("./routers/onboarding/pcaTrainingQuestions.js");
 const TrainingVideo = require("./routers/onboarding/trainingVideo.js");
 const MisconductStatement = require("./routers/onboarding/misconduct-statement.js");
+const DrivingLicense = require("./routers/onboarding/driving-license.js");
 
 // HR Review Routes
 const OnboardingReview = require("./routers/hr/onboarding-review.js");
@@ -117,6 +118,7 @@ app.use("/onboarding", OrientationPresentation);
 app.use("/onboarding/pca-training", PCATrainingQuestions);
 app.use("/onboarding/training-video", TrainingVideo);
 app.use("/onboarding/misconduct-statement", MisconductStatement);
+app.use("/onboarding", DrivingLicense);
 
 // Direct job description route (for simplified API)
 app.use("/job-description", JobDescription);

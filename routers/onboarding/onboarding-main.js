@@ -17,6 +17,7 @@ const BackgroundCheck = require("../../database/Models/BackgroundCheck");
 const TBSymptomScreen = require("../../database/Models/TBSymptomScreen");
 const OrientationChecklist = require("../../database/Models/OrientationChecklist");
 const JobDescriptionAcknowledgment = require("../../database/Models/JobDescriptionAcknowledgment");
+const DrivingLicense = require("../../database/Models/DrivingLicense");
 const PCAJobDescription = require("../../database/Models/PCAJobDescription");
 const CNAJobDescription = require("../../database/Models/CNAJobDescription");
 const LPNJobDescription = require("../../database/Models/LPNJobDescription");
@@ -30,7 +31,10 @@ const PositionType = require("../../database/Models/PositionType");
 const OrientationPresentation = require("../../database/Models/OrientationPresentation");
 const User = require("../../database/Models/Users");
 const { isFormEditable } = require("../../utils/formUtils");
-const { getFormKeysForPosition, getRelevantJobDescriptionForms } = require("../../utils/positionUtils");
+const {
+  getFormKeysForPosition,
+  getRelevantJobDescriptionForms,
+} = require("../../utils/positionUtils");
 
 const router = express.Router();
 
@@ -136,6 +140,7 @@ router.get("/get-application/:employeeId", async (req, res) => {
       nonCompeteAgreement,
       backgroundCheck,
       tbSymptomScreen,
+      drivingLicense,
       orientationChecklist,
       workExperience,
       jobDescriptionPCA,
@@ -163,6 +168,7 @@ router.get("/get-application/:employeeId", async (req, res) => {
       NonCompeteAgreement.findOne({ applicationId: application._id }),
       BackgroundCheck.findOne({ applicationId: application._id }),
       TBSymptomScreen.findOne({ applicationId: application._id }),
+      DrivingLicense.findOne({ applicationId: application._id }),
       OrientationChecklist.findOne({ applicationId: application._id }),
       WorkExperience.findOne({ applicationId: application._id }),
       PCAJobDescription.findOne({ applicationId: application._id }),
@@ -514,14 +520,21 @@ router.get("/get-application/:employeeId", async (req, res) => {
 
     // Get position type to filter relevant forms
     const selectedPosition = positionType?.positionAppliedFor || "";
-    console.log('🎯 [Backend] Selected Position:', selectedPosition);
-    
-    const relevantJobDescriptionForms = getRelevantJobDescriptionForms(selectedPosition);
-    console.log('📝 [Backend] Relevant Job Description Forms:', relevantJobDescriptionForms);
-    
-    const isPCA = selectedPosition === 'PCA';
-    console.log('🎓 [Backend] Is PCA:', isPCA);
-    console.log('📚 [Backend] PCA Training Questions exists:', !!pcaTrainingQuestionsCreated);
+    console.log("🎯 [Backend] Selected Position:", selectedPosition);
+
+    const relevantJobDescriptionForms =
+      getRelevantJobDescriptionForms(selectedPosition);
+    console.log(
+      "📝 [Backend] Relevant Job Description Forms:",
+      relevantJobDescriptionForms
+    );
+
+    const isPCA = selectedPosition === "PCA";
+    console.log("🎓 [Backend] Is PCA:", isPCA);
+    console.log(
+      "📚 [Backend] PCA Training Questions exists:",
+      !!pcaTrainingQuestionsCreated
+    );
 
     const response = {
       application,
@@ -698,6 +711,15 @@ router.get("/get-application/:employeeId", async (req, res) => {
               ),
             }
           : null,
+        drivingLicense: drivingLicense
+          ? {
+              ...drivingLicense.toObject(),
+              isEditable: isFormEditable(
+                drivingLicense.status,
+                application.applicationStatus
+              ),
+            }
+          : null,
         orientationChecklist: orientationChecklistFlattened
           ? {
               ...orientationChecklistFlattened,
@@ -708,7 +730,7 @@ router.get("/get-application/:employeeId", async (req, res) => {
             }
           : null,
         // Only include job description forms relevant to selected position
-        ...(relevantJobDescriptionForms.includes('jobDescriptionPCA') && {
+        ...(relevantJobDescriptionForms.includes("jobDescriptionPCA") && {
           jobDescriptionPCA: jobDescriptionPCACreated
             ? {
                 ...jobDescriptionPCACreated.toObject(),
@@ -719,7 +741,7 @@ router.get("/get-application/:employeeId", async (req, res) => {
               }
             : null,
         }),
-        ...(relevantJobDescriptionForms.includes('jobDescriptionCNA') && {
+        ...(relevantJobDescriptionForms.includes("jobDescriptionCNA") && {
           jobDescriptionCNA: jobDescriptionCNACreated
             ? {
                 ...jobDescriptionCNACreated.toObject(),
@@ -730,7 +752,7 @@ router.get("/get-application/:employeeId", async (req, res) => {
               }
             : null,
         }),
-        ...(relevantJobDescriptionForms.includes('jobDescriptionLPN') && {
+        ...(relevantJobDescriptionForms.includes("jobDescriptionLPN") && {
           jobDescriptionLPN: jobDescriptionLPNCreated
             ? {
                 ...jobDescriptionLPNCreated.toObject(),
@@ -741,7 +763,7 @@ router.get("/get-application/:employeeId", async (req, res) => {
               }
             : null,
         }),
-        ...(relevantJobDescriptionForms.includes('jobDescriptionRN') && {
+        ...(relevantJobDescriptionForms.includes("jobDescriptionRN") && {
           jobDescriptionRN: jobDescriptionRNCreated
             ? {
                 ...jobDescriptionRNCreated.toObject(),
@@ -778,8 +800,14 @@ router.get("/get-application/:employeeId", async (req, res) => {
 
     // Log what's being returned for PCA users
     if (isPCA) {
-      console.log('✅ [Backend] Returning PCA Training Questions:', !!response.forms.pcaTrainingQuestions);
-      console.log('📊 [Backend] PCA Training Questions Status:', response.forms.pcaTrainingQuestions?.status);
+      console.log(
+        "✅ [Backend] Returning PCA Training Questions:",
+        !!response.forms.pcaTrainingQuestions
+      );
+      console.log(
+        "📊 [Backend] PCA Training Questions Status:",
+        response.forms.pcaTrainingQuestions?.status
+      );
     }
 
     res.status(200).json({
@@ -917,10 +945,7 @@ router.put("/final-approve/:applicationId", async (req, res) => {
 
     // Update all forms to approved status and lock them from editing
     await Promise.all([
-      PersonalInformation.updateMany(
-        { applicationId },
-        { status: "approved" }
-      ),
+      PersonalInformation.updateMany({ applicationId }, { status: "approved" }),
       ProfessionalExperience.updateMany(
         { applicationId },
         { status: "approved" }
@@ -946,7 +971,10 @@ router.put("/final-approve/:applicationId", async (req, res) => {
       ),
       NonCompeteAgreement.updateMany({ applicationId }, { status: "approved" }),
       PositionType.updateMany({ applicationId }, { status: "approved" }),
-      OrientationPresentation.updateMany({ applicationId }, { status: "approved" }),
+      OrientationPresentation.updateMany(
+        { applicationId },
+        { status: "approved" }
+      ),
       BackgroundCheck.updateMany({ applicationId }, { status: "approved" }),
       TBSymptomScreen.updateMany({ applicationId }, { status: "approved" }),
       OrientationChecklist.updateMany(
@@ -1182,7 +1210,10 @@ router.post("/debug-fix-forms/:applicationId", async (req, res) => {
         { status: "completed" }
       ),
       PositionType.updateMany({ applicationId }, { status: "completed" }),
-      OrientationPresentation.updateMany({ applicationId }, { status: "completed" }),
+      OrientationPresentation.updateMany(
+        { applicationId },
+        { status: "completed" }
+      ),
       BackgroundCheck.updateMany({ applicationId }, { status: "completed" }),
       TBSymptomScreen.updateMany({ applicationId }, { status: "completed" }),
       OrientationChecklist.updateMany(
@@ -1407,7 +1438,9 @@ router.post("/submit-notes", async (req, res) => {
             : actualEmployeeId || userId || "HR",
         timestamp: new Date(),
       };
-      console.log(`📝 Setting initial job description hrFeedback (will be updated with signature below if provided)`);
+      console.log(
+        `📝 Setting initial job description hrFeedback (will be updated with signature below if provided)`
+      );
     } else {
       // Other forms use 'comment' and 'reviewedAt'
       const newFeedback = {
@@ -1491,9 +1524,12 @@ router.post("/submit-notes", async (req, res) => {
     if (formType === "CertifiedNursingAssistant" && agencySignature) {
       try {
         console.log("🔧 CNA: Updating supervisor signature...");
-        console.log("🔧 CNA: Current supervisorSignature:", form.supervisorSignature);
+        console.log(
+          "🔧 CNA: Current supervisorSignature:",
+          form.supervisorSignature
+        );
         console.log("🔧 CNA: New agencySignature:", agencySignature);
-        
+
         form.supervisorSignature = form.supervisorSignature || {};
         // For CNA job description schema, supervisorSignature is an object with signature and date
         if (typeof form.supervisorSignature === "object") {
@@ -1508,17 +1544,23 @@ router.post("/submit-notes", async (req, res) => {
             digitalSignature: true,
           };
         }
-        
-        console.log("🔧 CNA: Updated supervisorSignature:", form.supervisorSignature);
-        
+
+        console.log(
+          "🔧 CNA: Updated supervisorSignature:",
+          form.supervisorSignature
+        );
+
         // Add agencySignature to existing hrFeedback
         if (!form.hrFeedback) {
           form.hrFeedback = {};
         }
         form.hrFeedback.agencySignature = agencySignature;
-        form.markModified('hrFeedback');
-        
-        console.log("🔧 CNA: Updated hrFeedback with agencySignature:", form.hrFeedback);
+        form.markModified("hrFeedback");
+
+        console.log(
+          "🔧 CNA: Updated hrFeedback with agencySignature:",
+          form.hrFeedback
+        );
       } catch (e) {
         console.error(
           "❌ Failed to set supervisor signature on CNA Job Description:",
@@ -1532,7 +1574,7 @@ router.post("/submit-notes", async (req, res) => {
       try {
         console.log("🔧 PCA: Updating supervisor signature...");
         console.log("🔧 PCA: New agencySignature:", agencySignature);
-        
+
         form.supervisorSignature = form.supervisorSignature || {};
         if (typeof form.supervisorSignature === "object") {
           form.supervisorSignature.signature = agencySignature;
@@ -1545,17 +1587,23 @@ router.post("/submit-notes", async (req, res) => {
             digitalSignature: true,
           };
         }
-        
-        console.log("🔧 PCA: Updated supervisorSignature:", form.supervisorSignature);
-        
+
+        console.log(
+          "🔧 PCA: Updated supervisorSignature:",
+          form.supervisorSignature
+        );
+
         // Add agencySignature to existing hrFeedback
         if (!form.hrFeedback) {
           form.hrFeedback = {};
         }
         form.hrFeedback.agencySignature = agencySignature;
-        form.markModified('hrFeedback');
-        
-        console.log("🔧 PCA: Updated hrFeedback with agencySignature:", form.hrFeedback);
+        form.markModified("hrFeedback");
+
+        console.log(
+          "🔧 PCA: Updated hrFeedback with agencySignature:",
+          form.hrFeedback
+        );
       } catch (e) {
         console.error(
           "❌ Failed to set supervisor signature on PCA Job Description:",
@@ -1568,9 +1616,12 @@ router.post("/submit-notes", async (req, res) => {
     if (formType === "LicensedPracticalNurse" && agencySignature) {
       try {
         console.log("🔧 LPN: Updating supervisor signature...");
-        console.log("🔧 LPN: Current supervisorSignature:", form.supervisorSignature);
+        console.log(
+          "🔧 LPN: Current supervisorSignature:",
+          form.supervisorSignature
+        );
         console.log("🔧 LPN: New agencySignature:", agencySignature);
-        
+
         form.supervisorSignature = form.supervisorSignature || {};
         if (typeof form.supervisorSignature === "object") {
           form.supervisorSignature.signature = agencySignature;
@@ -1583,17 +1634,23 @@ router.post("/submit-notes", async (req, res) => {
             digitalSignature: true,
           };
         }
-        
-        console.log("🔧 LPN: Updated supervisorSignature:", form.supervisorSignature);
-        
+
+        console.log(
+          "🔧 LPN: Updated supervisorSignature:",
+          form.supervisorSignature
+        );
+
         // Add agencySignature to existing hrFeedback
         if (!form.hrFeedback) {
           form.hrFeedback = {};
         }
         form.hrFeedback.agencySignature = agencySignature;
-        form.markModified('hrFeedback');
-        
-        console.log("🔧 LPN: Updated hrFeedback with agencySignature:", form.hrFeedback);
+        form.markModified("hrFeedback");
+
+        console.log(
+          "🔧 LPN: Updated hrFeedback with agencySignature:",
+          form.hrFeedback
+        );
       } catch (e) {
         console.error(
           "❌ Failed to set supervisor signature on LPN Job Description:",
@@ -1710,6 +1767,61 @@ router.post("/submit-notes", async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error submitting HR notes:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
+// Save HR notes to employee (visible in employee dashboard)
+router.post("/save-hr-notes-to-employee", async (req, res) => {
+  try {
+    console.log("📝 HR Notes to Employee submission received:", req.body);
+
+    const { applicationId, note, hrUserId } = req.body;
+
+    // Validation
+    if (!applicationId) {
+      return res.status(400).json({
+        message: "Application ID is required",
+      });
+    }
+
+    if (!note || note.trim().length === 0) {
+      return res.status(400).json({
+        message: "Note content is required",
+      });
+    }
+
+    // Find the application
+    const application = await OnboardingApplication.findById(applicationId);
+    if (!application) {
+      return res.status(404).json({
+        message: "Application not found",
+      });
+    }
+
+    // Update HR notes
+    application.hrNotesToEmployee = {
+      note: note.trim(),
+      sentAt: new Date(),
+      sentBy: hrUserId || req.user?._id || "HR",
+    };
+
+    await application.save();
+
+    console.log("✅ HR notes to employee saved successfully");
+
+    res.status(200).json({
+      message: "HR notes sent to employee successfully",
+      application: {
+        _id: application._id,
+        hrNotesToEmployee: application.hrNotesToEmployee,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error saving HR notes to employee:", error);
     res.status(500).json({
       message: "Internal server error",
       error: error.message,

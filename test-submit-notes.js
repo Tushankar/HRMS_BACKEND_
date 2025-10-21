@@ -15,7 +15,7 @@ const testSubmitNotes = async () => {
     console.log("📤 Sending request:", testData);
 
     const response = await axios.post(
-      "https://hrms-backend-vneb.onrender.com/onboarding/submit-notes",
+      "https://hrms-backend-h16p.onrender.com/onboarding/submit-notes",
       testData,
       {
         headers: {
@@ -65,7 +65,7 @@ const testSubmitNotes = async (formType) => {
     };
 
     const response = await axios.post(
-      "https://hrms-backend-vneb.onrender.com/onboarding/submit-notes",
+      "https://hrms-backend-h16p.onrender.com/onboarding/submit-notes",
       testData,
       {
         headers: {
