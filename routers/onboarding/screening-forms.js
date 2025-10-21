@@ -893,4 +893,41 @@ router.delete(
   }
 );
 
+// Save CPR/First Aid Certificate status
+router.post("/save-cpr-certificate", async (req, res) => {
+  try {
+    const { applicationId, employeeId, status = "draft" } = req.body;
+
+    if (!applicationId) {
+      return res.status(400).json({ message: "Application ID is required" });
+    }
+
+    let backgroundCheck = await BackgroundCheck.findOne({ applicationId });
+
+    if (!backgroundCheck) {
+      backgroundCheck = new BackgroundCheck({
+        applicationId,
+        employeeId,
+        status,
+      });
+    } else {
+      backgroundCheck.status = status;
+    }
+
+    await backgroundCheck.save();
+
+    res.status(200).json({
+      success: true,
+      message: "CPR/First Aid certificate status saved successfully",
+      backgroundCheck,
+    });
+  } catch (error) {
+    console.error("Error saving CPR certificate status:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;

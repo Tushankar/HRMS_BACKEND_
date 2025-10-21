@@ -91,6 +91,7 @@ router.post("/save-emergency-contact", async (req, res) => {
         : "Emergency contact form submitted successfully";
 
     res.status(200).json({
+      success: true,
       message,
       emergencyContact: emergencyContactForm,
       completionPercentage: application.completionPercentage,
