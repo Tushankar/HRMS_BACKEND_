@@ -58,6 +58,7 @@ const UploadSignature = require("./routers/employee/uploadSignature.js");
 const UpdateProfile = require("./routers/employee/update-profile.js");
 const Getchat = require("./routers/chat/getChatHistory.js");
 const UploadRouter = require("./routers/upload.js");
+const EmployeeStatistics = require("./routers/hr/employee-statistics.js");
 
 // Onboarding Routes
 const OnboardingMain = require("./routers/onboarding/onboarding-main.js");
@@ -126,6 +127,7 @@ app.use("/job-description", JobDescription);
 // Apply HR Review Routes
 app.use("/hr/onboarding", OnboardingReview);
 app.use("/hr", OnboardingManagement);
+app.use("/hr", EmployeeStatistics);
 
 // Apply Kanban Task Management Routes
 app.use("/hr/kanban", KanbanTasks);
