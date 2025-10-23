@@ -1829,4 +1829,124 @@ router.post("/save-hr-notes-to-employee", async (req, res) => {
   }
 });
 
+// Approve or Reject individual form (HR Review)
+router.put("/approve-reject-form/:applicationId", async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+    const { formKey, status, rejectionNotes, hrUserId } = req.body;
+
+    // Validate inputs
+    if (!formKey || !status) {
+      return res.status(400).json({
+        message: "Form key and status are required",
+      });
+    }
+
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({
+        message: "Status must be either 'approved' or 'rejected'",
+      });
+    }
+
+    // Get the application
+    const application = await OnboardingApplication.findById(applicationId);
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    // Check if application is already finally approved (locked)
+    if (application.applicationStatus === "approved") {
+      return res.status(403).json({
+        message:
+          "Cannot modify forms - Application has been finally approved and is locked",
+        error: "APPLICATION_LOCKED",
+      });
+    }
+
+    // Map frontend formKey to model class
+    const formModelMap = {
+      personalInformation: PersonalInformation,
+      professionalExperience: ProfessionalExperience,
+      workExperience: WorkExperience,
+      education: Education,
+      references: References,
+      legalDisclosures: LegalDisclosures,
+      jobDescriptionPCA: PCAJobDescription,
+      jobDescriptionCNA: CNAJobDescription,
+      jobDescriptionLPN: LPNJobDescription,
+      jobDescriptionRN: RNJobDescription,
+      codeOfEthics: CodeOfEthics,
+      serviceDeliveryPolicies: ServiceDeliveryPolicy,
+      nonCompeteAgreement: NonCompeteAgreement,
+      orientationPresentation: OrientationPresentation,
+      orientationChecklist: OrientationChecklist,
+      backgroundCheck: BackgroundCheck,
+      tbSymptomScreen: TBSymptomScreen,
+      emergencyContact: EmergencyContact,
+      i9Form: I9Form,
+      w4Form: W4Form,
+      w9Form: W9Form,
+      directDeposit: DirectDeposit,
+      misconductStatement: MisconductStatement,
+      drivingLicense: DrivingLicense,
+      pcaTrainingQuestions: PCATrainingQuestions,
+      employmentApplication: EmploymentApplication,
+    };
+
+    const FormModel = formModelMap[formKey];
+    if (!FormModel) {
+      return res.status(400).json({
+        message: `Unknown form key: ${formKey}`,
+      });
+    }
+
+    // Find and update the form
+    const formData = await FormModel.findOne({ applicationId });
+    if (!formData) {
+      return res.status(404).json({
+        message: `Form ${formKey} not found for this application`,
+      });
+    }
+
+    // Update form status
+    formData.status = status;
+
+    // If rejecting, add rejection notes to hrFeedback
+    if (status === "rejected" && rejectionNotes) {
+      if (!formData.hrFeedback) {
+        formData.hrFeedback = {};
+      }
+      formData.hrFeedback.rejectionNotes = rejectionNotes;
+      formData.hrFeedback.rejectionDate = new Date();
+      formData.hrFeedback.rejectedBy = hrUserId || "HR";
+    }
+
+    // If approving, add approval timestamp
+    if (status === "approved") {
+      if (!formData.hrFeedback) {
+        formData.hrFeedback = {};
+      }
+      formData.hrFeedback.approvalDate = new Date();
+      formData.hrFeedback.approvedBy = hrUserId || "HR";
+    }
+
+    await formData.save();
+
+    res.status(200).json({
+      message: `Form ${formKey} ${status} successfully by HR`,
+      formData: {
+        formKey,
+        status: formData.status,
+        hrFeedback: formData.hrFeedback,
+      },
+    });
+  } catch (error) {
+    console.error("Error approving/rejecting form:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;
