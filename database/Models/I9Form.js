@@ -41,7 +41,7 @@ const I9FormSchema = new mongoose.Schema(
       },
       // for lawful permanent resident
       uscisNumber: { type: String },
-      // for authorized alien  
+      // for authorized alien
       formI94Number: { type: String },
       foreignPassportNumber: { type: String },
       countryOfIssuance: { type: String },
@@ -71,12 +71,12 @@ const I9FormSchema = new mongoose.Schema(
       issuingAuthority1: { type: String },
       documentNumber1: { type: String },
       expirationDate1: { type: String },
-      
+
       documentTitle2: { type: String },
       issuingAuthority2: { type: String },
       documentNumber2: { type: String },
       expirationDate2: { type: String },
-      
+
       documentTitle3: { type: String },
       issuingAuthority3: { type: String },
       documentNumber3: { type: String },
@@ -107,8 +107,26 @@ const I9FormSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
+    },
+
+    // Work Authorization (for non-citizens)
+    workAuthorization: {
+      isNonCitizen: { type: Boolean, default: false },
+      hasWorkAuthorization: { type: Boolean, default: false },
+      workAuthorizationDocument: {
+        filename: { type: String },
+        filePath: { type: String },
+        uploadedAt: { type: Date },
+      },
     },
 
     // Employee uploaded signed form
