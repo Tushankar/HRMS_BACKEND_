@@ -18,82 +18,47 @@ const WorkExperienceSchema = new mongoose.Schema(
     },
     workExperiences: [
       {
-        companyName: {
+        company: {
           type: String,
-          required: false, // Changed to false since it's optional when no experience
+          required: true,
+        },
+        phone: {
+          type: String,
+        },
+        address: {
+          type: String,
+        },
+        supervisor: {
+          type: String,
         },
         jobTitle: {
           type: String,
-          required: false, // Changed to false since it's optional when no experience
+          required: true,
         },
-        employmentType: {
+        startingSalary: {
           type: String,
-          enum: [
-            "Full-time",
-            "Part-time",
-            "Contract",
-            "Internship",
-            "Freelance",
-          ],
-          required: false, // Changed to false since it's optional when no experience
         },
-        startDate: {
+        endingSalary: {
+          type: String,
+        },
+        responsibilities: {
+          type: String,
+          required: true,
+        },
+        from: {
           type: Date,
-          required: false, // Changed to false since it's optional when no experience
+          required: true,
         },
-        endDate: {
+        to: {
           type: Date,
-        },
-        currentlyWorkingHere: {
-          type: Boolean,
-          default: false,
-        },
-        location: {
-          type: String,
-          required: false, // Changed to false since it's optional when no experience
-        },
-        supervisorName: {
-          type: String,
-        },
-        supervisorContact: {
-          type: String,
-        },
-        keyResponsibilities: {
-          type: String,
-          required: false, // Changed to false since it's optional when no experience
+          required: true,
         },
         reasonForLeaving: {
           type: String,
         },
-        proofDocument: {
-          type: String, // File path for uploaded proof
+        contactSupervisor: {
+          type: Boolean,
         },
-      },
-    ],
-
-    // Job Preferences (shown only if hasPreviousWorkExperience is true)
-    expectedSalary: { type: String },
-    salaryType: {
-      type: String,
-      enum: ["per hour", "per annum"],
-      default: "per annum",
-    },
-    preferredWorkLocation: { type: String },
-    willingToRelocate: { type: Boolean },
-    availabilityToStart: { type: Date },
-    employmentTypePreference: {
-      type: String,
-      enum: ["Full-time", "Part-time", "Contract", "Remote"],
-    },
-
-    // References (shown only if hasPreviousWorkExperience is true)
-    references: [
-      {
-        name: { type: String },
-        relationship: { type: String },
-        company: { type: String },
-        contactNumber: { type: String },
-        email: { type: String },
       },
     ],
 

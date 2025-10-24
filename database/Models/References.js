@@ -12,41 +12,40 @@ const ReferencesSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-    references: [{
-      referenceName: {
-        type: String,
-        required: true,
+    references: [
+      {
+        fullName: {
+          type: String,
+          required: true,
+        },
+        relationship: {
+          type: String,
+          required: true,
+        },
+        company: {
+          type: String,
+          required: true,
+        },
+        phone: {
+          type: String,
+          required: true,
+        },
+        address: {
+          type: String,
+          required: true,
+        },
       },
-      relationship: {
-        type: String,
-        required: true,
-      },
-      company: {
-        type: String,
-        required: true,
-      },
-      jobTitle: {
-        type: String,
-        required: true,
-      },
-      email: {
-        type: String,
-        required: true,
-      },
-      phone: {
-        type: String,
-        required: true,
-      },
-      yearsKnown: {
-        type: String,
-      },
-      notes: {
-        type: String,
-      },
-    }],
+    ],
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
     hrFeedback: {
@@ -55,7 +54,7 @@ const ReferencesSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",
       },
-      reviewedAt: { type: Date }
+      reviewedAt: { type: Date },
     },
   },
   {

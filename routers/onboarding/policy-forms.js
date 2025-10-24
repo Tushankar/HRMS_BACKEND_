@@ -1595,4 +1595,79 @@ router.get("/get-pca-job-description-template", async (req, res) => {
   }
 });
 
+// Upload signed PDF (as image) for Code of Ethics
+router.post(
+  "/upload-signed-pdf",
+  upload.single("signedImage"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file uploaded" });
+      }
+
+      const { applicationId, employeeId, signatureDate } = req.body;
+
+      if (!applicationId || !employeeId) {
+        return res
+          .status(400)
+          .json({ message: "Application ID and Employee ID are required" });
+      }
+
+      // Find or create Code of Ethics form
+      let codeOfEthicsForm = await CodeOfEthics.findOne({ applicationId });
+
+      if (!codeOfEthicsForm) {
+        codeOfEthicsForm = new CodeOfEthics({
+          applicationId,
+          employeeId,
+          acknowledgment: true,
+          status: "completed",
+        });
+      }
+
+      // Update with uploaded signed image (showing the signed PDF as an image)
+      codeOfEthicsForm.employeeUploadedForm = {
+        filename: req.file.filename,
+        filePath: `/uploads/${req.file.filename}`,
+        uploadedAt: new Date(),
+      };
+
+      codeOfEthicsForm.signatureDate = signatureDate
+        ? new Date(signatureDate)
+        : new Date();
+      codeOfEthicsForm.status = "completed";
+
+      // Also store the signature as a data reference (for reference)
+      codeOfEthicsForm.employeeSignature = `/uploads/${req.file.filename}`;
+
+      await codeOfEthicsForm.save();
+
+      // Update application progress
+      const application = await OnboardingApplication.findById(applicationId);
+      if (application) {
+        if (!application.completedForms) {
+          application.completedForms = [];
+        }
+        if (!application.completedForms.includes("Code of Ethics")) {
+          application.completedForms.push("Code of Ethics");
+        }
+        application.completionPercentage =
+          application.calculateCompletionPercentage();
+        await application.save();
+      }
+
+      res.status(200).json({
+        message: "Signed PDF image uploaded successfully",
+        filePath: codeOfEthicsForm.employeeUploadedForm.filePath,
+        codeOfEthics: codeOfEthicsForm,
+      });
+    } catch (error) {
+      console.error("Error uploading signed PDF image:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
+  }
+);
+
 module.exports = router;

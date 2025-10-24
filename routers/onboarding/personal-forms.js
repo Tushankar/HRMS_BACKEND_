@@ -6,6 +6,7 @@ const BackgroundCheck = require("../../database/Models/BackgroundCheck");
 const PersonalInformation = require("../../database/Models/PersonalInformation");
 const ProfessionalExperience = require("../../database/Models/ProfessionalExperience");
 const WorkExperience = require("../../database/Models/WorkExperience");
+const OrientationChecklist = require("../../database/Models/OrientationChecklist");
 const OnboardingApplication = require("../../database/Models/OnboardingApplication");
 const multer = require("multer");
 const path = require("path");
@@ -335,10 +336,8 @@ router.post("/save-personal-information", async (req, res) => {
   try {
     const { applicationId, employeeId, formData, status = "draft" } = req.body;
 
-    if (!applicationId || !employeeId) {
-      return res
-        .status(400)
-        .json({ message: "Application ID and Employee ID are required" });
+    if (!applicationId) {
+      return res.status(400).json({ message: "Application ID is required" });
     }
 
     // Check if application exists
@@ -357,15 +356,23 @@ router.post("/save-personal-information", async (req, res) => {
       const { status: formDataStatus, ...cleanFormData } = formData;
       Object.assign(personalInfoForm, cleanFormData);
       personalInfoForm.status = status;
+      // Update employeeId if provided and valid
+      if (employeeId && employeeId.length === 24) {
+        personalInfoForm.employeeId = employeeId;
+      }
     } else {
       // Create new form - ensure status parameter overrides any status in formData
       const { status: formDataStatus, ...cleanFormData } = formData;
-      personalInfoForm = new PersonalInformation({
+      const formPayload = {
         applicationId,
-        employeeId,
         ...cleanFormData,
         status,
-      });
+      };
+      // Only add employeeId if it's valid
+      if (employeeId && employeeId.length === 24) {
+        formPayload.employeeId = employeeId;
+      }
+      personalInfoForm = new PersonalInformation(formPayload);
     }
 
     // Use validateBeforeSave: false for draft to skip validation
@@ -707,6 +714,110 @@ router.get("/get-work-experience-by-id/:id", async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting work experience form by ID:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Save or update Orientation Checklist form
+router.post("/save-orientation-checklist", async (req, res) => {
+  try {
+    const { applicationId, employeeId, formData, status = "draft" } = req.body;
+
+    if (!applicationId || !employeeId) {
+      return res
+        .status(400)
+        .json({ message: "Application ID and Employee ID are required" });
+    }
+
+    // Check if application exists
+    const application = await OnboardingApplication.findById(applicationId);
+    if (!application) {
+      return res
+        .status(404)
+        .json({ message: "Onboarding application not found" });
+    }
+
+    // Find existing form or create new one
+    let orientationChecklistForm = await OrientationChecklist.findOne({
+      applicationId,
+    });
+
+    if (orientationChecklistForm) {
+      // Update existing form - ensure status parameter overrides any status in formData
+      const { status: formDataStatus, ...cleanFormData } = formData;
+      Object.assign(orientationChecklistForm, cleanFormData);
+      orientationChecklistForm.status = status;
+    } else {
+      // Create new form - ensure status parameter overrides any status in formData
+      const { status: formDataStatus, ...cleanFormData } = formData;
+      orientationChecklistForm = new OrientationChecklist({
+        applicationId,
+        employeeId,
+        ...cleanFormData,
+        status,
+      });
+    }
+
+    await orientationChecklistForm.save();
+
+    // Update application progress
+    if (status === "completed") {
+      // Ensure completedForms array exists
+      if (!application.completedForms) {
+        application.completedForms = [];
+      }
+
+      // Check if Orientation Checklist is already marked as completed
+      if (!application.completedForms.includes("Orientation Checklist")) {
+        application.completedForms.push("Orientation Checklist");
+      }
+
+      application.completionPercentage =
+        application.calculateCompletionPercentage();
+      await application.save();
+    }
+
+    const message =
+      status === "draft"
+        ? "Orientation checklist saved as draft"
+        : "Orientation checklist completed";
+
+    res.status(200).json({
+      message,
+      orientationChecklist: orientationChecklistForm,
+      completionPercentage: application.completionPercentage,
+    });
+  } catch (error) {
+    console.error("Error saving orientation checklist form:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Get Orientation Checklist form
+router.get("/get-orientation-checklist/:applicationId", async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+
+    const orientationChecklist = await OrientationChecklist.findOne({
+      applicationId,
+    });
+
+    if (!orientationChecklist) {
+      return res
+        .status(404)
+        .json({ message: "Orientation checklist form not found" });
+    }
+
+    res.status(200).json({
+      message: "Orientation checklist form retrieved successfully",
+      orientationChecklist,
+    });
+  } catch (error) {
+    console.error("Error getting orientation checklist form:", error);
     res
       .status(500)
       .json({ message: "Internal server error", error: error.message });

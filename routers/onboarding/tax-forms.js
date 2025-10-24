@@ -56,6 +56,22 @@ router.get("/get-w4-template", async (req, res) => {
   }
 });
 
+// Serve W4 PDF without CSP restrictions
+router.get("/serve-w4-pdf", async (req, res) => {
+  try {
+    const template = await W4FormTemplate.findOne({ isActive: true });
+    if (!template) {
+      return res.status(404).json({ message: "Template not found" });
+    }
+    const filePath = path.join(__dirname, "../../", template.filePath);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("X-Frame-Options", "ALLOWALL");
+    res.sendFile(filePath);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Save W4 form status
 router.post("/save-w4-form", async (req, res) => {
   try {
@@ -179,6 +195,22 @@ router.get("/get-w9-template", async (req, res) => {
   }
 });
 
+// Serve W9 PDF without CSP restrictions
+router.get("/serve-w9-pdf", async (req, res) => {
+  try {
+    const template = await W9FormTemplate.findOne({ isActive: true });
+    if (!template) {
+      return res.status(404).json({ message: "Template not found" });
+    }
+    const filePath = path.join(__dirname, "../../", template.filePath);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("X-Frame-Options", "ALLOWALL");
+    res.sendFile(filePath);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Save W9 form status
 router.post("/save-w9-form", async (req, res) => {
   try {
@@ -271,6 +303,22 @@ router.get("/get-i9-template", async (req, res) => {
   try {
     const template = await I9FormTemplate.findOne({ isActive: true });
     res.json({ template });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Serve I9 PDF without CSP restrictions
+router.get("/serve-i9-pdf", async (req, res) => {
+  try {
+    const template = await I9FormTemplate.findOne({ isActive: true });
+    if (!template) {
+      return res.status(404).json({ message: "Template not found" });
+    }
+    const filePath = path.join(__dirname, "../../", template.filePath);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("X-Frame-Options", "ALLOWALL");
+    res.sendFile(filePath);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -570,6 +618,22 @@ router.get("/get-direct-deposit-template", async (req, res) => {
   try {
     const template = await DirectDepositTemplate.findOne({ isActive: true });
     res.json({ template });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Serve Direct Deposit PDF for inline viewing/editing
+router.get("/serve-direct-deposit-pdf", async (req, res) => {
+  try {
+    const template = await DirectDepositTemplate.findOne({ isActive: true });
+    if (!template) {
+      return res.status(404).json({ message: "Template not found" });
+    }
+    const filePath = path.join(__dirname, "../../", template.filePath);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("X-Frame-Options", "ALLOWALL");
+    res.sendFile(filePath);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

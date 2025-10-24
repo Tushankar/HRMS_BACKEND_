@@ -1188,6 +1188,7 @@ router.post("/job-description/save-status", async (req, res) => {
       status,
       employeeSignature,
       signatureDate,
+      employeeUploadedForm,
     } = req.body;
 
     if (!applicationId || !employeeId || !positionType) {
@@ -1209,6 +1210,14 @@ router.post("/job-description/save-status", async (req, res) => {
       if (signatureDate) {
         jobDesc.signatureDate = signatureDate;
       }
+      // Save uploaded form if provided
+      if (employeeUploadedForm) {
+        jobDesc.employeeUploadedForm = {
+          filename: employeeUploadedForm.filename || "signed-jd.pdf",
+          filePath: employeeUploadedForm.filePath,
+          uploadedAt: employeeUploadedForm.uploadedAt || new Date(),
+        };
+      }
       await jobDesc.save({ validateBeforeSave: status !== "draft" });
     } else {
       jobDesc = new JobModel({
@@ -1217,6 +1226,7 @@ router.post("/job-description/save-status", async (req, res) => {
         status: status || "draft",
         employeeSignature: employeeSignature || "",
         signatureDate: signatureDate || "",
+        employeeUploadedForm: employeeUploadedForm || undefined,
       });
       await jobDesc.save({ validateBeforeSave: status !== "draft" });
     }

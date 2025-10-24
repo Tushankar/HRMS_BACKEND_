@@ -34,7 +34,7 @@ async function testFixedEndpoint() {
 
     console.log("📤 Sending request to save background check form...");
     const response = await axios.post(
-      "https://hrms-backend-h16p.onrender.com/onboarding/save-background-check",
+      "http://localhost:1111/onboarding/save-background-check",
       payload,
       {
         headers: { "Content-Type": "application/json" },
@@ -89,7 +89,7 @@ async function testUpdateForm(formId) {
     };
 
     const response = await axios.post(
-      "https://hrms-backend-h16p.onrender.com/onboarding/save-background-check",
+      "http://localhost:1111/onboarding/save-background-check",
       payload,
       {
         headers: { "Content-Type": "application/json" },
