@@ -36,13 +36,30 @@ const MisconductStatementSchema = new mongoose.Schema(
       uploadedAt: { type: Date },
     },
 
+    // Digital signature support
+    employeeSignature: { type: String }, // Base64 encoded signature
+    signatureDate: { type: String }, // Date in YYYY-MM-DD format
+    signingMethod: {
+      type: String,
+      enum: ["digital", "pdf"],
+      default: "pdf",
+    },
+
     // Track employee's download activity
     downloadedAt: { type: Date },
     downloadCount: { type: Number, default: 0 },
 
     status: {
       type: String,
-      enum: ["pending", "downloaded", "in_progress", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "pending",
+        "downloaded",
+        "in_progress",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "pending",
     },
 

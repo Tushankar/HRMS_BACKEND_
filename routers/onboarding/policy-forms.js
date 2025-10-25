@@ -924,11 +924,12 @@ router.post("/save-non-compete-agreement", async (req, res) => {
         address: formData.employeeAddress || "",
         position: formData.jobTitle || "",
       },
-      // Signature mapping
+      // Signature mapping - support both digital and PDF signatures
       employeeSignature: formData.employeeSignature || "",
-      employeeSignatureDate: formData.agreementDate
-        ? new Date(formData.agreementDate)
+      employeeSignatureDate: formData.employeeDate
+        ? new Date(formData.employeeDate)
         : null,
+      signedPdfPath: formData.signedPdfPath || null,
       status,
     };
 
@@ -1178,6 +1179,10 @@ router.get("/get-non-compete-agreement/:applicationId", async (req, res) => {
       employeeName: nonCompeteAgreement.employeeInfo?.employeeName || "",
       employeeAddress: nonCompeteAgreement.employeeInfo?.address || "",
       jobTitle: nonCompeteAgreement.employeeInfo?.position || "",
+      // Map signatures
+      employeeSignature: nonCompeteAgreement.employeeSignature || "",
+      employeeDate: nonCompeteAgreement.employeeSignatureDate || null,
+      signedPdfPath: nonCompeteAgreement.signedPdfPath || null,
       // Map company representative
       companyRepName: nonCompeteAgreement.companyRepresentative?.name || "",
       companyRepSignature:

@@ -22,7 +22,7 @@ async function testBackgroundCheckHRFeedback() {
     console.log("\n---\n");
 
     const response = await axios.post(
-      "http://localhost:1111/onboarding/save-background-check",
+      "https://hrms-backend-h16p.onrender.com/onboarding/save-background-check",
       payload,
       {
         headers: {

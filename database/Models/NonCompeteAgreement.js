@@ -32,7 +32,10 @@ const NonCompeteAgreementSchema = new mongoose.Schema(
     companyInfo: {
       companyName: { type: String, default: "Pacific Health Systems LLC" },
       address: {
-        street: { type: String, default: "303 Corporate Center Dr., Suite 325" },
+        street: {
+          type: String,
+          default: "303 Corporate Center Dr., Suite 325",
+        },
         city: { type: String, default: "Stockbridge" },
         state: { type: String, default: "GA" },
         zipCode: { type: String, default: "30281" },
@@ -42,6 +45,7 @@ const NonCompeteAgreementSchema = new mongoose.Schema(
     // Signatures
     employeeSignature: { type: String },
     employeeSignatureDate: { type: Date },
+    signedPdfPath: { type: String }, // Path to uploaded signed PDF
     companyRepresentative: {
       name: { type: String },
       title: { type: String },
@@ -58,7 +62,14 @@ const NonCompeteAgreementSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
 

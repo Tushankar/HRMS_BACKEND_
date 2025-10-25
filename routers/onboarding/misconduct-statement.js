@@ -11,7 +11,10 @@ const router = express.Router();
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, "../../uploads/misconduct-statements");
+    const uploadDir = path.join(
+      __dirname,
+      "../../uploads/misconduct-statements"
+    );
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -36,47 +39,55 @@ const upload = multer({
 });
 
 // Admin: Upload misconduct statement template
-router.post("/admin-upload-template", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+router.post(
+  "/admin-upload-template",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const { uploadedBy } = req.body;
+
+      // Deactivate previous templates
+      await MisconductStatementTemplate.updateMany({}, { isActive: false });
+
+      // Create new template
+      const templateData = {
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        path: req.file.path,
+        mimeType: req.file.mimetype,
+      };
+
+      if (uploadedBy) {
+        templateData.uploadedBy = uploadedBy;
+      }
+
+      const template = new MisconductStatementTemplate(templateData);
+
+      await template.save();
+
+      res.status(200).json({
+        message: "Misconduct statement template uploaded successfully",
+        template,
+      });
+    } catch (error) {
+      console.error("Error uploading template:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
     }
-
-    const { uploadedBy } = req.body;
-
-    // Deactivate previous templates
-    await MisconductStatementTemplate.updateMany({}, { isActive: false });
-
-    // Create new template
-    const templateData = {
-      filename: req.file.filename,
-      originalName: req.file.originalname,
-      path: req.file.path,
-      mimeType: req.file.mimetype,
-    };
-    
-    if (uploadedBy) {
-      templateData.uploadedBy = uploadedBy;
-    }
-    
-    const template = new MisconductStatementTemplate(templateData);
-
-    await template.save();
-
-    res.status(200).json({
-      message: "Misconduct statement template uploaded successfully",
-      template,
-    });
-  } catch (error) {
-    console.error("Error uploading template:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
   }
-});
+);
 
 // Get active misconduct statement template
 router.get("/get-template", async (req, res) => {
   try {
-    const template = await MisconductStatementTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+    const template = await MisconductStatementTemplate.findOne({
+      isActive: true,
+    }).sort({ createdAt: -1 });
 
     if (!template) {
       return res.status(404).json({ message: "No active template found" });
@@ -88,7 +99,9 @@ router.get("/get-template", async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching template:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
@@ -97,7 +110,9 @@ router.get("/download-template/:applicationId", async (req, res) => {
   try {
     const { applicationId } = req.params;
 
-    const template = await MisconductStatementTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+    const template = await MisconductStatementTemplate.findOne({
+      isActive: true,
+    }).sort({ createdAt: -1 });
 
     if (!template) {
       return res.status(404).json({ message: "No active template found" });
@@ -117,25 +132,132 @@ router.get("/download-template/:applicationId", async (req, res) => {
     res.download(template.path, template.originalName);
   } catch (error) {
     console.error("Error downloading template:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // Employee: Upload signed misconduct statement
-router.post("/employee-upload-signed", upload.single("signedForm"), async (req, res) => {
+router.post(
+  "/employee-upload-signed",
+  upload.single("signedForm"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const { applicationId, employeeId } = req.body;
+
+      if (!applicationId || !employeeId) {
+        return res
+          .status(400)
+          .json({ message: "Application ID and Employee ID are required" });
+      }
+
+      // Find or create misconduct statement
+      let misconductStatement = await MisconductStatement.findOne({
+        applicationId,
+      });
+
+      if (!misconductStatement) {
+        misconductStatement = new MisconductStatement({
+          applicationId,
+          employeeId,
+        });
+      }
+
+      // Update with employee uploaded file
+      misconductStatement.employeeUploadedFile = {
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        path: req.file.path,
+        mimeType: req.file.mimetype,
+        uploadedAt: new Date(),
+      };
+      misconductStatement.status = "submitted";
+      misconductStatement.submittedAt = new Date();
+
+      await misconductStatement.save();
+
+      // Update onboarding application progress
+      const application = await OnboardingApplication.findById(applicationId);
+      if (application) {
+        if (!application.completedForms) {
+          application.completedForms = [];
+        }
+        if (
+          !application.completedForms.includes("Staff Statement of Misconduct")
+        ) {
+          application.completedForms.push("Staff Statement of Misconduct");
+        }
+        application.completionPercentage =
+          application.calculateCompletionPercentage();
+        await application.save();
+      }
+
+      res.status(200).json({
+        message: "Signed misconduct statement uploaded successfully",
+        misconductStatement,
+        completionPercentage: application?.completionPercentage || 0,
+      });
+    } catch (error) {
+      console.error("Error uploading signed form:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
+  }
+);
+
+// Get misconduct statement by application ID
+router.get("/get-misconduct-statement/:applicationId", async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+    const { applicationId } = req.params;
+
+    const misconductStatement = await MisconductStatement.findOne({
+      applicationId,
+    });
+
+    if (!misconductStatement) {
+      return res
+        .status(404)
+        .json({ message: "Misconduct statement not found" });
     }
 
-    const { applicationId, employeeId } = req.body;
+    res.status(200).json({
+      message: "Misconduct statement retrieved successfully",
+      formData: {
+        signingMethod: misconductStatement.signingMethod || "pdf",
+        employeeSignature: misconductStatement.employeeSignature,
+        signatureDate: misconductStatement.signatureDate,
+        signedPdfPath: misconductStatement.employeeUploadedFile?.path,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching misconduct statement:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Save misconduct statement (supports both digital and PDF signing)
+router.post("/save-misconduct-statement", async (req, res) => {
+  try {
+    const { applicationId, employeeId, formData, status } = req.body;
 
     if (!applicationId || !employeeId) {
-      return res.status(400).json({ message: "Application ID and Employee ID are required" });
+      return res
+        .status(400)
+        .json({ message: "Application ID and Employee ID are required" });
     }
 
     // Find or create misconduct statement
-    let misconductStatement = await MisconductStatement.findOne({ applicationId });
+    let misconductStatement = await MisconductStatement.findOne({
+      applicationId,
+    });
 
     if (!misconductStatement) {
       misconductStatement = new MisconductStatement({
@@ -144,15 +266,25 @@ router.post("/employee-upload-signed", upload.single("signedForm"), async (req, 
       });
     }
 
-    // Update with employee uploaded file
-    misconductStatement.employeeUploadedFile = {
-      filename: req.file.filename,
-      originalName: req.file.originalname,
-      path: req.file.path,
-      mimeType: req.file.mimetype,
-      uploadedAt: new Date(),
-    };
-    misconductStatement.status = "submitted";
+    // Update based on signing method
+    if (formData.signingMethod === "digital") {
+      misconductStatement.employeeSignature = formData.employeeSignature;
+      misconductStatement.signatureDate = formData.signatureDate;
+      misconductStatement.signingMethod = "digital";
+    } else if (formData.signingMethod === "pdf") {
+      if (formData.signedPdfPath) {
+        misconductStatement.employeeUploadedFile = {
+          filename: path.basename(formData.signedPdfPath),
+          originalName: path.basename(formData.signedPdfPath),
+          path: formData.signedPdfPath,
+          mimeType: "application/pdf",
+          uploadedAt: new Date(),
+        };
+        misconductStatement.signingMethod = "pdf";
+      }
+    }
+
+    misconductStatement.status = status || "completed";
     misconductStatement.submittedAt = new Date();
 
     await misconductStatement.save();
@@ -163,42 +295,26 @@ router.post("/employee-upload-signed", upload.single("signedForm"), async (req, 
       if (!application.completedForms) {
         application.completedForms = [];
       }
-      if (!application.completedForms.includes("Staff Statement of Misconduct")) {
+      if (
+        !application.completedForms.includes("Staff Statement of Misconduct")
+      ) {
         application.completedForms.push("Staff Statement of Misconduct");
       }
-      application.completionPercentage = application.calculateCompletionPercentage();
+      application.completionPercentage =
+        application.calculateCompletionPercentage();
       await application.save();
     }
 
     res.status(200).json({
-      message: "Signed misconduct statement uploaded successfully",
+      message: "Misconduct statement saved successfully",
       misconductStatement,
       completionPercentage: application?.completionPercentage || 0,
     });
   } catch (error) {
-    console.error("Error uploading signed form:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
-  }
-});
-
-// Get misconduct statement by application ID
-router.get("/get-misconduct-statement/:applicationId", async (req, res) => {
-  try {
-    const { applicationId } = req.params;
-
-    const misconductStatement = await MisconductStatement.findOne({ applicationId });
-
-    if (!misconductStatement) {
-      return res.status(404).json({ message: "Misconduct statement not found" });
-    }
-
-    res.status(200).json({
-      message: "Misconduct statement retrieved successfully",
-      misconductStatement,
-    });
-  } catch (error) {
-    console.error("Error fetching misconduct statement:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    console.error("Error saving misconduct statement:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
@@ -207,7 +323,9 @@ router.get("/download-signed/:applicationId", async (req, res) => {
   try {
     const { applicationId } = req.params;
 
-    const misconductStatement = await MisconductStatement.findOne({ applicationId });
+    const misconductStatement = await MisconductStatement.findOne({
+      applicationId,
+    });
 
     if (!misconductStatement || !misconductStatement.employeeUploadedFile) {
       return res.status(404).json({ message: "Signed form not found" });
@@ -219,7 +337,9 @@ router.get("/download-signed/:applicationId", async (req, res) => {
     );
   } catch (error) {
     console.error("Error downloading signed form:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
