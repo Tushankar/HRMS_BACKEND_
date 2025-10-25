@@ -38,8 +38,8 @@ const upload = multer({ storage });
 
 const router = express.Router();
 
-// Save or update Misconduct Statement form
-router.post("/save-misconduct-statement", async (req, res) => {
+// Save or update Traditional Misconduct Statement form (with notary and witness)
+router.post("/save-traditional-misconduct-statement", async (req, res) => {
   try {
     const {
       applicationId,
