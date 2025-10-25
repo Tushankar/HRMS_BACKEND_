@@ -246,32 +246,64 @@ router.get("/get-misconduct-statement/:applicationId", async (req, res) => {
 // Save misconduct statement (supports both digital and PDF signing)
 router.post("/save-misconduct-statement", async (req, res) => {
   try {
+    console.log("🔍 [Misconduct Router] Received save request");
+    console.log(
+      "📥 [Misconduct Router] Request body:",
+      JSON.stringify(req.body, null, 2)
+    );
+
     const { applicationId, employeeId, formData, status } = req.body;
 
+    console.log("🔍 [Misconduct Router] Extracted data:");
+    console.log("  - applicationId:", applicationId);
+    console.log("  - employeeId:", employeeId);
+    console.log("  - formData keys:", Object.keys(formData || {}));
+    console.log("  - status:", status);
+
     if (!applicationId || !employeeId) {
+      console.log("❌ [Misconduct Router] Missing required IDs");
       return res
         .status(400)
         .json({ message: "Application ID and Employee ID are required" });
     }
 
     // Find or create misconduct statement
+    console.log(
+      "🔍 [Misconduct Router] Finding existing misconduct statement..."
+    );
     let misconductStatement = await MisconductStatement.findOne({
       applicationId,
     });
 
     if (!misconductStatement) {
+      console.log("📝 [Misconduct Router] Creating new misconduct statement");
       misconductStatement = new MisconductStatement({
         applicationId,
         employeeId,
       });
+    } else {
+      console.log("📝 [Misconduct Router] Found existing misconduct statement");
     }
 
     // Update based on signing method
+    console.log(
+      "🔍 [Misconduct Router] Checking signing method:",
+      formData?.signingMethod
+    );
     if (formData.signingMethod === "digital") {
+      console.log("📝 [Misconduct Router] Setting digital signature fields");
       misconductStatement.employeeSignature = formData.employeeSignature;
       misconductStatement.signatureDate = formData.signatureDate;
       misconductStatement.signingMethod = "digital";
+      console.log("✅ [Misconduct Router] Digital signature fields set:");
+      console.log(
+        "  - employeeSignature length:",
+        formData.employeeSignature?.length || 0
+      );
+      console.log("  - signatureDate:", formData.signatureDate);
+      console.log("  - signingMethod:", misconductStatement.signingMethod);
     } else if (formData.signingMethod === "pdf") {
+      console.log("📝 [Misconduct Router] Setting PDF signature fields");
       if (formData.signedPdfPath) {
         misconductStatement.employeeUploadedFile = {
           filename: path.basename(formData.signedPdfPath),
@@ -287,9 +319,14 @@ router.post("/save-misconduct-statement", async (req, res) => {
     misconductStatement.status = status || "completed";
     misconductStatement.submittedAt = new Date();
 
+    console.log("💾 [Misconduct Router] Saving misconduct statement...");
     await misconductStatement.save();
+    console.log(
+      "✅ [Misconduct Router] Misconduct statement saved successfully"
+    );
 
     // Update onboarding application progress
+    console.log("🔄 [Misconduct Router] Updating application progress...");
     const application = await OnboardingApplication.findById(applicationId);
     if (application) {
       if (!application.completedForms) {
@@ -303,15 +340,25 @@ router.post("/save-misconduct-statement", async (req, res) => {
       application.completionPercentage =
         application.calculateCompletionPercentage();
       await application.save();
+      console.log("✅ [Misconduct Router] Application progress updated");
     }
 
+    console.log("🎉 [Misconduct Router] Request completed successfully");
     res.status(200).json({
       message: "Misconduct statement saved successfully",
       misconductStatement,
       completionPercentage: application?.completionPercentage || 0,
     });
   } catch (error) {
-    console.error("Error saving misconduct statement:", error);
+    console.error(
+      "❌ [Misconduct Router] Error saving misconduct statement:",
+      error
+    );
+    console.error("❌ [Misconduct Router] Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
     res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
