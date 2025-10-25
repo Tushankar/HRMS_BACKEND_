@@ -51,6 +51,10 @@ const UserSchema = new Mongoose.Schema(
     profileImage: {
       type: String,
     },
+    // Digital signature image path (relative, e.g. uploads/signatures/xxx.png)
+    signatureImage: {
+      type: String,
+    },
     accountStatus: {
       type: String,
       default: "active",

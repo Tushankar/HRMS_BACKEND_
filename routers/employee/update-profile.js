@@ -90,6 +90,23 @@ router.put(
         updateData.profileImage = `uploads/profile-pictures/${req.file.filename}`;
       }
 
+      // Allow updating signature image path (sent as string path from client)
+      if (req.body && req.body.signatureImage) {
+        // Delete old signature file if it exists and is different
+        if (user.signatureImage && user.signatureImage !== req.body.signatureImage) {
+          try {
+            const oldSigPath = path.join(__dirname, "../../", user.signatureImage);
+            if (fs.existsSync(oldSigPath)) {
+              fs.unlinkSync(oldSigPath);
+            }
+          } catch (err) {
+            console.warn('Warning: could not delete old signature file:', err.message);
+          }
+        }
+
+        updateData.signatureImage = req.body.signatureImage;
+      }
+
       // Update user in database
       const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
         new: true,
