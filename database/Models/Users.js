@@ -58,12 +58,12 @@ const UserSchema = new Mongoose.Schema(
     accountStatus: {
       type: String,
       default: "active",
-      enum: ["active", "inactive",],
+      enum: ["active", "inactive"],
     },
     tasks: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref:'task',
+        ref: "task",
       },
     ],
   },
