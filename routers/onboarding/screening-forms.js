@@ -636,14 +636,22 @@ router.post("/save-tb-symptom-screen", async (req, res) => {
       mappedFormData.basicInfo = {
         fullName: formData.name || "",
         sex: formData.gender || "",
-        dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth) : null,
+        dateOfBirth: formData.dateOfBirth
+          ? new Date(formData.dateOfBirth)
+          : null,
       };
     }
 
     // Last Skin Test
-    if (formData.lastSkinTest || formData.testDate || formData.testResults ||
-        formData.positive !== undefined || formData.negative !== undefined ||
-        formData.chestXRayNormal !== undefined || formData.chestXRayAbnormal !== undefined) {
+    if (
+      formData.lastSkinTest ||
+      formData.testDate ||
+      formData.testResults ||
+      formData.positive !== undefined ||
+      formData.negative !== undefined ||
+      formData.chestXRayNormal !== undefined ||
+      formData.chestXRayAbnormal !== undefined
+    ) {
       mappedFormData.lastSkinTest = {
         facilityName: formData.lastSkinTest || "",
         testDate: formData.testDate ? new Date(formData.testDate) : null,
@@ -656,13 +664,19 @@ router.post("/save-tb-symptom-screen", async (req, res) => {
     }
 
     // Treatment History
-    if (formData.treatedForLTBI !== undefined || formData.monthsLTBI ||
-        formData.treatedForTB !== undefined || formData.monthsTB ||
-        formData.whenTreated || formData.whereTreated || formData.medications) {
+    if (
+      formData.treatedForLTBI !== undefined ||
+      formData.monthsLTBI ||
+      formData.treatedForTB !== undefined ||
+      formData.monthsTB ||
+      formData.whenTreated ||
+      formData.whereTreated ||
+      formData.medications
+    ) {
       mappedFormData.treatmentHistory = {
-        latentTB: formData.treatedForLTBI === 'yes',
+        latentTB: formData.treatedForLTBI === "yes",
         latentMonths: parseInt(formData.monthsLTBI) || 0,
-        tbDisease: formData.treatedForTB === 'yes',
+        tbDisease: formData.treatedForTB === "yes",
         tbDiseaseMonths: parseInt(formData.monthsTB) || 0,
         treatmentWhen: formData.whenTreated || "",
         treatmentWhere: formData.whereTreated || "",
@@ -676,34 +690,49 @@ router.post("/save-tb-symptom-screen", async (req, res) => {
     }
 
     // Symptom Assessment
-    if (Object.keys(formData).some(key => key.includes('Cough') || key.includes('cough') ||
-        key.includes('Sweats') || key.includes('sweats') || key.includes('fevers') ||
-        key.includes('weight') || key.includes('tired') || key.includes('chest') ||
-        key.includes('breath') || key.includes('contact'))) {
+    if (
+      Object.keys(formData).some(
+        (key) =>
+          key.includes("Cough") ||
+          key.includes("cough") ||
+          key.includes("Sweats") ||
+          key.includes("sweats") ||
+          key.includes("fevers") ||
+          key.includes("weight") ||
+          key.includes("tired") ||
+          key.includes("chest") ||
+          key.includes("breath") ||
+          key.includes("contact")
+      )
+    ) {
       mappedFormData.symptoms = {
-        cough: formData.hasCough === 'yes',
+        cough: formData.hasCough === "yes",
         coughDurationDays: parseInt(formData.coughDurationDays) || 0,
         coughDurationWeeks: parseInt(formData.coughDurationWeeks) || 0,
         coughDurationMonths: parseInt(formData.coughDurationMonths) || 0,
         mucusColor: formData.mucusColor || "",
-        coughingBlood: formData.coughingUpBlood === 'yes',
-        nightSweats: formData.hasNightSweats === 'yes',
-        fevers: formData.hasFevers === 'yes',
-        weightLoss: formData.lostWeight === 'yes',
+        coughingBlood: formData.coughingUpBlood === "yes",
+        nightSweats: formData.hasNightSweats === "yes",
+        fevers: formData.hasFevers === "yes",
+        weightLoss: formData.lostWeight === "yes",
         weightLossPounds: parseInt(formData.weightLost) || 0,
-        fatigue: formData.tiredOrWeak === 'yes',
+        fatigue: formData.tiredOrWeak === "yes",
         fatigueDurationDays: parseInt(formData.tirednessDurationDays) || 0,
         fatigueDurationWeeks: parseInt(formData.tirednessDurationWeeks) || 0,
         fatigueDurationMonths: parseInt(formData.tirednessDurationMonths) || 0,
-        chestPain: formData.hasChestPain === 'yes',
+        chestPain: formData.hasChestPain === "yes",
         chestPainDurationDays: parseInt(formData.chestPainDurationDays) || 0,
         chestPainDurationWeeks: parseInt(formData.chestPainDurationWeeks) || 0,
-        chestPainDurationMonths: parseInt(formData.chestPainDurationMonths) || 0,
-        shortnessOfBreath: formData.hasShortnessOfBreath === 'yes',
-        shortnessBreathDurationDays: parseInt(formData.shortnessOfBreathDurationDays) || 0,
-        shortnessBreathDurationWeeks: parseInt(formData.shortnessOfBreathDurationWeeks) || 0,
-        shortnessBreathDurationMonths: parseInt(formData.shortnessOfBreathDurationMonths) || 0,
-        knowsSomeoneWithSymptoms: formData.knowsSomeoneWithSymptoms === 'yes',
+        chestPainDurationMonths:
+          parseInt(formData.chestPainDurationMonths) || 0,
+        shortnessOfBreath: formData.hasShortnessOfBreath === "yes",
+        shortnessBreathDurationDays:
+          parseInt(formData.shortnessOfBreathDurationDays) || 0,
+        shortnessBreathDurationWeeks:
+          parseInt(formData.shortnessOfBreathDurationWeeks) || 0,
+        shortnessBreathDurationMonths:
+          parseInt(formData.shortnessOfBreathDurationMonths) || 0,
+        knowsSomeoneWithSymptoms: formData.knowsSomeoneWithSymptoms === "yes",
         contactName: formData.contactName || "",
         contactAddress: formData.contactAddress || "",
         contactPhone: formData.contactPhone || "",
@@ -711,10 +740,21 @@ router.post("/save-tb-symptom-screen", async (req, res) => {
     }
 
     // Action Taken
-    if (Object.keys(formData).some(key => key.includes('SignOf') || key.includes('Xray') ||
-        key.includes('discussed') || key.includes('client') || key.includes('further') ||
-        key.includes('isolated') || key.includes('mask') || key.includes('sputum') ||
-        key.includes('referred') || key.includes('other'))) {
+    if (
+      Object.keys(formData).some(
+        (key) =>
+          key.includes("SignOf") ||
+          key.includes("Xray") ||
+          key.includes("discussed") ||
+          key.includes("client") ||
+          key.includes("further") ||
+          key.includes("isolated") ||
+          key.includes("mask") ||
+          key.includes("sputum") ||
+          key.includes("referred") ||
+          key.includes("other")
+      )
+    ) {
       mappedFormData.actionTaken = {
         noSignOfTB: formData.noSignOfActiveTB || false,
         chestXrayNotNeeded: formData.chestXRayNotNeeded || false,
@@ -731,10 +771,16 @@ router.post("/save-tb-symptom-screen", async (req, res) => {
     }
 
     // Signatures
-    if (formData.assessorSignature || formData.clientSignature || formData.signatureDate) {
+    if (
+      formData.assessorSignature ||
+      formData.clientSignature ||
+      formData.signatureDate
+    ) {
       mappedFormData.screenerSignature = formData.assessorSignature || "";
       mappedFormData.clientSignature = formData.clientSignature || "";
-      mappedFormData.clientSignatureDate = formData.signatureDate ? new Date(formData.signatureDate) : null;
+      mappedFormData.clientSignatureDate = formData.signatureDate
+        ? new Date(formData.signatureDate)
+        : null;
     }
 
     const updateData = { status };
@@ -762,7 +808,8 @@ router.post("/save-tb-symptom-screen", async (req, res) => {
         if (!application.completedForms.includes("tbSymptomScreen")) {
           application.completedForms.push("tbSymptomScreen");
         }
-        application.completionPercentage = application.calculateCompletionPercentage();
+        application.completionPercentage =
+          application.calculateCompletionPercentage();
         await application.save();
       }
     }

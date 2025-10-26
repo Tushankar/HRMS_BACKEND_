@@ -146,8 +146,8 @@ router.post("/save-background-check", async (req, res) => {
 
     if (status === "completed") {
       if (!application.completedForms) application.completedForms = [];
-      if (!application.completedForms.includes("Background Check")) {
-        application.completedForms.push("Background Check");
+      if (!application.completedForms.includes("backgroundCheck")) {
+        application.completedForms.push("backgroundCheck");
       }
       application.completionPercentage = application.calculateCompletionPercentage();
       await application.save();
