@@ -1154,35 +1154,11 @@ router.post("/save-job-description-hr-notes", async (req, res) => {
         .json({ success: false, message: "Job description not found" });
     }
 
-    // Update HR feedback - preserve any signature fields sent in hrFeedback
+    // Update HR feedback
     jobDesc.hrFeedback = {
-      // prefer comment, then notes
-      notes: (hrFeedback && (hrFeedback.comment || hrFeedback.notes)) || "",
-      // allow the frontend to supply who reviewed (HR user), otherwise fallback to employeeId
-      reviewedBy:
-        (hrFeedback && (hrFeedback.reviewedBy || hrFeedback.reviewer)) ||
-        employeeId,
-      // optional human-readable reviewer name supplied by frontend
-      reviewedByName:
-        (hrFeedback &&
-          (hrFeedback.reviewedByName || hrFeedback.reviewerName)) ||
-        undefined,
-      // prefer reviewedAt timestamp if provided
-      timestamp:
-        (hrFeedback && (hrFeedback.reviewedAt || hrFeedback.timestamp)) ||
-        new Date(),
-      // optional signature fields - accept multiple possible field names
-      companyRepresentativeSignature:
-        (hrFeedback &&
-          (hrFeedback.companyRepresentativeSignature ||
-            hrFeedback.companyRepSignature)) ||
-        undefined,
-      agencySignature: (hrFeedback && hrFeedback.agencySignature) || undefined,
-      // supervisorSignature may be an object with signature/date
-      supervisorSignature:
-        (hrFeedback && hrFeedback.supervisorSignature) || undefined,
-      // keep any raw hrFeedback for debugging/reference
-      _raw: hrFeedback || undefined,
+      notes: hrFeedback.comment,
+      reviewedBy: employeeId,
+      timestamp: new Date(),
     };
     jobDesc.status = status || "under_review";
     await jobDesc.save();
