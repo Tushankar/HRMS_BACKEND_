@@ -1162,6 +1162,10 @@ router.post("/save-job-description-hr-notes", async (req, res) => {
       reviewedBy:
         (hrFeedback && (hrFeedback.reviewedBy || hrFeedback.reviewer)) ||
         employeeId,
+      // optional human-readable reviewer name supplied by frontend
+      reviewedByName:
+        (hrFeedback && (hrFeedback.reviewedByName || hrFeedback.reviewerName)) ||
+        undefined,
       // prefer reviewedAt timestamp if provided
       timestamp:
         (hrFeedback && (hrFeedback.reviewedAt || hrFeedback.timestamp)) ||
