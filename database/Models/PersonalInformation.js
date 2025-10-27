@@ -28,6 +28,7 @@ const PersonalInformationSchema = new mongoose.Schema(
     city: { type: String },
     state: { type: String },
     zipCode: { type: String },
+    country: { type: String },
 
     // Contact
     phone: { type: String },
