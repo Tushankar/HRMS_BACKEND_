@@ -40,6 +40,14 @@ const PersonalInformationSchema = new mongoose.Schema(
     desiredSalary: { type: String },
     positionAppliedFor: { type: String },
 
+    // Government ID
+    governmentIdType: {
+      type: String,
+      enum: ["Driver's License", "State ID", "Passport"],
+    },
+    governmentIdState: { type: String },
+    governmentIdCountry: { type: String },
+
     // Authorization Questions
     isUSCitizen: {
       type: String,
