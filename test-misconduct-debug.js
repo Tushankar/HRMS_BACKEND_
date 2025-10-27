@@ -1,7 +1,8 @@
 const axios = require("axios");
 
 async function testMisconductStatement() {
-  const BASE_URL = "http://localhost:1111/onboarding/misconduct-statement";
+  const BASE_URL =
+    "https://hrms-backend-h16p.onrender.com/onboarding/misconduct-statement";
 
   // Test data with digital signature
   const testData = {
