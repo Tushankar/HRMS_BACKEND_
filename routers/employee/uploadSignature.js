@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const employeeId = req.body.employeeId || Date.now().toString(); // Fallback to timestamp if no employeeId
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9); // Generate unique suffix
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9); // Generate unique suffix
     const ext = path.extname(file.originalname).toLowerCase();
     cb(null, `signature_${employeeId}_${uniqueSuffix}${ext}`); // Unique filename per user
   },
@@ -24,7 +24,9 @@ const upload = multer({
   storage: storage,
   fileFilter: function (req, file, cb) {
     const fileTypes = /jpeg|jpg|png|pdf/;
-    const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+    const extname = fileTypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
     const mimetype = fileTypes.test(file.mimetype);
 
     if (extname && mimetype) {
@@ -33,12 +35,13 @@ const upload = multer({
       return cb(new Error("Only images and PDFs are allowed"));
     }
   },
-  limits: { files: 1 } // Limit to 1 file
+  limits: { files: 1 }, // Limit to 1 file
 });
 
 // File Upload API
-appRouter.post("/upload-signature", 
-  upload.single('signature'), 
+appRouter.post(
+  "/upload-signature",
+  upload.single("signature"),
   async (req, res) => {
     try {
       // Check if file was uploaded
@@ -56,16 +59,18 @@ appRouter.post("/upload-signature",
 
       // Determine file type
       let fileType;
-      if (mimetype.startsWith('image')) {
+      if (mimetype.startsWith("image")) {
         fileType = "image";
-      } else if (mimetype === 'application/pdf') {
+      } else if (mimetype === "application/pdf") {
         fileType = "pdf";
       } else {
         throw new Error("Invalid file type");
       }
 
       // Check if employee already has a signature
-      let existingSignature = await FileUpload.findOne({ employee_id: employeeId });
+      let existingSignature = await FileUpload.findOne({
+        employee_id: employeeId,
+      });
 
       if (existingSignature) {
         // Remove old file if it exists
@@ -77,7 +82,7 @@ appRouter.post("/upload-signature",
         existingSignature.signature = {
           filename: filename, // Updated to new unique filename
           filePath: filePath, // Updated to new file path
-          fileType: fileType
+          fileType: fileType,
         };
         await existingSignature.save();
       } else {
@@ -87,8 +92,8 @@ appRouter.post("/upload-signature",
           signature: {
             filename: filename, // Unique filename
             filePath: filePath, // New file path
-            fileType: fileType
-          }
+            fileType: fileType,
+          },
         });
 
         await newSignature.save();
@@ -98,10 +103,9 @@ appRouter.post("/upload-signature",
       res.status(200).json({
         message: "Signature uploaded successfully",
         filename: filename,
-        filePath: filePath,
-        fileType: fileType
+        filePath: `/uploads/${filename}`, // Return path that matches static route
+        fileType: fileType,
       });
-
     } catch (error) {
       console.error("Upload error:", error);
 
@@ -111,7 +115,9 @@ appRouter.post("/upload-signature",
       }
 
       // For other validation or server errors
-      res.status(500).json({ message: error.message || "Server error during upload" });
+      res
+        .status(500)
+        .json({ message: error.message || "Server error during upload" });
     }
   }
 );

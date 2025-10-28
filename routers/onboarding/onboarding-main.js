@@ -1779,7 +1779,7 @@ router.post("/save-hr-notes-to-employee", async (req, res) => {
   try {
     console.log("📝 HR Notes to Employee submission received:", req.body);
 
-    const { applicationId, note, hrUserId } = req.body;
+    const { applicationId, note, hrUserId, signature } = req.body;
 
     // Validation
     if (!applicationId) {
@@ -1807,6 +1807,7 @@ router.post("/save-hr-notes-to-employee", async (req, res) => {
       note: note.trim(),
       sentAt: new Date(),
       sentBy: hrUserId || req.user?._id || "HR",
+      signature: signature || null,
     };
 
     await application.save();

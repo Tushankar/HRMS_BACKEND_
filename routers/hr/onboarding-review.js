@@ -19,33 +19,36 @@ const PCAJobDescription = require("../../database/Models/PCAJobDescription");
 const CNAJobDescription = require("../../database/Models/CNAJobDescription");
 const LPNJobDescription = require("../../database/Models/LPNJobDescription");
 const RNJobDescription = require("../../database/Models/RNJobDescription");
-const User = require("../../database/Models/Users");
+const PersonalInformation = require("../../database/Models/PersonalInformation");
+const Education = require("../../database/Models/Education");
 
 const router = express.Router();
 
 // Helper function to get the correct model based on form type
 const getFormModel = (formType) => {
   const models = {
-    'employment-application': EmploymentApplication,
-    'i9-form': I9Form,
-    'w4-form': W4Form,
-    'w9-form': W9Form,
-    'emergency-contact': EmergencyContact,
-    'direct-deposit': DirectDeposit,
-    'direct-deposit-form': DirectDeposit, // Added kebab-case mapping
-    'misconduct-statement': MisconductStatement,
-    'code-of-ethics': CodeOfEthics,
-    'service-delivery-policy': ServiceDeliveryPolicy,
-    'service-delivery-policies': ServiceDeliveryPolicy, // Added plural mapping
-    'non-compete-agreement': NonCompeteAgreement,
-    'background-check': BackgroundCheck,
-    'tb-symptom-screen': TBSymptomScreen,
-    'orientation-checklist': OrientationChecklist,
-    'job-description': JobDescriptionAcknowledgment,
-    'personal-care': PCAJobDescription,
-    'certified-nursing-assistant': CNAJobDescription,
-    'licensed-practical-nurse': LPNJobDescription,
-    'registered-nurse': RNJobDescription
+    "personal-information": PersonalInformation,
+    "employment-application": EmploymentApplication,
+    education: Education,
+    "i9-form": I9Form,
+    "w4-form": W4Form,
+    "w9-form": W9Form,
+    "emergency-contact": EmergencyContact,
+    "direct-deposit": DirectDeposit,
+    "direct-deposit-form": DirectDeposit, // Added kebab-case mapping
+    "misconduct-statement": MisconductStatement,
+    "code-of-ethics": CodeOfEthics,
+    "service-delivery-policy": ServiceDeliveryPolicy,
+    "service-delivery-policies": ServiceDeliveryPolicy, // Added plural mapping
+    "non-compete-agreement": NonCompeteAgreement,
+    "background-check": BackgroundCheck,
+    "tb-symptom-screen": TBSymptomScreen,
+    "orientation-checklist": OrientationChecklist,
+    "job-description": JobDescriptionAcknowledgment,
+    "personal-care": PCAJobDescription,
+    "certified-nursing-assistant": CNAJobDescription,
+    "licensed-practical-nurse": LPNJobDescription,
+    "registered-nurse": RNJobDescription,
   };
   return models[formType];
 };
@@ -54,7 +57,7 @@ const getFormModel = (formType) => {
 router.get("/pending-applications", async (req, res) => {
   try {
     const applications = await OnboardingApplication.find({
-      applicationStatus: { $in: ["submitted", "under_review"] }
+      applicationStatus: { $in: ["submitted", "under_review"] },
     })
       .populate("employeeId", "userName email phoneNumber position department")
       .populate("reviewedBy", "userName")
@@ -62,12 +65,13 @@ router.get("/pending-applications", async (req, res) => {
 
     res.status(200).json({
       message: "Pending applications retrieved successfully",
-      applications
+      applications,
     });
-
   } catch (error) {
     console.error("Error getting pending applications:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
@@ -86,6 +90,8 @@ router.get("/application-detail/:applicationId", async (req, res) => {
 
     // Get all forms with their statuses
     const [
+      personalInformation,
+      education,
       employmentApp,
       i9Form,
       w4Form,
@@ -103,31 +109,95 @@ router.get("/application-detail/:applicationId", async (req, res) => {
       pcaJobDescription,
       cnaJobDescription,
       lpnJobDescription,
-      rnJobDescription
+      rnJobDescription,
     ] = await Promise.all([
-      EmploymentApplication.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      I9Form.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      W4Form.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      W9Form.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      EmergencyContact.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      DirectDeposit.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      MisconductStatement.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      CodeOfEthics.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      ServiceDeliveryPolicy.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      NonCompeteAgreement.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      BackgroundCheck.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      TBSymptomScreen.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      OrientationChecklist.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      JobDescriptionAcknowledgment.find({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      PCAJobDescription.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      CNAJobDescription.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      LPNJobDescription.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName"),
-      RNJobDescription.findOne({ applicationId }).populate("hrFeedback.reviewedBy", "userName")
+      PersonalInformation.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      Education.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      EmploymentApplication.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      I9Form.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      W4Form.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      W9Form.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      EmergencyContact.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      DirectDeposit.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      MisconductStatement.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      CodeOfEthics.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      ServiceDeliveryPolicy.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      NonCompeteAgreement.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      BackgroundCheck.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      TBSymptomScreen.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      OrientationChecklist.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      JobDescriptionAcknowledgment.find({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      PCAJobDescription.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      CNAJobDescription.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      LPNJobDescription.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
+      RNJobDescription.findOne({ applicationId }).populate(
+        "hrFeedback.reviewedBy",
+        "userName"
+      ),
     ]);
 
     const response = {
       application,
       forms: {
+        personalInformation,
+        education,
         employmentApplication: employmentApp,
         i9Form,
         w4Form,
@@ -142,28 +212,29 @@ router.get("/application-detail/:applicationId", async (req, res) => {
         tbSymptomScreen,
         orientationChecklist,
         jobDescriptions: {
-          PCA: jobDescriptions.find(jd => jd.jobDescriptionType === 'PCA'),
-          CNA: jobDescriptions.find(jd => jd.jobDescriptionType === 'CNA'),
-          LPN: jobDescriptions.find(jd => jd.jobDescriptionType === 'LPN'),
-          RN: jobDescriptions.find(jd => jd.jobDescriptionType === 'RN')
+          PCA: jobDescriptions.find((jd) => jd.jobDescriptionType === "PCA"),
+          CNA: jobDescriptions.find((jd) => jd.jobDescriptionType === "CNA"),
+          LPN: jobDescriptions.find((jd) => jd.jobDescriptionType === "LPN"),
+          RN: jobDescriptions.find((jd) => jd.jobDescriptionType === "RN"),
         },
         jobDescriptionForms: {
           pcaJobDescription,
           cnaJobDescription,
           lpnJobDescription,
-          rnJobDescription
-        }
-      }
+          rnJobDescription,
+        },
+      },
     };
 
     res.status(200).json({
       message: "Application details retrieved successfully",
-      data: response
+      data: response,
     });
-
   } catch (error) {
     console.error("Error getting application details:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
@@ -174,7 +245,9 @@ router.put("/review-form/:formType/:formId", async (req, res) => {
     const { status, comment, reviewedBy } = req.body;
 
     if (!["approved", "rejected"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status. Use 'approved' or 'rejected'" });
+      return res
+        .status(400)
+        .json({ message: "Invalid status. Use 'approved' or 'rejected'" });
     }
 
     const FormModel = getFormModel(formType);
@@ -189,7 +262,12 @@ router.put("/review-form/:formType/:formId", async (req, res) => {
 
     // Update form status and HR feedback - use correct field names based on form type
     form.status = status;
-    const jobDescriptionForms = ['personal-care', 'certified-nursing-assistant', 'licensed-practical-nurse', 'registered-nurse'];
+    const jobDescriptionForms = [
+      "personal-care",
+      "certified-nursing-assistant",
+      "licensed-practical-nurse",
+      "registered-nurse",
+    ];
 
     // Handle case where hrFeedback might be an array from previous version
     if (Array.isArray(form.hrFeedback)) {
@@ -201,14 +279,14 @@ router.put("/review-form/:formType/:formId", async (req, res) => {
       form.hrFeedback = {
         notes: comment || "",
         reviewedBy,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     } else {
       // Other forms use 'comment' and 'reviewedAt'
       form.hrFeedback = {
         comment: comment || "",
         reviewedBy,
-        reviewedAt: new Date()
+        reviewedAt: new Date(),
       };
     }
 
@@ -219,12 +297,13 @@ router.put("/review-form/:formType/:formId", async (req, res) => {
 
     res.status(200).json({
       message: `Form ${status} successfully`,
-      form
+      form,
     });
-
   } catch (error) {
     console.error("Error reviewing form:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
@@ -235,7 +314,9 @@ router.put("/review-application/:applicationId", async (req, res) => {
     const { status, reviewComments, reviewedBy } = req.body;
 
     if (!["approved", "rejected"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status. Use 'approved' or 'rejected'" });
+      return res
+        .status(400)
+        .json({ message: "Invalid status. Use 'approved' or 'rejected'" });
     }
 
     const application = await OnboardingApplication.findById(applicationId);
@@ -253,30 +334,34 @@ router.put("/review-application/:applicationId", async (req, res) => {
 
     res.status(200).json({
       message: `Application ${status} successfully`,
-      application
+      application,
     });
-
   } catch (error) {
     console.error("Error reviewing application:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
 // Submit HR notes/feedback for a specific form
 router.post("/submit-notes", async (req, res) => {
   try {
-    const { formType, formId, applicationId, comment, status, reviewedBy } = req.body;
+    const { formType, formId, applicationId, comment, status, reviewedBy } =
+      req.body;
 
     // Validation
     if (!formType || (!formId && !applicationId) || !comment || !reviewedBy) {
-      return res.status(400).json({ 
-        message: "Missing required fields: formType, formId/applicationId, comment, reviewedBy" 
+      return res.status(400).json({
+        message:
+          "Missing required fields: formType, formId/applicationId, comment, reviewedBy",
       });
     }
 
     if (status && !["approved", "rejected", "under_review"].includes(status)) {
-      return res.status(400).json({ 
-        message: "Invalid status. Use 'approved', 'rejected', or 'under_review'" 
+      return res.status(400).json({
+        message:
+          "Invalid status. Use 'approved', 'rejected', or 'under_review'",
       });
     }
 
@@ -298,7 +383,12 @@ router.post("/submit-notes", async (req, res) => {
     }
 
     // Update HR feedback - use correct field names based on form type
-    const jobDescriptionForms = ['personal-care', 'certified-nursing-assistant', 'licensed-practical-nurse', 'registered-nurse'];
+    const jobDescriptionForms = [
+      "personal-care",
+      "certified-nursing-assistant",
+      "licensed-practical-nurse",
+      "registered-nurse",
+    ];
 
     // Handle case where hrFeedback might be an array from previous version
     if (Array.isArray(form.hrFeedback)) {
@@ -310,14 +400,14 @@ router.post("/submit-notes", async (req, res) => {
       form.hrFeedback = {
         notes: comment,
         reviewedBy,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     } else {
       // Other forms use 'comment' and 'reviewedAt'
       form.hrFeedback = {
         comment: comment,
         reviewedBy,
-        reviewedAt: new Date()
+        reviewedAt: new Date(),
       };
     }
 
@@ -338,13 +428,14 @@ router.post("/submit-notes", async (req, res) => {
       form: {
         _id: form._id,
         status: form.status,
-        hrFeedback: form.hrFeedback
-      }
+        hrFeedback: form.hrFeedback,
+      },
     });
-
   } catch (error) {
     console.error("Error submitting HR notes:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
@@ -355,27 +446,29 @@ router.get("/review-statistics", async (req, res) => {
       {
         $group: {
           _id: "$applicationStatus",
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     const formStats = {};
     const formModels = [
-      { name: 'employment-application', model: EmploymentApplication },
-      { name: 'i9-form', model: I9Form },
-      { name: 'w4-form', model: W4Form },
-      { name: 'w9-form', model: W9Form },
-      { name: 'emergency-contact', model: EmergencyContact },
-      { name: 'direct-deposit', model: DirectDeposit },
-      { name: 'misconduct-statement', model: MisconductStatement },
-      { name: 'code-of-ethics', model: CodeOfEthics },
-      { name: 'service-delivery-policy', model: ServiceDeliveryPolicy },
-      { name: 'non-compete-agreement', model: NonCompeteAgreement },
-      { name: 'background-check', model: BackgroundCheck },
-      { name: 'tb-symptom-screen', model: TBSymptomScreen },
-      { name: 'orientation-checklist', model: OrientationChecklist },
-      { name: 'job-description', model: JobDescriptionAcknowledgment }
+      { name: "personal-information", model: PersonalInformation },
+      { name: "education", model: Education },
+      { name: "employment-application", model: EmploymentApplication },
+      { name: "i9-form", model: I9Form },
+      { name: "w4-form", model: W4Form },
+      { name: "w9-form", model: W9Form },
+      { name: "emergency-contact", model: EmergencyContact },
+      { name: "direct-deposit", model: DirectDeposit },
+      { name: "misconduct-statement", model: MisconductStatement },
+      { name: "code-of-ethics", model: CodeOfEthics },
+      { name: "service-delivery-policy", model: ServiceDeliveryPolicy },
+      { name: "non-compete-agreement", model: NonCompeteAgreement },
+      { name: "background-check", model: BackgroundCheck },
+      { name: "tb-symptom-screen", model: TBSymptomScreen },
+      { name: "orientation-checklist", model: OrientationChecklist },
+      { name: "job-description", model: JobDescriptionAcknowledgment },
     ];
 
     for (const form of formModels) {
@@ -383,9 +476,9 @@ router.get("/review-statistics", async (req, res) => {
         {
           $group: {
             _id: "$status",
-            count: { $sum: 1 }
-          }
-        }
+            count: { $sum: 1 },
+          },
+        },
       ]);
       formStats[form.name] = formStat;
     }
@@ -393,12 +486,13 @@ router.get("/review-statistics", async (req, res) => {
     res.status(200).json({
       message: "Review statistics retrieved successfully",
       applicationStats: stats,
-      formStats
+      formStats,
     });
-
   } catch (error) {
     console.error("Error getting review statistics:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 
@@ -412,6 +506,8 @@ async function checkAndUpdateApplicationStatus(applicationId) {
 
     // Get all forms for this application
     const [
+      personalInformation,
+      education,
       employmentApp,
       i9Form,
       w4Form,
@@ -425,8 +521,10 @@ async function checkAndUpdateApplicationStatus(applicationId) {
       backgroundCheck,
       tbSymptomScreen,
       orientationChecklist,
-      jobDescriptions
+      jobDescriptions,
     ] = await Promise.all([
+      PersonalInformation.findOne({ applicationId }),
+      Education.findOne({ applicationId }),
       EmploymentApplication.findOne({ applicationId }),
       I9Form.findOne({ applicationId }),
       W4Form.findOne({ applicationId }),
@@ -440,32 +538,46 @@ async function checkAndUpdateApplicationStatus(applicationId) {
       BackgroundCheck.findOne({ applicationId }),
       TBSymptomScreen.findOne({ applicationId }),
       OrientationChecklist.findOne({ applicationId }),
-      JobDescriptionAcknowledgment.find({ applicationId })
+      JobDescriptionAcknowledgment.find({ applicationId }),
     ]);
 
     // Check if all forms are either approved or rejected
     const allForms = [
-      employmentApp, i9Form, w4Form, w9Form, emergencyContact, directDeposit,
-      misconductStatement, codeOfEthics, serviceDeliveryPolicy, nonCompeteAgreement,
-      backgroundCheck, tbSymptomScreen, orientationChecklist, ...jobDescriptions
-    ].filter(form => form !== null);
+      personalInformation,
+      education,
+      employmentApp,
+      i9Form,
+      w4Form,
+      w9Form,
+      emergencyContact,
+      directDeposit,
+      misconductStatement,
+      codeOfEthics,
+      serviceDeliveryPolicy,
+      nonCompeteAgreement,
+      backgroundCheck,
+      tbSymptomScreen,
+      orientationChecklist,
+      ...jobDescriptions,
+    ].filter((form) => form !== null);
 
-    const allFormsReviewed = allForms.every(form => 
+    const allFormsReviewed = allForms.every((form) =>
       ["approved", "rejected"].includes(form.status)
     );
 
     if (allFormsReviewed) {
-      const anyFormRejected = allForms.some(form => form.status === "rejected");
-      
+      const anyFormRejected = allForms.some(
+        (form) => form.status === "rejected"
+      );
+
       if (anyFormRejected) {
         application.applicationStatus = "under_review";
       } else {
         application.applicationStatus = "under_review"; // Still needs final HR approval
       }
-      
+
       await application.save();
     }
-
   } catch (error) {
     console.error("Error checking application status:", error);
   }

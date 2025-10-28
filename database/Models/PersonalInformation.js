@@ -38,6 +38,7 @@ const PersonalInformationSchema = new mongoose.Schema(
     dateAvailable: { type: Date },
     socialSecurityNo: { type: String },
     desiredSalary: { type: String },
+    desiredSalaryType: { type: String, enum: ["hourly", "annual"] },
     positionAppliedFor: { type: String },
 
     // Government ID
@@ -45,6 +46,7 @@ const PersonalInformationSchema = new mongoose.Schema(
       type: String,
       enum: ["Driver's License", "State ID", "Passport"],
     },
+    governmentIdNumber: { type: String },
     governmentIdState: { type: String },
     governmentIdCountry: { type: String },
 

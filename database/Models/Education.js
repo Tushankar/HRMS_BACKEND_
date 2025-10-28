@@ -12,39 +12,69 @@ const EducationSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-    educations: [{
-      institutionName: {
-        type: String,
+    educations: [
+      {
+        type: {
+          type: String,
+          default: "",
+        },
+        institutionName: {
+          type: String,
+        },
+        address: {
+          type: String,
+        },
+        from: {
+          type: Date,
+        },
+        to: {
+          type: Date,
+        },
+        didGraduate: {
+          type: String,
+          enum: ["YES", "NO"],
+        },
+        degree: {
+          type: String,
+        },
+        diploma: {
+          type: String,
+        },
+        // Legacy fields for backward compatibility
+        location: {
+          type: String,
+        },
+        startDate: {
+          type: Date,
+        },
+        endDate: {
+          type: Date,
+        },
+        currentlyStudying: {
+          type: Boolean,
+          default: false,
+        },
+        grade: {
+          type: String,
+        },
+        certificate: {
+          type: String,
+        },
+        fieldOfStudy: {
+          type: String,
+        },
       },
-      degree: {
-        type: String,
-      },
-      fieldOfStudy: {
-        type: String,
-      },
-      startDate: {
-        type: Date,
-      },
-      endDate: {
-        type: Date,
-      },
-      currentlyStudying: {
-        type: Boolean,
-        default: false,
-      },
-      grade: {
-        type: String,
-      },
-      location: {
-        type: String,
-      },
-      certificate: {
-        type: String,
-      },
-    }],
+    ],
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
     hrFeedback: {
@@ -53,7 +83,7 @@ const EducationSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",
       },
-      reviewedAt: { type: Date }
+      reviewedAt: { type: Date },
     },
   },
   {
