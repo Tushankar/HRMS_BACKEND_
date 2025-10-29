@@ -226,14 +226,36 @@ router.get("/get-misconduct-statement/:applicationId", async (req, res) => {
         .json({ message: "Misconduct statement not found" });
     }
 
+    // Map database fields to frontend field names for backward compatibility
+    const mappedData = {
+      ...misconductStatement.toObject(),
+      // Map form data back to frontend fields
+      staffTitle: misconductStatement.formData?.staffTitle || "",
+      companyName: misconductStatement.formData?.companyName || "",
+      employeeNameParagraph:
+        misconductStatement.formData?.employeeNameParagraph || "",
+      employeeName: misconductStatement.formData?.employeeName || "",
+      employmentPosition:
+        misconductStatement.formData?.employmentPosition || "",
+      signatureLine: misconductStatement.formData?.signatureLine || "",
+      dateField1: misconductStatement.formData?.dateField1 || "",
+      exhibitName: misconductStatement.formData?.exhibitName || "",
+      printName: misconductStatement.formData?.printName || "",
+      signatureField: misconductStatement.formData?.signatureField || "",
+      dateField2: misconductStatement.formData?.dateField2 || "",
+      notaryDay: misconductStatement.formData?.notaryDay || "",
+      notaryMonth: misconductStatement.formData?.notaryMonth || "",
+      notaryYear: misconductStatement.formData?.notaryYear || "",
+      // Legacy fields for backward compatibility
+      signingMethod: misconductStatement.signingMethod || "digital",
+      employeeSignature: misconductStatement.employeeSignature,
+      signatureDate: misconductStatement.signatureDate,
+      signedPdfPath: misconductStatement.employeeUploadedFile?.path,
+    };
+
     res.status(200).json({
       message: "Misconduct statement retrieved successfully",
-      formData: {
-        signingMethod: misconductStatement.signingMethod || "pdf",
-        employeeSignature: misconductStatement.employeeSignature,
-        signatureDate: misconductStatement.signatureDate,
-        signedPdfPath: misconductStatement.employeeUploadedFile?.path,
-      },
+      formData: mappedData,
     });
   } catch (error) {
     console.error("Error fetching misconduct statement:", error);
@@ -267,7 +289,15 @@ router.post("/save-misconduct-statement", async (req, res) => {
         .json({ message: "Application ID and Employee ID are required" });
     }
 
-    // Find or create misconduct statement
+    // Check if application exists
+    const application = await OnboardingApplication.findById(applicationId);
+    if (!application) {
+      return res
+        .status(404)
+        .json({ message: "Onboarding application not found" });
+    }
+
+    // Find existing form or create new one
     console.log(
       "🔍 [Misconduct Router] Finding existing misconduct statement..."
     );
@@ -285,38 +315,32 @@ router.post("/save-misconduct-statement", async (req, res) => {
       console.log("📝 [Misconduct Router] Found existing misconduct statement");
     }
 
-    // Update based on signing method
-    console.log(
-      "🔍 [Misconduct Router] Checking signing method:",
-      formData?.signingMethod
-    );
-    if (formData.signingMethod === "digital") {
-      console.log("📝 [Misconduct Router] Setting digital signature fields");
-      misconductStatement.employeeSignature = formData.employeeSignature;
-      misconductStatement.signatureDate = formData.signatureDate;
-      misconductStatement.signingMethod = "digital";
-      console.log("✅ [Misconduct Router] Digital signature fields set:");
-      console.log(
-        "  - employeeSignature length:",
-        formData.employeeSignature?.length || 0
-      );
-      console.log("  - signatureDate:", formData.signatureDate);
-      console.log("  - signingMethod:", misconductStatement.signingMethod);
-    } else if (formData.signingMethod === "pdf") {
-      console.log("📝 [Misconduct Router] Setting PDF signature fields");
-      if (formData.signedPdfPath) {
-        misconductStatement.employeeUploadedFile = {
-          filename: path.basename(formData.signedPdfPath),
-          originalName: path.basename(formData.signedPdfPath),
-          path: formData.signedPdfPath,
-          mimeType: "application/pdf",
-          uploadedAt: new Date(),
-        };
-        misconductStatement.signingMethod = "pdf";
-      }
-    }
+    // Update form data
+    console.log("� [Misconduct Router] Updating form data");
+    misconductStatement.formData = {
+      staffTitle: formData.staffTitle || "",
+      companyName: formData.companyName || "",
+      employeeNameParagraph: formData.employeeNameParagraph || "",
+      employeeName: formData.employeeName || "",
+      employmentPosition: formData.employmentPosition || "",
+      signatureLine: formData.signatureLine || "",
+      dateField1: formData.dateField1 || "",
+      exhibitName: formData.exhibitName || "",
+      printName: formData.printName || "",
+      signatureField: formData.signatureField || "",
+      dateField2: formData.dateField2 || "",
+      notaryDay: formData.notaryDay || "",
+      notaryMonth: formData.notaryMonth || "",
+      notaryYear: formData.notaryYear || "",
+    };
 
-    misconductStatement.status = status || "completed";
+    // Update signing method and legacy fields for backward compatibility
+    misconductStatement.signingMethod = formData.signingMethod || "digital";
+    // Set legacy signature fields from formData for backward compatibility
+    misconductStatement.employeeSignature = formData.signatureField || ""; // Use the signature from formData
+    misconductStatement.signatureDate =
+      formData.dateField2 || new Date().toISOString().split("T")[0];
+    misconductStatement.status = status || "submitted";
     misconductStatement.submittedAt = new Date();
 
     console.log("💾 [Misconduct Router] Saving misconduct statement...");
@@ -325,10 +349,9 @@ router.post("/save-misconduct-statement", async (req, res) => {
       "✅ [Misconduct Router] Misconduct statement saved successfully"
     );
 
-    // Update onboarding application progress
-    console.log("🔄 [Misconduct Router] Updating application progress...");
-    const application = await OnboardingApplication.findById(applicationId);
-    if (application) {
+    // Update application progress if status is submitted
+    if (status === "submitted") {
+      console.log("🔄 [Misconduct Router] Updating application progress...");
       if (!application.completedForms) {
         application.completedForms = [];
       }
@@ -347,7 +370,7 @@ router.post("/save-misconduct-statement", async (req, res) => {
     res.status(200).json({
       message: "Misconduct statement saved successfully",
       misconductStatement,
-      completionPercentage: application?.completionPercentage || 0,
+      completionPercentage: application.completionPercentage || 0,
     });
   } catch (error) {
     console.error(

@@ -45,6 +45,7 @@ const NonCompeteAgreementSchema = new mongoose.Schema(
     // Signatures
     employeeSignature: { type: String },
     employeeSignatureDate: { type: Date },
+    employeeSignatureName: { type: String }, // Employee name as written in signature section
     signedPdfPath: { type: String }, // Path to uploaded signed PDF
     companyRepresentative: {
       name: { type: String },

@@ -49,13 +49,36 @@ const W4FormSchema = new mongoose.Schema(
       deductions: { type: String }, // 4(b)
       extraWithholding: { type: String }, // 4(c)
     },
-    
+
     // Exemption from withholding
     exempt: { type: Boolean, default: false },
 
+    // Multiple Jobs Worksheet
+    multipleJobsWorksheet: {
+      twoJobs: {
+        amount: { type: String },
+      },
+      threeJobs: {
+        firstTwoJobs: { type: String },
+        thirdJob: { type: String },
+        total: { type: String },
+      },
+      payPeriods: { type: String },
+      extraWithholding: { type: String },
+    },
+
+    // Deductions Worksheet
+    deductionsWorksheet: {
+      itemizedDeductions: { type: String },
+      standardDeduction: { type: String },
+      difference: { type: String },
+      otherAdjustments: { type: String },
+      total: { type: String },
+    },
+
     // Step 5: Sign Here
     employeeSignature: { type: String },
-    signatureDate: { type: String },
+    signatureDate: { type: Date },
 
     // Employer Use Only Section
     employerInfo: {
@@ -64,11 +87,18 @@ const W4FormSchema = new mongoose.Schema(
       firstDateOfEmployment: { type: String },
       employerEIN: { type: String },
     },
-    
+
     // Internal status tracking
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
 

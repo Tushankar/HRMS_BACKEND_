@@ -902,33 +902,22 @@ router.post("/save-non-compete-agreement", async (req, res) => {
     const mappedData = {
       // Effective date mapping
       effectiveDate: {
-        day: formData.agreementDate
-          ? new Date(formData.agreementDate).getDate()
-          : null,
-        month:
-          formData.agreementMonth ||
-          (formData.agreementDate
-            ? new Date(formData.agreementDate).toLocaleDateString("en-US", {
-                month: "long",
-              })
-            : ""),
-        year: formData.agreementYear
-          ? parseInt(formData.agreementYear)
-          : formData.agreementDate
-          ? new Date(formData.agreementDate).getFullYear()
-          : null,
+        day: formData.day ? parseInt(formData.day) || null : null,
+        month: formData.month || "",
+        year: formData.year ? parseInt(formData.year) || null : null,
       },
       // Employee info mapping
       employeeInfo: {
         employeeName: formData.employeeName || "",
         address: formData.employeeAddress || "",
-        position: formData.jobTitle || "",
+        position: formData.employeePosition || "",
       },
       // Signature mapping - support both digital and PDF signatures
       employeeSignature: formData.employeeSignature || "",
       employeeSignatureDate: formData.employeeDate
         ? new Date(formData.employeeDate)
         : null,
+      employeeSignatureName: formData.employeeSignatureName || "", // Employee name in signature section
       signedPdfPath: formData.signedPdfPath || null,
       status,
     };
@@ -1150,38 +1139,17 @@ router.get("/get-non-compete-agreement/:applicationId", async (req, res) => {
     const mappedData = {
       ...nonCompeteAgreement.toObject(),
       // Map effective date back to frontend fields
-      agreementDate:
-        nonCompeteAgreement.effectiveDate?.day &&
-        nonCompeteAgreement.effectiveDate?.month &&
-        nonCompeteAgreement.effectiveDate?.year
-          ? new Date(
-              nonCompeteAgreement.effectiveDate.year,
-              [
-                "January",
-                "February",
-                "March",
-                "April",
-                "May",
-                "June",
-                "July",
-                "August",
-                "September",
-                "October",
-                "November",
-                "December",
-              ].indexOf(nonCompeteAgreement.effectiveDate.month),
-              nonCompeteAgreement.effectiveDate.day
-            )
-          : null,
-      agreementMonth: nonCompeteAgreement.effectiveDate?.month || "",
-      agreementYear: nonCompeteAgreement.effectiveDate?.year?.toString() || "",
+      day: nonCompeteAgreement.effectiveDate?.day?.toString() || "",
+      month: nonCompeteAgreement.effectiveDate?.month || "",
+      year: nonCompeteAgreement.effectiveDate?.year?.toString() || "",
       // Map employee info
       employeeName: nonCompeteAgreement.employeeInfo?.employeeName || "",
       employeeAddress: nonCompeteAgreement.employeeInfo?.address || "",
-      jobTitle: nonCompeteAgreement.employeeInfo?.position || "",
+      employeePosition: nonCompeteAgreement.employeeInfo?.position || "",
       // Map signatures
       employeeSignature: nonCompeteAgreement.employeeSignature || "",
       employeeDate: nonCompeteAgreement.employeeSignatureDate || null,
+      employeeSignatureName: nonCompeteAgreement.employeeSignatureName || "", // Employee name in signature section
       signedPdfPath: nonCompeteAgreement.signedPdfPath || null,
       // Map company representative
       companyRepName: nonCompeteAgreement.companyRepresentative?.name || "",
