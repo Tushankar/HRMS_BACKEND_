@@ -94,15 +94,53 @@ const I9FormSchema = new mongoose.Schema(
       employerBusinessAddress: { type: String },
     },
 
-    // Section 3: Reverification and Rehires (Supplement B)
-    section3: {
-      dateOfRehire: { type: Date },
-      newName: { type: String },
-      documentTitle: { type: String },
-      documentNumber: { type: String },
-      expirationDate: { type: Date },
-      employerSignature: { type: String },
-      signatureDate: { type: Date },
+    // Supplement A: Preparer and/or Translator Certification
+    supplementA: {
+      employeeName: {
+        lastName: { type: String },
+        firstName: { type: String },
+        middleInitial: { type: String },
+      },
+      preparers: [
+        {
+          signature: { type: String },
+          date: { type: String },
+          lastName: { type: String },
+          firstName: { type: String },
+          middleInitial: { type: String },
+          address: { type: String },
+          city: { type: String },
+          state: { type: String },
+          zipCode: { type: String },
+        },
+      ],
+    },
+
+    // Supplement B: Reverification and Rehire
+    supplementB: {
+      employeeName: {
+        lastName: { type: String },
+        firstName: { type: String },
+        middleInitial: { type: String },
+      },
+      reverifications: [
+        {
+          dateOfRehire: { type: String },
+          newName: {
+            lastName: { type: String },
+            firstName: { type: String },
+            middleInitial: { type: String },
+          },
+          documentTitle: { type: String },
+          documentNumber: { type: String },
+          expirationDate: { type: String },
+          employerName: { type: String },
+          employerSignature: { type: String },
+          employerDate: { type: String },
+          additionalInfo: { type: String },
+          altProcedureUsed: { type: Boolean, default: false },
+        },
+      ],
     },
 
     status: {

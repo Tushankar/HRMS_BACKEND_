@@ -575,6 +575,14 @@ router.post("/save-service-delivery-policy", async (req, res) => {
       policy3Acknowledged: formData.policy3Acknowledged || false,
       policy4Acknowledged: formData.policy4Acknowledged || false,
       policy5Acknowledged: formData.policy5Acknowledged || false,
+      // Policy initials
+      policyInitials: formData.policyInitials || {
+        policy1: "",
+        policy2: "",
+        policy3: "",
+        policy4: "",
+        policy5: "",
+      },
       // Employee signature fields (frontend uses employeeSignature, employeeDate)
       employeeSignature: formData.employeeSignature || "",
       employeeSignatureDate: formData.employeeDate
@@ -655,6 +663,13 @@ router.get("/get-service-delivery-policy/:applicationId", async (req, res) => {
       employeeDate: serviceDeliveryPolicy.employeeSignatureDate || null,
       agencySignature: serviceDeliveryPolicy.supervisorSignature || "",
       agencyDate: serviceDeliveryPolicy.supervisorSignatureDate || null,
+      policyInitials: serviceDeliveryPolicy.policyInitials || {
+        policy1: "",
+        policy2: "",
+        policy3: "",
+        policy4: "",
+        policy5: "",
+      },
     };
 
     res.status(200).json({

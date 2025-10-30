@@ -15,11 +15,20 @@ const ServiceDeliveryPolicySchema = new mongoose.Schema(
     },
 
     // Policy Acknowledgments (5 fixed statements)
-    policy1Acknowledged: { type: Boolean, default: false }, // No “EVV Login, No pay” + payroll submission
+    policy1Acknowledged: { type: Boolean, default: false }, // No "EVV Login, No pay" + payroll submission
     policy2Acknowledged: { type: Boolean, default: false }, // No Call, No Show = termination
     policy3Acknowledged: { type: Boolean, default: false }, // Must inform supervisor for off-duty needs
     policy4Acknowledged: { type: Boolean, default: false }, // No borrowing money / personal challenges with clients
     policy5Acknowledged: { type: Boolean, default: false }, // Must seek approval before driving client
+
+    // Policy Initials (employee initials for each policy statement)
+    policyInitials: {
+      policy1: { type: String, default: "" },
+      policy2: { type: String, default: "" },
+      policy3: { type: String, default: "" },
+      policy4: { type: String, default: "" },
+      policy5: { type: String, default: "" },
+    },
 
     // Employee Signature
     employeeSignature: { type: String },
@@ -38,7 +47,14 @@ const ServiceDeliveryPolicySchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
 

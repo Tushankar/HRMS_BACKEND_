@@ -69,13 +69,11 @@ router.post("/save-i9-form", async (req, res) => {
       i9Form.hrFeedback = hrFeedback;
       i9Form.status = status;
       await i9Form.save();
-      return res
-        .status(200)
-        .json({
-          success: true,
-          i9Form,
-          message: "HR feedback saved successfully",
-        });
+      return res.status(200).json({
+        success: true,
+        i9Form,
+        message: "HR feedback saved successfully",
+      });
     }
 
     if (i9Form) {
@@ -105,30 +103,29 @@ router.post("/save-i9-form", async (req, res) => {
             formData.otherLastNames || i9Form.section1?.otherLastNames,
           address: formData.address || i9Form.section1?.address,
           aptNumber: formData.aptNumber || i9Form.section1?.aptNumber,
-          cityOrTown: formData.cityOrTown || i9Form.section1?.cityOrTown,
+          cityOrTown: formData.city || i9Form.section1?.cityOrTown,
           state: formData.state || i9Form.section1?.state,
           zipCode: formData.zipCode || i9Form.section1?.zipCode,
           dateOfBirth: formData.dateOfBirth || i9Form.section1?.dateOfBirth,
           socialSecurityNumber:
             formData.socialSecurityNumber ||
             i9Form.section1?.socialSecurityNumber,
-          employeeEmail:
-            formData.employeeEmail || i9Form.section1?.employeeEmail,
-          employeePhone:
-            formData.employeePhone || i9Form.section1?.employeePhone,
+          employeeEmail: formData.email || i9Form.section1?.employeeEmail,
+          employeePhone: formData.telephone || i9Form.section1?.employeePhone,
           citizenshipStatus:
             mapCitizenshipStatus(formData.citizenshipStatus) ||
             i9Form.section1?.citizenshipStatus,
-          uscisNumber: formData.uscisNumber || i9Form.section1?.uscisNumber,
-          formI94Number:
-            formData.formI94Number || i9Form.section1?.formI94Number,
+          uscisNumber:
+            formData.aNumber ||
+            formData.uscisANumber ||
+            i9Form.section1?.uscisNumber,
+          formI94Number: formData.i94Number || i9Form.section1?.formI94Number,
           foreignPassportNumber:
-            formData.foreignPassportNumber ||
-            i9Form.section1?.foreignPassportNumber,
+            formData.passportNumber || i9Form.section1?.foreignPassportNumber,
           countryOfIssuance:
             formData.countryOfIssuance || i9Form.section1?.countryOfIssuance,
           expirationDate:
-            formData.expirationDate || i9Form.section1?.expirationDate,
+            formData.workAuthExpDate || i9Form.section1?.expirationDate,
           employeeSignature:
             formData.employeeSignature || i9Form.section1?.employeeSignature,
           employeeSignatureDate:
@@ -157,18 +154,298 @@ router.post("/save-i9-form", async (req, res) => {
           },
         };
 
+        // Handle Supplement A: Preparer and/or Translator Certification
+        i9Form.supplementA = {
+          employeeName: {
+            lastName:
+              formData.suppALastName ||
+              i9Form.supplementA?.employeeName?.lastName,
+            firstName:
+              formData.suppAFirstName ||
+              i9Form.supplementA?.employeeName?.firstName,
+            middleInitial:
+              formData.suppAMiddleInitial ||
+              i9Form.supplementA?.employeeName?.middleInitial,
+          },
+          preparers: [
+            // Preparer 1
+            {
+              signature:
+                formData.prep1Signature ||
+                i9Form.supplementA?.preparers?.[0]?.signature,
+              date:
+                formData.prep1Date || i9Form.supplementA?.preparers?.[0]?.date,
+              lastName:
+                formData.prep1LastName ||
+                i9Form.supplementA?.preparers?.[0]?.lastName,
+              firstName:
+                formData.prep1FirstName ||
+                i9Form.supplementA?.preparers?.[0]?.firstName,
+              middleInitial:
+                formData.prep1MiddleInitial ||
+                i9Form.supplementA?.preparers?.[0]?.middleInitial,
+              address:
+                formData.prep1Address ||
+                i9Form.supplementA?.preparers?.[0]?.address,
+              city:
+                formData.prep1City || i9Form.supplementA?.preparers?.[0]?.city,
+              state:
+                formData.prep1State ||
+                i9Form.supplementA?.preparers?.[0]?.state,
+              zipCode:
+                formData.prep1ZipCode ||
+                i9Form.supplementA?.preparers?.[0]?.zipCode,
+            },
+            // Preparer 2
+            {
+              signature:
+                formData.prep2Signature ||
+                i9Form.supplementA?.preparers?.[1]?.signature,
+              date:
+                formData.prep2Date || i9Form.supplementA?.preparers?.[1]?.date,
+              lastName:
+                formData.prep2LastName ||
+                i9Form.supplementA?.preparers?.[1]?.lastName,
+              firstName:
+                formData.prep2FirstName ||
+                i9Form.supplementA?.preparers?.[1]?.firstName,
+              middleInitial:
+                formData.prep2MiddleInitial ||
+                i9Form.supplementA?.preparers?.[1]?.middleInitial,
+              address:
+                formData.prep2Address ||
+                i9Form.supplementA?.preparers?.[1]?.address,
+              city:
+                formData.prep2City || i9Form.supplementA?.preparers?.[1]?.city,
+              state:
+                formData.prep2State ||
+                i9Form.supplementA?.preparers?.[1]?.state,
+              zipCode:
+                formData.prep2ZipCode ||
+                i9Form.supplementA?.preparers?.[1]?.zipCode,
+            },
+            // Preparer 3
+            {
+              signature:
+                formData.prep3Signature ||
+                i9Form.supplementA?.preparers?.[2]?.signature,
+              date:
+                formData.prep3Date || i9Form.supplementA?.preparers?.[2]?.date,
+              lastName:
+                formData.prep3LastName ||
+                i9Form.supplementA?.preparers?.[2]?.lastName,
+              firstName:
+                formData.prep3FirstName ||
+                i9Form.supplementA?.preparers?.[2]?.firstName,
+              middleInitial:
+                formData.prep3MiddleInitial ||
+                i9Form.supplementA?.preparers?.[2]?.middleInitial,
+              address:
+                formData.prep3Address ||
+                i9Form.supplementA?.preparers?.[2]?.address,
+              city:
+                formData.prep3City || i9Form.supplementA?.preparers?.[2]?.city,
+              state:
+                formData.prep3State ||
+                i9Form.supplementA?.preparers?.[2]?.state,
+              zipCode:
+                formData.prep3ZipCode ||
+                i9Form.supplementA?.preparers?.[2]?.zipCode,
+            },
+            // Preparer 4
+            {
+              signature:
+                formData.prep4Signature ||
+                i9Form.supplementA?.preparers?.[3]?.signature,
+              date:
+                formData.prep4Date || i9Form.supplementA?.preparers?.[3]?.date,
+              lastName:
+                formData.prep4LastName ||
+                i9Form.supplementA?.preparers?.[3]?.lastName,
+              firstName:
+                formData.prep4FirstName ||
+                i9Form.supplementA?.preparers?.[3]?.firstName,
+              middleInitial:
+                formData.prep4MiddleInitial ||
+                i9Form.supplementA?.preparers?.[3]?.middleInitial,
+              address:
+                formData.prep4Address ||
+                i9Form.supplementA?.preparers?.[3]?.address,
+              city:
+                formData.prep4City || i9Form.supplementA?.preparers?.[3]?.city,
+              state:
+                formData.prep4State ||
+                i9Form.supplementA?.preparers?.[3]?.state,
+              zipCode:
+                formData.prep4ZipCode ||
+                i9Form.supplementA?.preparers?.[3]?.zipCode,
+            },
+          ].filter(
+            (preparer) =>
+              preparer.signature || preparer.lastName || preparer.firstName
+          ), // Only include preparers with data
+        };
+
+        // Handle Supplement B: Reverification and Rehire
+        i9Form.supplementB = {
+          employeeName: {
+            lastName:
+              formData.suppBLastName ||
+              i9Form.supplementB?.employeeName?.lastName,
+            firstName:
+              formData.suppBFirstName ||
+              i9Form.supplementB?.employeeName?.firstName,
+            middleInitial:
+              formData.suppBMiddleInitial ||
+              i9Form.supplementB?.employeeName?.middleInitial,
+          },
+          reverifications: [
+            // Reverification 1
+            {
+              dateOfRehire:
+                formData.rev1Date ||
+                i9Form.supplementB?.reverifications?.[0]?.dateOfRehire,
+              newName: {
+                lastName:
+                  formData.rev1LastName ||
+                  i9Form.supplementB?.reverifications?.[0]?.newName?.lastName,
+                firstName:
+                  formData.rev1FirstName ||
+                  i9Form.supplementB?.reverifications?.[0]?.newName?.firstName,
+                middleInitial:
+                  formData.rev1MiddleInitial ||
+                  i9Form.supplementB?.reverifications?.[0]?.newName
+                    ?.middleInitial,
+              },
+              documentTitle:
+                formData.rev1DocTitle ||
+                i9Form.supplementB?.reverifications?.[0]?.documentTitle,
+              documentNumber:
+                formData.rev1DocNumber ||
+                i9Form.supplementB?.reverifications?.[0]?.documentNumber,
+              expirationDate:
+                formData.rev1ExpDate ||
+                i9Form.supplementB?.reverifications?.[0]?.expirationDate,
+              employerName:
+                formData.rev1EmployerName ||
+                i9Form.supplementB?.reverifications?.[0]?.employerName,
+              employerSignature:
+                formData.rev1EmployerSignature ||
+                i9Form.supplementB?.reverifications?.[0]?.employerSignature,
+              employerDate:
+                formData.rev1EmployerDate ||
+                i9Form.supplementB?.reverifications?.[0]?.employerDate,
+              additionalInfo:
+                formData.rev1AdditionalInfo ||
+                i9Form.supplementB?.reverifications?.[0]?.additionalInfo,
+              altProcedureUsed:
+                formData.rev1AltProcedureUsed ||
+                i9Form.supplementB?.reverifications?.[0]?.altProcedureUsed ||
+                false,
+            },
+            // Reverification 2
+            {
+              dateOfRehire:
+                formData.rev2Date ||
+                i9Form.supplementB?.reverifications?.[1]?.dateOfRehire,
+              newName: {
+                lastName:
+                  formData.rev2LastName ||
+                  i9Form.supplementB?.reverifications?.[1]?.newName?.lastName,
+                firstName:
+                  formData.rev2FirstName ||
+                  i9Form.supplementB?.reverifications?.[1]?.newName?.firstName,
+                middleInitial:
+                  formData.rev2MiddleInitial ||
+                  i9Form.supplementB?.reverifications?.[1]?.newName
+                    ?.middleInitial,
+              },
+              documentTitle:
+                formData.rev2DocTitle ||
+                i9Form.supplementB?.reverifications?.[1]?.documentTitle,
+              documentNumber:
+                formData.rev2DocNumber ||
+                i9Form.supplementB?.reverifications?.[1]?.documentNumber,
+              expirationDate:
+                formData.rev2ExpDate ||
+                i9Form.supplementB?.reverifications?.[1]?.expirationDate,
+              employerName:
+                formData.rev2EmployerName ||
+                i9Form.supplementB?.reverifications?.[1]?.employerName,
+              employerSignature:
+                formData.rev2EmployerSignature ||
+                i9Form.supplementB?.reverifications?.[1]?.employerSignature,
+              employerDate:
+                formData.rev2EmployerDate ||
+                i9Form.supplementB?.reverifications?.[1]?.employerDate,
+              additionalInfo:
+                formData.rev2AdditionalInfo ||
+                i9Form.supplementB?.reverifications?.[1]?.additionalInfo,
+              altProcedureUsed:
+                formData.rev2AltProcedureUsed ||
+                i9Form.supplementB?.reverifications?.[1]?.altProcedureUsed ||
+                false,
+            },
+            // Reverification 3
+            {
+              dateOfRehire:
+                formData.rev3Date ||
+                i9Form.supplementB?.reverifications?.[2]?.dateOfRehire,
+              newName: {
+                lastName:
+                  formData.rev3LastName ||
+                  i9Form.supplementB?.reverifications?.[2]?.newName?.lastName,
+                firstName:
+                  formData.rev3FirstName ||
+                  i9Form.supplementB?.reverifications?.[2]?.newName?.firstName,
+                middleInitial:
+                  formData.rev3MiddleInitial ||
+                  i9Form.supplementB?.reverifications?.[2]?.newName
+                    ?.middleInitial,
+              },
+              documentTitle:
+                formData.rev3DocTitle ||
+                i9Form.supplementB?.reverifications?.[2]?.documentTitle,
+              documentNumber:
+                formData.rev3DocNumber ||
+                i9Form.supplementB?.reverifications?.[2]?.documentNumber,
+              expirationDate:
+                formData.rev3ExpDate ||
+                i9Form.supplementB?.reverifications?.[2]?.expirationDate,
+              employerName:
+                formData.rev3EmployerName ||
+                i9Form.supplementB?.reverifications?.[2]?.employerName,
+              employerSignature:
+                formData.rev3EmployerSignature ||
+                i9Form.supplementB?.reverifications?.[2]?.employerSignature,
+              employerDate:
+                formData.rev3EmployerDate ||
+                i9Form.supplementB?.reverifications?.[2]?.employerDate,
+              additionalInfo:
+                formData.rev3AdditionalInfo ||
+                i9Form.supplementB?.reverifications?.[2]?.additionalInfo,
+              altProcedureUsed:
+                formData.rev3AltProcedureUsed ||
+                i9Form.supplementB?.reverifications?.[2]?.altProcedureUsed ||
+                false,
+            },
+          ].filter(
+            (rev) =>
+              rev.dateOfRehire || rev.documentTitle || rev.employerSignature
+          ), // Only include reverifications with data
+        };
+
         i9Form.section2 = {
           employmentStartDate:
-            formData.employmentStartDate ||
-            i9Form.section2?.employmentStartDate,
+            formData.firstDayEmployment || i9Form.section2?.employmentStartDate,
           documentTitle1:
-            formData.documentTitle1 || i9Form.section2?.documentTitle1,
+            formData.listADocTitle1 || i9Form.section2?.documentTitle1,
           issuingAuthority1:
-            formData.issuingAuthority1 || i9Form.section2?.issuingAuthority1,
+            formData.listAIssuingAuth1 || i9Form.section2?.issuingAuthority1,
           documentNumber1:
-            formData.documentNumber1 || i9Form.section2?.documentNumber1,
+            formData.listADocNumber1 || i9Form.section2?.documentNumber1,
           expirationDate1:
-            formData.expirationDate1 || i9Form.section2?.expirationDate1,
+            formData.listAExpDate1 || i9Form.section2?.expirationDate1,
           documentTitle2:
             formData.documentTitle2 || i9Form.section2?.documentTitle2,
           issuingAuthority2:
@@ -178,13 +455,13 @@ router.post("/save-i9-form", async (req, res) => {
           expirationDate2:
             formData.expirationDate2 || i9Form.section2?.expirationDate2,
           documentTitle3:
-            formData.documentTitle3 || i9Form.section2?.documentTitle3,
+            formData.listADocTitle3 || i9Form.section2?.documentTitle3,
           issuingAuthority3:
-            formData.issuingAuthority3 || i9Form.section2?.issuingAuthority3,
+            formData.listAIssuingAuth3 || i9Form.section2?.issuingAuthority3,
           documentNumber3:
-            formData.documentNumber3 || i9Form.section2?.documentNumber3,
+            formData.listADocNumber3 || i9Form.section2?.documentNumber3,
           expirationDate3:
-            formData.expirationDate3 || i9Form.section2?.expirationDate3,
+            formData.listAExpDate3 || i9Form.section2?.expirationDate3,
           additionalInfo:
             formData.additionalInfo || i9Form.section2?.additionalInfo,
           employerSignature:
@@ -206,18 +483,18 @@ router.post("/save-i9-form", async (req, res) => {
 
       // Handle work authorization data
       if (formData.workAuthorization) {
-        i9Form.workAuthorization = {
-          isNonCitizen:
-            formData.workAuthorization.isNonCitizen !== undefined
-              ? formData.workAuthorization.isNonCitizen
-              : i9Form.workAuthorization?.isNonCitizen,
-          hasWorkAuthorization:
-            formData.workAuthorization.hasWorkAuthorization !== undefined
-              ? formData.workAuthorization.hasWorkAuthorization
-              : i9Form.workAuthorization?.hasWorkAuthorization,
-          workAuthorizationDocument:
-            i9Form.workAuthorization?.workAuthorizationDocument || null,
-        };
+        if (formData.workAuthorization.isNonCitizen !== undefined) {
+          i9Form.set(
+            "workAuthorization.isNonCitizen",
+            formData.workAuthorization.isNonCitizen
+          );
+        }
+        if (formData.workAuthorization.hasWorkAuthorization !== undefined) {
+          i9Form.set(
+            "workAuthorization.hasWorkAuthorization",
+            formData.workAuthorization.hasWorkAuthorization
+          );
+        }
       }
 
       i9Form.status = status;
@@ -253,19 +530,19 @@ router.post("/save-i9-form", async (req, res) => {
           otherLastNames: formData.otherLastNames,
           address: formData.address,
           aptNumber: formData.aptNumber,
-          cityOrTown: formData.cityOrTown,
+          cityOrTown: formData.city,
           state: formData.state,
           zipCode: formData.zipCode,
           dateOfBirth: formData.dateOfBirth,
           socialSecurityNumber: formData.socialSecurityNumber,
-          employeeEmail: formData.employeeEmail,
-          employeePhone: formData.employeePhone,
+          employeeEmail: formData.email,
+          employeePhone: formData.telephone,
           citizenshipStatus: mapCitizenshipStatus(formData.citizenshipStatus),
-          uscisNumber: formData.uscisNumber,
-          formI94Number: formData.formI94Number,
-          foreignPassportNumber: formData.foreignPassportNumber,
+          uscisNumber: formData.aNumber || formData.uscisANumber,
+          formI94Number: formData.i94Number,
+          foreignPassportNumber: formData.passportNumber,
           countryOfIssuance: formData.countryOfIssuance,
-          expirationDate: formData.expirationDate,
+          expirationDate: formData.workAuthExpDate,
           employeeSignature: formData.employeeSignature,
           employeeSignatureDate: formData.employeeSignatureDate,
           preparerTranslator: {
@@ -278,20 +555,147 @@ router.post("/save-i9-form", async (req, res) => {
           },
         };
 
+        // Handle Supplement A: Preparer and/or Translator Certification
+        newFormData.supplementA = {
+          employeeName: {
+            lastName: formData.suppALastName,
+            firstName: formData.suppAFirstName,
+            middleInitial: formData.suppAMiddleInitial,
+          },
+          preparers: [
+            // Preparer 1
+            {
+              signature: formData.prep1Signature,
+              date: formData.prep1Date,
+              lastName: formData.prep1LastName,
+              firstName: formData.prep1FirstName,
+              middleInitial: formData.prep1MiddleInitial,
+              address: formData.prep1Address,
+              city: formData.prep1City,
+              state: formData.prep1State,
+              zipCode: formData.prep1ZipCode,
+            },
+            // Preparer 2
+            {
+              signature: formData.prep2Signature,
+              date: formData.prep2Date,
+              lastName: formData.prep2LastName,
+              firstName: formData.prep2FirstName,
+              middleInitial: formData.prep2MiddleInitial,
+              address: formData.prep2Address,
+              city: formData.prep2City,
+              state: formData.prep2State,
+              zipCode: formData.prep2ZipCode,
+            },
+            // Preparer 3
+            {
+              signature: formData.prep3Signature,
+              date: formData.prep3Date,
+              lastName: formData.prep3LastName,
+              firstName: formData.prep3FirstName,
+              middleInitial: formData.prep3MiddleInitial,
+              address: formData.prep3Address,
+              city: formData.prep3City,
+              state: formData.prep3State,
+              zipCode: formData.prep3ZipCode,
+            },
+            // Preparer 4
+            {
+              signature: formData.prep4Signature,
+              date: formData.prep4Date,
+              lastName: formData.prep4LastName,
+              firstName: formData.prep4FirstName,
+              middleInitial: formData.prep4MiddleInitial,
+              address: formData.prep4Address,
+              city: formData.prep4City,
+              state: formData.prep4State,
+              zipCode: formData.prep4ZipCode,
+            },
+          ].filter(
+            (preparer) =>
+              preparer.signature || preparer.lastName || preparer.firstName
+          ), // Only include preparers with data
+        };
+
+        // Handle Supplement B: Reverification and Rehire
+        newFormData.supplementB = {
+          employeeName: {
+            lastName: formData.suppBLastName,
+            firstName: formData.suppBFirstName,
+            middleInitial: formData.suppBMiddleInitial,
+          },
+          reverifications: [
+            // Reverification 1
+            {
+              dateOfRehire: formData.rev1Date,
+              newName: {
+                lastName: formData.rev1LastName,
+                firstName: formData.rev1FirstName,
+                middleInitial: formData.rev1MiddleInitial,
+              },
+              documentTitle: formData.rev1DocTitle,
+              documentNumber: formData.rev1DocNumber,
+              expirationDate: formData.rev1ExpDate,
+              employerName: formData.rev1EmployerName,
+              employerSignature: formData.rev1EmployerSignature,
+              employerDate: formData.rev1EmployerDate,
+              additionalInfo: formData.rev1AdditionalInfo,
+              altProcedureUsed: formData.rev1AltProcedureUsed || false,
+            },
+            // Reverification 2
+            {
+              dateOfRehire: formData.rev2Date,
+              newName: {
+                lastName: formData.rev2LastName,
+                firstName: formData.rev2FirstName,
+                middleInitial: formData.rev2MiddleInitial,
+              },
+              documentTitle: formData.rev2DocTitle,
+              documentNumber: formData.rev2DocNumber,
+              expirationDate: formData.rev2ExpDate,
+              employerName: formData.rev2EmployerName,
+              employerSignature: formData.rev2EmployerSignature,
+              employerDate: formData.rev2EmployerDate,
+              additionalInfo: formData.rev2AdditionalInfo,
+              altProcedureUsed: formData.rev2AltProcedureUsed || false,
+            },
+            // Reverification 3
+            {
+              dateOfRehire: formData.rev3Date,
+              newName: {
+                lastName: formData.rev3LastName,
+                firstName: formData.rev3FirstName,
+                middleInitial: formData.rev3MiddleInitial,
+              },
+              documentTitle: formData.rev3DocTitle,
+              documentNumber: formData.rev3DocNumber,
+              expirationDate: formData.rev3ExpDate,
+              employerName: formData.rev3EmployerName,
+              employerSignature: formData.rev3EmployerSignature,
+              employerDate: formData.rev3EmployerDate,
+              additionalInfo: formData.rev3AdditionalInfo,
+              altProcedureUsed: formData.rev3AltProcedureUsed || false,
+            },
+          ].filter(
+            (rev) =>
+              rev.dateOfRehire || rev.documentTitle || rev.employerSignature
+          ), // Only include reverifications with data
+        };
+
         newFormData.section2 = {
-          employmentStartDate: formData.employmentStartDate,
-          documentTitle1: formData.documentTitle1,
-          issuingAuthority1: formData.issuingAuthority1,
-          documentNumber1: formData.documentNumber1,
-          expirationDate1: formData.expirationDate1,
+          employmentStartDate: formData.firstDayEmployment,
+          documentTitle1: formData.listADocTitle1,
+          issuingAuthority1: formData.listAIssuingAuth1,
+          documentNumber1: formData.listADocNumber1,
+          expirationDate1: formData.listAExpDate1,
           documentTitle2: formData.documentTitle2,
           issuingAuthority2: formData.issuingAuthority2,
           documentNumber2: formData.documentNumber2,
           expirationDate2: formData.expirationDate2,
-          documentTitle3: formData.documentTitle3,
-          issuingAuthority3: formData.issuingAuthority3,
-          documentNumber3: formData.documentNumber3,
-          expirationDate3: formData.expirationDate3,
+          documentTitle3: formData.listADocTitle3,
+          issuingAuthority3: formData.listAIssuingAuth3,
+          documentNumber3: formData.listADocNumber3,
+          expirationDate3: formData.listAExpDate3,
           additionalInfo: formData.additionalInfo,
           employerSignature: formData.employerSignature,
           employerSignatureDate: formData.employerSignatureDate,
@@ -303,6 +707,22 @@ router.post("/save-i9-form", async (req, res) => {
       }
 
       i9Form = new I9Form(newFormData);
+
+      // Initialize workAuthorization if provided
+      if (formData.workAuthorization) {
+        if (formData.workAuthorization.isNonCitizen !== undefined) {
+          i9Form.set(
+            "workAuthorization.isNonCitizen",
+            formData.workAuthorization.isNonCitizen
+          );
+        }
+        if (formData.workAuthorization.hasWorkAuthorization !== undefined) {
+          i9Form.set(
+            "workAuthorization.hasWorkAuthorization",
+            formData.workAuthorization.hasWorkAuthorization
+          );
+        }
+      }
     }
 
     await i9Form.save();

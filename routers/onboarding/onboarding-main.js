@@ -295,6 +295,128 @@ router.get("/get-application/:employeeId", async (req, res) => {
         employerTitle: i9Form.section2?.employerTitle || "",
         employerBusinessName: i9Form.section2?.employerBusinessName || "",
         employerBusinessAddress: i9Form.section2?.employerBusinessAddress || "",
+        // Supplement A fields (flattened from supplementA)
+        suppALastName: i9Form.supplementA?.employeeName?.lastName || "",
+        suppAFirstName: i9Form.supplementA?.employeeName?.firstName || "",
+        suppAMiddleInitial:
+          i9Form.supplementA?.employeeName?.middleInitial || "",
+        prep1Signature: i9Form.supplementA?.preparers?.[0]?.signature || "",
+        prep1Date: i9Form.supplementA?.preparers?.[0]?.date || "",
+        prep1LastName: i9Form.supplementA?.preparers?.[0]?.lastName || "",
+        prep1FirstName: i9Form.supplementA?.preparers?.[0]?.firstName || "",
+        prep1MiddleInitial:
+          i9Form.supplementA?.preparers?.[0]?.middleInitial || "",
+        prep1Address: i9Form.supplementA?.preparers?.[0]?.address || "",
+        prep1City: i9Form.supplementA?.preparers?.[0]?.city || "",
+        prep1State: i9Form.supplementA?.preparers?.[0]?.state || "",
+        prep1ZipCode: i9Form.supplementA?.preparers?.[0]?.zipCode || "",
+        prep2Signature: i9Form.supplementA?.preparers?.[1]?.signature || "",
+        prep2Date: i9Form.supplementA?.preparers?.[1]?.date || "",
+        prep2LastName: i9Form.supplementA?.preparers?.[1]?.lastName || "",
+        prep2FirstName: i9Form.supplementA?.preparers?.[1]?.firstName || "",
+        prep2MiddleInitial:
+          i9Form.supplementA?.preparers?.[1]?.middleInitial || "",
+        prep2Address: i9Form.supplementA?.preparers?.[1]?.address || "",
+        prep2City: i9Form.supplementA?.preparers?.[1]?.city || "",
+        prep2State: i9Form.supplementA?.preparers?.[1]?.state || "",
+        prep2ZipCode: i9Form.supplementA?.preparers?.[1]?.zipCode || "",
+        prep3Signature: i9Form.supplementA?.preparers?.[2]?.signature || "",
+        prep3Date: i9Form.supplementA?.preparers?.[2]?.date || "",
+        prep3LastName: i9Form.supplementA?.preparers?.[2]?.lastName || "",
+        prep3FirstName: i9Form.supplementA?.preparers?.[2]?.firstName || "",
+        prep3MiddleInitial:
+          i9Form.supplementA?.preparers?.[2]?.middleInitial || "",
+        prep3Address: i9Form.supplementA?.preparers?.[2]?.address || "",
+        prep3City: i9Form.supplementA?.preparers?.[2]?.city || "",
+        prep3State: i9Form.supplementA?.preparers?.[2]?.state || "",
+        prep3ZipCode: i9Form.supplementA?.preparers?.[2]?.zipCode || "",
+        prep4Signature: i9Form.supplementA?.preparers?.[3]?.signature || "",
+        prep4Date: i9Form.supplementA?.preparers?.[3]?.date || "",
+        prep4LastName: i9Form.supplementA?.preparers?.[3]?.lastName || "",
+        prep4FirstName: i9Form.supplementA?.preparers?.[3]?.firstName || "",
+        prep4MiddleInitial:
+          i9Form.supplementA?.preparers?.[3]?.middleInitial || "",
+        prep4Address: i9Form.supplementA?.preparers?.[3]?.address || "",
+        prep4City: i9Form.supplementA?.preparers?.[3]?.city || "",
+        prep4State: i9Form.supplementA?.preparers?.[3]?.state || "",
+        prep4ZipCode: i9Form.supplementA?.preparers?.[3]?.zipCode || "",
+        // Supplement B fields (flattened from supplementB)
+        suppBLastName: i9Form.supplementB?.employeeName?.lastName || "",
+        suppBFirstName: i9Form.supplementB?.employeeName?.firstName || "",
+        suppBMiddleInitial:
+          i9Form.supplementB?.employeeName?.middleInitial || "",
+        rev1Date: i9Form.supplementB?.reverifications?.[0]?.dateOfRehire || "",
+        rev1LastName:
+          i9Form.supplementB?.reverifications?.[0]?.newName?.lastName || "",
+        rev1FirstName:
+          i9Form.supplementB?.reverifications?.[0]?.newName?.firstName || "",
+        rev1MiddleInitial:
+          i9Form.supplementB?.reverifications?.[0]?.newName?.middleInitial ||
+          "",
+        rev1DocTitle:
+          i9Form.supplementB?.reverifications?.[0]?.documentTitle || "",
+        rev1DocNumber:
+          i9Form.supplementB?.reverifications?.[0]?.documentNumber || "",
+        rev1ExpDate:
+          i9Form.supplementB?.reverifications?.[0]?.expirationDate || "",
+        rev1EmployerName:
+          i9Form.supplementB?.reverifications?.[0]?.employerName || "",
+        rev1EmployerSignature:
+          i9Form.supplementB?.reverifications?.[0]?.employerSignature || "",
+        rev1EmployerDate:
+          i9Form.supplementB?.reverifications?.[0]?.employerDate || "",
+        rev1AdditionalInfo:
+          i9Form.supplementB?.reverifications?.[0]?.additionalInfo || "",
+        rev1AltProcedure:
+          i9Form.supplementB?.reverifications?.[0]?.altProcedureUsed || false,
+        rev2Date: i9Form.supplementB?.reverifications?.[1]?.dateOfRehire || "",
+        rev2LastName:
+          i9Form.supplementB?.reverifications?.[1]?.newName?.lastName || "",
+        rev2FirstName:
+          i9Form.supplementB?.reverifications?.[1]?.newName?.firstName || "",
+        rev2MiddleInitial:
+          i9Form.supplementB?.reverifications?.[1]?.newName?.middleInitial ||
+          "",
+        rev2DocTitle:
+          i9Form.supplementB?.reverifications?.[1]?.documentTitle || "",
+        rev2DocNumber:
+          i9Form.supplementB?.reverifications?.[1]?.documentNumber || "",
+        rev2ExpDate:
+          i9Form.supplementB?.reverifications?.[1]?.expirationDate || "",
+        rev2EmployerName:
+          i9Form.supplementB?.reverifications?.[1]?.employerName || "",
+        rev2EmployerSignature:
+          i9Form.supplementB?.reverifications?.[1]?.employerSignature || "",
+        rev2EmployerDate:
+          i9Form.supplementB?.reverifications?.[1]?.employerDate || "",
+        rev2AdditionalInfo:
+          i9Form.supplementB?.reverifications?.[1]?.additionalInfo || "",
+        rev2AltProcedure:
+          i9Form.supplementB?.reverifications?.[1]?.altProcedureUsed || false,
+        rev3Date: i9Form.supplementB?.reverifications?.[2]?.dateOfRehire || "",
+        rev3LastName:
+          i9Form.supplementB?.reverifications?.[2]?.newName?.lastName || "",
+        rev3FirstName:
+          i9Form.supplementB?.reverifications?.[2]?.newName?.firstName || "",
+        rev3MiddleInitial:
+          i9Form.supplementB?.reverifications?.[2]?.newName?.middleInitial ||
+          "",
+        rev3DocTitle:
+          i9Form.supplementB?.reverifications?.[2]?.documentTitle || "",
+        rev3DocNumber:
+          i9Form.supplementB?.reverifications?.[2]?.documentNumber || "",
+        rev3ExpDate:
+          i9Form.supplementB?.reverifications?.[2]?.expirationDate || "",
+        rev3EmployerName:
+          i9Form.supplementB?.reverifications?.[2]?.employerName || "",
+        rev3EmployerSignature:
+          i9Form.supplementB?.reverifications?.[2]?.employerSignature || "",
+        rev3EmployerDate:
+          i9Form.supplementB?.reverifications?.[2]?.employerDate || "",
+        rev3AdditionalInfo:
+          i9Form.supplementB?.reverifications?.[2]?.additionalInfo || "",
+        rev3AltProcedure:
+          i9Form.supplementB?.reverifications?.[2]?.altProcedureUsed || false,
         // Metadata
         status: i9Form.status,
         createdAt: i9Form.createdAt,

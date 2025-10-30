@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-// Main Schema for the Direct Deposit Enrollment/Change Form (Exhibit 14)
+// Standard Form 1199A - Direct Deposit Sign-Up Form
 const DirectDepositFormSchema = new mongoose.Schema(
   {
     applicationId: {
@@ -8,58 +8,49 @@ const DirectDepositFormSchema = new mongoose.Schema(
       ref: "OnboardingApplication",
       required: true,
     },
-    // Link to the employee/user record
     employeeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
     },
 
-    // Header Information
-    companyName: { type: String },
-    clientNumber: { type: String },
-    employeeName: { type: String },
-    employeeNumber: { type: String },
-
-    // Account 1
-    account1Action: { type: String },
-    account1Type: { type: String },
-    account1HolderName: { type: String },
-    account1RoutingNumber: { type: String },
-    account1Number: { type: String },
-    account1Institution: { type: String },
-    account1DepositType: { type: String },
-    account1PercentageNet: { type: String },
-    account1SpecificAmount: { type: String },
-
-    // Account 2
-    account2Action: { type: String },
-    account2Type: { type: String },
-    account2HolderName: { type: String },
-    account2RoutingNumber: { type: String },
-    account2Number: { type: String },
-    account2Institution: { type: String },
-    account2DepositType: { type: String },
-    account2PercentageNet: { type: String },
-    account2SpecificAmount: { type: String },
-
-    // Account 3
-    account3Action: { type: String },
-    account3Type: { type: String },
-    account3HolderName: { type: String },
-    account3RoutingNumber: { type: String },
-    account3Number: { type: String },
-    account3Institution: { type: String },
-    account3DepositType: { type: String },
-    account3PercentageNet: { type: String },
-    account3SpecificAmount: { type: String },
-
-    // Authorization and Signatures
-    employeeSignature: { type: String },
-    employeeSignatureDate: { type: String },
-    employerRepName: { type: String },
-    employerRepSignature: { type: String },
-    employerRepDate: { type: String },
+    // Section 1 - Payee Information
+    name: { type: String },
+    address: { type: String },
+    city: { type: String },
+    state: { type: String },
+    zipCode: { type: String },
+    telephone: { type: String },
+    areaCode: { type: String },
+    personEntitled: { type: String },
+    claimId: { type: String },
+    accountType: { type: String },
+    paymentType: [{ type: String }],
+    accountNumber: { type: String },
+    allotmentType: { type: String },
+    allotmentAmount: { type: String },
+    
+    // Section 2 - Government Agency
+    govAgencyName: { type: String },
+    govAgencyAddress: { type: String },
+    
+    // Section 3 - Financial Institution
+    financialInstitution: { type: String },
+    routingNumber: { type: String },
+    checkDigit: { type: String },
+    accountTitle: { type: String },
+    repName: { type: String },
+    repTelephone: { type: String },
+    
+    // Signatures
+    payeeSignature1: { type: String },
+    payeeDate1: { type: String },
+    payeeSignature2: { type: String },
+    payeeDate2: { type: String },
+    jointSignature1: { type: String },
+    jointDate1: { type: String },
+    jointSignature2: { type: String },
+    jointDate2: { type: String },
 
     // Internal status tracking
     status: {
