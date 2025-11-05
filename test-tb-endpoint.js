@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const BASE_URL = "http://localhost:1111/onboarding";
+const BASE_URL = "https://api-hrms-backend.kyptronix.us/onboarding";
 
 async function testTBSymptomScreen() {
   try {
