@@ -42,6 +42,34 @@ router.post("/work-experience/save", async (req, res) => {
       });
     }
 
+    // Convert old format to new format if needed
+    const convertedWorkExperiences = workExperiences.map((exp) => {
+      const converted = { ...exp };
+
+      // Handle backward compatibility for salary fields
+      if (exp.startingSalary && !exp.startingSalaryType) {
+        converted.startingSalaryType = "hourly"; // Default to hourly
+        converted.startingSalaryAmount = exp.startingSalary;
+        delete converted.startingSalary;
+      } else if (exp.startingSalaryType) {
+        converted.startingSalaryType = exp.startingSalaryType;
+        converted.startingSalaryAmount =
+          exp.startingSalaryAmount || exp.startingSalary;
+      }
+
+      if (exp.endingSalary && !exp.endingSalaryType) {
+        converted.endingSalaryType = "hourly"; // Default to hourly
+        converted.endingSalaryAmount = exp.endingSalary;
+        delete converted.endingSalary;
+      } else if (exp.endingSalaryType) {
+        converted.endingSalaryType = exp.endingSalaryType;
+        converted.endingSalaryAmount =
+          exp.endingSalaryAmount || exp.endingSalary;
+      }
+
+      return converted;
+    });
+
     // If applicationId is invalid or not provided, find or create one
     if (
       !applicationId ||
@@ -87,7 +115,7 @@ router.post("/work-experience/save", async (req, res) => {
         hasPreviousWorkExperience !== undefined
           ? hasPreviousWorkExperience
           : false;
-      workExp.workExperiences = workExperiences;
+      workExp.workExperiences = convertedWorkExperiences;
       workExp.status = status || "draft";
       await workExp.save({ validateBeforeSave: status !== "draft" });
       console.log("✅ [WorkExperience] Work experience updated");
@@ -100,7 +128,7 @@ router.post("/work-experience/save", async (req, res) => {
           hasPreviousWorkExperience !== undefined
             ? hasPreviousWorkExperience
             : false,
-        workExperiences,
+        workExperiences: convertedWorkExperiences,
         status: status || "draft",
       });
       await workExp.save({ validateBeforeSave: status !== "draft" });

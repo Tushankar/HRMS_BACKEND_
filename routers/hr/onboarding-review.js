@@ -21,6 +21,7 @@ const LPNJobDescription = require("../../database/Models/LPNJobDescription");
 const RNJobDescription = require("../../database/Models/RNJobDescription");
 const PersonalInformation = require("../../database/Models/PersonalInformation");
 const Education = require("../../database/Models/Education");
+const WorkExperience = require("../../database/Models/WorkExperience");
 
 const router = express.Router();
 

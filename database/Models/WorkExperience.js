@@ -35,10 +35,20 @@ const WorkExperienceSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
-        startingSalary: {
+        startingSalaryType: {
+          type: String,
+          enum: ["hourly", "weekly", "bi-weekly", "monthly", "yearly"],
+          default: "hourly",
+        },
+        startingSalaryAmount: {
           type: String,
         },
-        endingSalary: {
+        endingSalaryType: {
+          type: String,
+          enum: ["hourly", "weekly", "bi-weekly", "monthly", "yearly"],
+          default: "hourly",
+        },
+        endingSalaryAmount: {
           type: String,
         },
         responsibilities: {

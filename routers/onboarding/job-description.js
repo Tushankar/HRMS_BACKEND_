@@ -17,10 +17,37 @@ const storage = multer.diskStorage({
     cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    cb(
+      null,
+      Date.now() +
+        "-" +
+        Math.round(Math.random() * 1e9) +
+        path.extname(file.originalname)
+    );
   },
 });
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB per file
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow PDF and image files
+    const allowedMimes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF, images, and Word documents are allowed"), false);
+    }
+  },
+});
 
 // Helper function to get the correct model based on job type
 const getJobDescriptionModel = (jobType) => {
@@ -1178,6 +1205,206 @@ router.post("/save-job-description-hr-notes", async (req, res) => {
   }
 });
 
+// Save position-based signature
+router.post("/save-position-signature", async (req, res) => {
+  try {
+    const {
+      applicationId,
+      employeeId,
+      positionType,
+      signatureImage,
+      signatureDate,
+    } = req.body;
+
+    if (!applicationId || !employeeId || !positionType) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Missing required fields: applicationId, employeeId, positionType",
+      });
+    }
+
+    if (!signatureImage) {
+      return res.status(400).json({
+        success: false,
+        message: "Signature image is required",
+      });
+    }
+
+    // Validate position type
+    const validPositions = ["PCA", "CNA", "LPN", "RN"];
+    if (!validPositions.includes(positionType.toUpperCase())) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid position type. Must be one of: ${validPositions.join(
+          ", "
+        )}`,
+      });
+    }
+
+    const JobModel = getJobDescriptionModel(positionType);
+    let jobDesc = await JobModel.findOne({ applicationId });
+
+    if (!jobDesc) {
+      jobDesc = new JobModel({
+        applicationId,
+        employeeId,
+        status: "draft",
+      });
+    }
+
+    // Store the signature image and date for this specific position
+    jobDesc.employeeSignature = signatureImage;
+    jobDesc.signatureDate =
+      signatureDate || new Date().toISOString().split("T")[0];
+    jobDesc.status = "completed";
+
+    await jobDesc.save();
+
+    // Update application progress
+    const application = await OnboardingApplication.findById(applicationId);
+    if (application) {
+      const formKey = `jobDescription${positionType.toUpperCase()}`;
+
+      if (!application.completedForms) {
+        application.completedForms = [];
+      }
+
+      if (!application.completedForms.includes(formKey)) {
+        application.completedForms.push(formKey);
+      }
+
+      application.completionPercentage =
+        application.calculateCompletionPercentage();
+      await application.save();
+    }
+
+    console.log(`✅ Signature saved for ${positionType} position`, {
+      applicationId,
+      employeeId,
+      positionType,
+      signatureDate: jobDesc.signatureDate,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Signature saved successfully for ${positionType} position`,
+      data: {
+        jobDescription: jobDesc,
+        positionType,
+        signatureDate: jobDesc.signatureDate,
+      },
+    });
+  } catch (error) {
+    console.error("Error saving signature:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
+// Alias route for job-description/save-signature
+router.post("/job-description-save-signature", async (req, res) => {
+  try {
+    const {
+      applicationId,
+      employeeId,
+      positionType,
+      signatureImage,
+      signatureDate,
+    } = req.body;
+
+    if (!applicationId || !employeeId || !positionType) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Missing required fields: applicationId, employeeId, positionType",
+      });
+    }
+
+    if (!signatureImage) {
+      return res.status(400).json({
+        success: false,
+        message: "Signature image is required",
+      });
+    }
+
+    // Validate position type
+    const validPositions = ["PCA", "CNA", "LPN", "RN"];
+    if (!validPositions.includes(positionType.toUpperCase())) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid position type. Must be one of: ${validPositions.join(
+          ", "
+        )}`,
+      });
+    }
+
+    const JobModel = getJobDescriptionModel(positionType);
+    let jobDesc = await JobModel.findOne({ applicationId });
+
+    if (!jobDesc) {
+      jobDesc = new JobModel({
+        applicationId,
+        employeeId,
+        status: "draft",
+      });
+    }
+
+    // Store the signature image and date for this specific position
+    jobDesc.employeeSignature = signatureImage;
+    jobDesc.signatureDate =
+      signatureDate || new Date().toISOString().split("T")[0];
+    jobDesc.status = "completed";
+
+    await jobDesc.save();
+
+    // Update application progress
+    const application = await OnboardingApplication.findById(applicationId);
+    if (application) {
+      const formKey = `jobDescription${positionType.toUpperCase()}`;
+
+      if (!application.completedForms) {
+        application.completedForms = [];
+      }
+
+      if (!application.completedForms.includes(formKey)) {
+        application.completedForms.push(formKey);
+      }
+
+      application.completionPercentage =
+        application.calculateCompletionPercentage();
+      await application.save();
+    }
+
+    console.log(`✅ Signature saved for ${positionType} position`, {
+      applicationId,
+      employeeId,
+      positionType,
+      signatureDate: jobDesc.signatureDate,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Signature saved successfully for ${positionType} position`,
+      data: {
+        jobDescription: jobDesc,
+        positionType,
+        signatureDate: jobDesc.signatureDate,
+      },
+    });
+  } catch (error) {
+    console.error("Error saving signature:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
 // Save job description status (draft/completed)
 router.post("/job-description/save-status", async (req, res) => {
   try {
@@ -1393,6 +1620,233 @@ router.post("/remove-job-description-upload", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
+// ============================================
+// MULTIPLE FILE UPLOAD ENDPOINTS
+// ============================================
+
+// Upload multiple documents for job description
+router.post(
+  "/employee-upload-multiple-documents",
+  upload.array("files", 10), // Allow up to 10 files
+  async (req, res) => {
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "No files uploaded",
+        });
+      }
+
+      const { applicationId, employeeId, positionType } = req.body;
+
+      if (!applicationId || !positionType) {
+        return res.status(400).json({
+          success: false,
+          message: "Application ID and Position Type are required",
+        });
+      }
+
+      const JobModel = getJobDescriptionModel(positionType);
+
+      // Find or create job description
+      let jobDesc = await JobModel.findOne({ applicationId });
+
+      if (!jobDesc) {
+        jobDesc = new JobModel({
+          applicationId,
+          employeeId: employeeId || "67e0f8770c6feb6ba99d11d2",
+        });
+      }
+
+      // Initialize employeeUploadedForms array if it doesn't exist
+      if (!jobDesc.employeeUploadedForms) {
+        jobDesc.employeeUploadedForms = [];
+      }
+
+      // Add each uploaded file to the array
+      const uploadedDocuments = [];
+      req.files.forEach((file) => {
+        const document = {
+          filename: file.originalname,
+          filePath: file.path,
+          fileSize: file.size,
+          mimeType: file.mimetype,
+          uploadedAt: new Date(),
+        };
+        jobDesc.employeeUploadedForms.push(document);
+        uploadedDocuments.push(document);
+      });
+
+      jobDesc.status = "submitted";
+      await jobDesc.save();
+
+      // Update application completion
+      const application = await OnboardingApplication.findById(applicationId);
+      if (application) {
+        const formKey = `jobDescription${positionType.toUpperCase()}`;
+        if (!application.completedForms.includes(formKey)) {
+          application.completedForms.push(formKey);
+        }
+        application.completionPercentage =
+          application.calculateCompletionPercentage();
+        await application.save();
+      }
+
+      res.status(200).json({
+        success: true,
+        message: `${req.files.length} document(s) uploaded successfully`,
+        data: {
+          jobDescription: jobDesc,
+          uploadedDocuments,
+          totalDocuments: jobDesc.employeeUploadedForms.length,
+        },
+      });
+    } catch (error) {
+      console.error("Error uploading multiple documents:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to upload documents",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// Get all uploaded documents for job description
+router.get(
+  "/get-uploaded-documents/:applicationId/:positionType",
+  async (req, res) => {
+    try {
+      const { applicationId, positionType } = req.params;
+
+      const JobModel = getJobDescriptionModel(positionType);
+      const jobDesc = await JobModel.findOne({ applicationId });
+
+      if (!jobDesc) {
+        return res.status(200).json({
+          success: true,
+          message: "No documents found",
+          data: {
+            documents: [],
+            count: 0,
+          },
+        });
+      }
+
+      // Return both old format (single) and new format (multiple)
+      const documents = jobDesc.employeeUploadedForms || [];
+
+      // If old format exists, add it to the list for backward compatibility
+      if (
+        jobDesc.employeeUploadedForm &&
+        jobDesc.employeeUploadedForm.filePath
+      ) {
+        const exists = documents.some(
+          (doc) => doc.filePath === jobDesc.employeeUploadedForm.filePath
+        );
+        if (!exists) {
+          documents.unshift({
+            filename: jobDesc.employeeUploadedForm.filename,
+            filePath: jobDesc.employeeUploadedForm.filePath,
+            uploadedAt: jobDesc.employeeUploadedForm.uploadedAt,
+          });
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Documents retrieved successfully",
+        data: {
+          documents,
+          count: documents.length,
+          jobDescriptionStatus: jobDesc.status,
+        },
+      });
+    } catch (error) {
+      console.error("Error retrieving documents:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve documents",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// Remove specific document from job description
+router.post("/remove-document", async (req, res) => {
+  try {
+    const { applicationId, positionType, documentId } = req.body;
+
+    if (!applicationId || !positionType || !documentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Application ID, Position Type, and Document ID are required",
+      });
+    }
+
+    const JobModel = getJobDescriptionModel(positionType);
+    const jobDesc = await JobModel.findOne({ applicationId });
+
+    if (!jobDesc) {
+      return res.status(404).json({
+        success: false,
+        message: "Job description not found",
+      });
+    }
+
+    // Find and remove the document
+    const initialLength = jobDesc.employeeUploadedForms.length;
+    jobDesc.employeeUploadedForms = jobDesc.employeeUploadedForms.filter(
+      (doc) => doc._id.toString() !== documentId
+    );
+
+    if (jobDesc.employeeUploadedForms.length === initialLength) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    // If no documents left, update status to draft
+    if (jobDesc.employeeUploadedForms.length === 0) {
+      jobDesc.status = "draft";
+    }
+
+    await jobDesc.save();
+
+    // Update application completion if no documents left
+    if (jobDesc.employeeUploadedForms.length === 0) {
+      const application = await OnboardingApplication.findById(applicationId);
+      if (application) {
+        const formKey = `jobDescription${positionType.toUpperCase()}`;
+        application.completedForms = application.completedForms.filter(
+          (form) => form !== formKey
+        );
+        application.completionPercentage =
+          application.calculateCompletionPercentage();
+        await application.save();
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Document removed successfully",
+      data: {
+        jobDescription: jobDesc,
+        remainingDocuments: jobDesc.employeeUploadedForms.length,
+      },
+    });
+  } catch (error) {
+    console.error("Error removing document:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to remove document",
       error: error.message,
     });
   }

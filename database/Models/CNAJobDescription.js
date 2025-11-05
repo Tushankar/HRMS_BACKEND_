@@ -58,7 +58,18 @@ const CNAJobDescriptionSchema = new mongoose.Schema(
       date: { type: Date },
       digitalSignature: { type: Boolean, default: false },
     },
-    // Employee uploaded signed document
+    // Employee uploaded signed documents (now supports multiple)
+    employeeUploadedForms: [
+      {
+        _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+        filename: { type: String },
+        filePath: { type: String },
+        uploadedAt: { type: Date, default: Date.now },
+        fileSize: { type: Number }, // in bytes
+        mimeType: { type: String },
+      },
+    ],
+    // Legacy field for backward compatibility
     employeeUploadedForm: {
       filename: { type: String },
       filePath: { type: String },

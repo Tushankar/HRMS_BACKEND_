@@ -15,24 +15,31 @@ const OrientationChecklistSchema = new mongoose.Schema(
     },
 
     // Orientation Acknowledgments (checkboxes)
-    readPoliciesAndScope: { type: Boolean, default: false },        // policies/procedures + scope of services & clients
-    understandDuties: { type: Boolean, default: false },            // assigned duties/responsibilities
-    reportEmergencies: { type: Boolean, default: false },           // report emergencies/problems/progress to nurse
-    reportTBExposure: { type: Boolean, default: false },            // must report TB exposure
-    understandClientRights: { type: Boolean, default: false },      // client rights
-    readProcedures: { type: Boolean, default: false },              // handling complaints, emergencies, incidents
-    understandDocumentation: { type: Boolean, default: false },     // daily documentation
-    receivedHandbook: { type: Boolean, default: false },            // received Employee Handbook
+    policies: { type: Boolean, default: false }, // policies/procedures + scope of services & clients
+    duties: { type: Boolean, default: false }, // assigned duties/responsibilities
+    emergencies: { type: Boolean, default: false }, // report emergencies/problems/progress to nurse
+    tbExposure: { type: Boolean, default: false }, // must report TB exposure
+    clientRights: { type: Boolean, default: false }, // client rights
+    complaints: { type: Boolean, default: false }, // handling complaints, emergencies, incidents
+    documentation: { type: Boolean, default: false }, // daily documentation
+    handbook: { type: Boolean, default: false }, // received Employee Handbook
 
-    // Signatures
-    employeeSignature: { type: String },
-    employeeSignatureDate: { type: Date },
+    // Signatures - matching LegalDisclosures pattern
+    applicantSignature: { type: String },
+    signatureDate: { type: Date },
     agencySignature: { type: String },
     agencySignatureDate: { type: Date },
 
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
 
