@@ -29,6 +29,7 @@ const W4FormSchema = new mongoose.Schema(
           "single_or_married_filing_separately",
           "married_filing_jointly_or_qualifying_surviving_spouse",
           "head_of_household",
+          null,
         ],
       },
     },

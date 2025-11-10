@@ -123,7 +123,7 @@ router.post("/save-w4-form", async (req, res) => {
         address: formData.address || "",
         cityStateZip: formData.city || "",
         socialSecurityNumber: formData.ssn || "",
-        filingStatus: formData.filingStatus || "",
+        filingStatus: formData.filingStatus || null, // Allow null for empty filing status
       },
 
       // Step 2: Multiple Jobs or Spouse Works
@@ -144,9 +144,16 @@ router.post("/save-w4-form", async (req, res) => {
       },
 
       // Step 5: Sign Here
-      employeeSignature: formData.signature || "",
+      employeeSignature:
+        typeof formData.signature === "object" && formData.signature?.signature
+          ? formData.signature.signature
+          : formData.signature || "",
       signatureDate: formData.signatureDate
         ? new Date(formData.signatureDate)
+        : formData.signature &&
+          typeof formData.signature === "object" &&
+          formData.signature.signatureDate
+        ? new Date(formData.signature.signatureDate)
         : null,
 
       // Employer Use Only Section
@@ -475,23 +482,24 @@ router.post("/save-w9-form", async (req, res) => {
     }
 
     // Determine if form has any data filled
-    const hasData = formData && (
-      formData.name ||
-      formData.businessName ||
-      formData.taxClassification ||
-      formData.address ||
-      formData.city ||
-      (formData.ssn && formData.ssn.some(d => d)) ||
-      (formData.ein && formData.ein.some(d => d)) ||
-      formData.signature ||
-      formData.signatureDate
-    );
+    const hasData =
+      formData &&
+      (formData.name ||
+        formData.businessName ||
+        formData.taxClassification ||
+        formData.address ||
+        formData.city ||
+        (formData.ssn && formData.ssn.some((d) => d)) ||
+        (formData.ein && formData.ein.some((d) => d)) ||
+        formData.signature ||
+        formData.signatureDate);
 
     // Map form data to schema
     const mappedData = {
       name: formData?.name || "",
       businessName: formData?.businessName || "",
-      taxClassification: formData?.taxClassification || "individual_sole_proprietor",
+      taxClassification:
+        formData?.taxClassification || "individual_sole_proprietor",
       llcClassification: formData?.llcClassification || null,
       hasForeignPartnersOrOwners: formData?.foreignPartners || false,
       exemptions: {
@@ -506,7 +514,9 @@ router.post("/save-w9-form", async (req, res) => {
       socialSecurityNumber: formData?.ssn ? formData.ssn.join("") : "",
       employerIdentificationNumber: formData?.ein ? formData.ein.join("") : "",
       signature: formData?.signature || "",
-      signatureDate: formData?.signatureDate ? new Date(formData.signatureDate) : null,
+      signatureDate: formData?.signatureDate
+        ? new Date(formData.signatureDate)
+        : null,
       status: hasData ? status : "draft",
     };
 
@@ -527,7 +537,9 @@ router.post("/save-w9-form", async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: hasData ? "W9 form saved successfully" : "W9 form saved as draft",
+      message: hasData
+        ? "W9 form saved successfully"
+        : "W9 form saved as draft",
       w9Form,
     });
   } catch (error) {
@@ -560,8 +572,12 @@ router.get("/get-w9-form/:applicationId", async (req, res) => {
       address: w9Form.address?.street || "",
       city: w9Form.address?.city || "",
       accountNumbers: w9Form.accountNumbers || "",
-      ssn: w9Form.socialSecurityNumber ? w9Form.socialSecurityNumber.split("") : Array(9).fill(""),
-      ein: w9Form.employerIdentificationNumber ? w9Form.employerIdentificationNumber.split("") : Array(9).fill(""),
+      ssn: w9Form.socialSecurityNumber
+        ? w9Form.socialSecurityNumber.split("")
+        : Array(9).fill(""),
+      ein: w9Form.employerIdentificationNumber
+        ? w9Form.employerIdentificationNumber.split("")
+        : Array(9).fill(""),
       signature: w9Form.signature || "",
       signatureDate: w9Form.signatureDate || null,
     };
