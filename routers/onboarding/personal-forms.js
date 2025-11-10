@@ -484,6 +484,13 @@ router.post("/save-professional-experience", async (req, res) => {
         .json({ message: "Onboarding application not found" });
     }
 
+    // Convert hasMilitaryService from string to boolean
+    let cleanFormData = { ...formData };
+    if (cleanFormData.hasMilitaryService) {
+      cleanFormData.hasMilitaryService =
+        cleanFormData.hasMilitaryService === "YES" ? true : false;
+    }
+
     // Find existing form or create new one
     let professionalExpForm = await ProfessionalExperience.findOne({
       applicationId,
@@ -491,16 +498,18 @@ router.post("/save-professional-experience", async (req, res) => {
 
     if (professionalExpForm) {
       // Update existing form - ensure status parameter overrides any status in formData
-      const { status: formDataStatus, ...cleanFormData } = formData;
-      Object.assign(professionalExpForm, cleanFormData);
+      const { status: formDataStatus, ...formDataWithoutStatus } =
+        cleanFormData;
+      Object.assign(professionalExpForm, formDataWithoutStatus);
       professionalExpForm.status = status;
     } else {
       // Create new form - ensure status parameter overrides any status in formData
-      const { status: formDataStatus, ...cleanFormData } = formData;
+      const { status: formDataStatus, ...formDataWithoutStatus } =
+        cleanFormData;
       professionalExpForm = new ProfessionalExperience({
         applicationId,
         employeeId,
-        ...cleanFormData,
+        ...formDataWithoutStatus,
         status,
       });
     }
@@ -519,6 +528,9 @@ router.post("/save-professional-experience", async (req, res) => {
       if (!application.completedForms.includes("Professional Experience")) {
         application.completedForms.push("Professional Experience");
       }
+
+      // Update application status to reflect form completion
+      application.applicationStatus = "completed";
 
       application.completionPercentage =
         application.calculateCompletionPercentage();

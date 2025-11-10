@@ -4,7 +4,7 @@
 
 ### Prerequisites
 
-- Backend server running on `https://api-hrms-backend.kyptronix.us`
+- Backend server running on `http://localhost:1111`
 - MongoDB connected
 - Testing tool: **Postman**, **Thunder Client**, or **curl**
 
@@ -49,7 +49,7 @@
 ### Step 1: Test Server Connection
 
 ```bash
-curl https://api-hrms-backend.kyptronix.us/onboarding/get-all-applications
+curl http://localhost:1111/onboarding/get-all-applications
 ```
 
 ### Step 2: Create Test Employee (if needed)
@@ -68,7 +68,7 @@ First, you need a valid employee ID from your existing users table.
 
 ```bash
 # Replace EMPLOYEE_ID with actual employee ID
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-application/EMPLOYEE_ID
+curl -X GET http://localhost:1111/onboarding/get-application/EMPLOYEE_ID
 ```
 
 ### 2. Test All 13 Interactive Forms
@@ -77,7 +77,7 @@ curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-application/EMP
 
 ```bash
 # Save as Draft
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-employment-application \
+curl -X POST http://localhost:1111/onboarding/save-employment-application \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -99,14 +99,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-employment-ap
   }'
 
 # Get Employment Application
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-employment-application/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-employment-application/APPLICATION_ID
 ```
 
 #### Form 2: I-9 Form
 
 ```bash
 # Save I-9 Form
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-i9-form \
+curl -X POST http://localhost:1111/onboarding/save-i9-form \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -122,14 +122,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-i9-form \
   }'
 
 # Get I-9 Form
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-i9-form/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-i9-form/APPLICATION_ID
 ```
 
 #### Form 3: W-4 Form
 
 ```bash
 # Save W-4 Form
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-w4-form \
+curl -X POST http://localhost:1111/onboarding/save-w4-form \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -145,14 +145,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-w4-form \
   }'
 
 # Get W-4 Form
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-w4-form/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-w4-form/APPLICATION_ID
 ```
 
 #### Form 4: W-9 Form
 
 ```bash
 # Save W-9 Form
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-w9-form \
+curl -X POST http://localhost:1111/onboarding/save-w9-form \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -167,14 +167,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-w9-form \
   }'
 
 # Get W-9 Form
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-w9-form/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-w9-form/APPLICATION_ID
 ```
 
 #### Form 5: Emergency Contact
 
 ```bash
 # Save Emergency Contact
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-emergency-contact \
+curl -X POST http://localhost:1111/onboarding/save-emergency-contact \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -193,14 +193,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-emergency-con
   }'
 
 # Get Emergency Contact
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-emergency-contact/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-emergency-contact/APPLICATION_ID
 ```
 
 #### Form 6: Direct Deposit
 
 ```bash
 # Save Direct Deposit
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-direct-deposit \
+curl -X POST http://localhost:1111/onboarding/save-direct-deposit \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -220,14 +220,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-direct-deposi
   }'
 
 # Get Direct Deposit
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-direct-deposit/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-direct-deposit/APPLICATION_ID
 ```
 
 #### Form 7: Misconduct Statement
 
 ```bash
 # Save Misconduct Statement
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-misconduct-statement \
+curl -X POST http://localhost:1111/onboarding/save-misconduct-statement \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -246,14 +246,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-misconduct-st
   }'
 
 # Get Misconduct Statement
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-misconduct-statement/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-misconduct-statement/APPLICATION_ID
 ```
 
 #### Form 8: Code of Ethics
 
 ```bash
 # Save Code of Ethics
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-code-of-ethics \
+curl -X POST http://localhost:1111/onboarding/save-code-of-ethics \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -273,14 +273,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-code-of-ethic
   }'
 
 # Get Code of Ethics
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-code-of-ethics/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-code-of-ethics/APPLICATION_ID
 ```
 
 #### Form 9: Service Delivery Policy
 
 ```bash
 # Save Service Delivery Policy
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-service-delivery-policy \
+curl -X POST http://localhost:1111/onboarding/save-service-delivery-policy \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -301,14 +301,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-service-deliv
   }'
 
 # Get Service Delivery Policy
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-service-delivery-policy/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-service-delivery-policy/APPLICATION_ID
 ```
 
 #### Form 10: Non-Compete Agreement
 
 ```bash
 # Save Non-Compete Agreement
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-non-compete-agreement \
+curl -X POST http://localhost:1111/onboarding/save-non-compete-agreement \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -327,14 +327,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-non-compete-a
   }'
 
 # Get Non-Compete Agreement
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-non-compete-agreement/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-non-compete-agreement/APPLICATION_ID
 ```
 
 #### Form 11: Background Check
 
 ```bash
 # Save Background Check
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-background-check \
+curl -X POST http://localhost:1111/onboarding/save-background-check \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -352,14 +352,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-background-ch
   }'
 
 # Get Background Check
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-background-check/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-background-check/APPLICATION_ID
 ```
 
 #### Form 12: TB Symptom Screen
 
 ```bash
 # Save TB Symptom Screen
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-tb-symptom-screen \
+curl -X POST http://localhost:1111/onboarding/save-tb-symptom-screen \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -379,14 +379,14 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-tb-symptom-sc
   }'
 
 # Get TB Symptom Screen
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-tb-symptom-screen/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-tb-symptom-screen/APPLICATION_ID
 ```
 
 #### Form 13: Orientation Checklist
 
 ```bash
 # Save Orientation Checklist
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-orientation-checklist \
+curl -X POST http://localhost:1111/onboarding/save-orientation-checklist \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "APPLICATION_ID_HERE",
@@ -405,7 +405,7 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/save-orientation-c
   }'
 
 # Get Orientation Checklist
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-orientation-checklist/APPLICATION_ID
+curl -X GET http://localhost:1111/onboarding/get-orientation-checklist/APPLICATION_ID
 ```
 
 ---
@@ -416,14 +416,14 @@ curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-orientation-che
 
 ```bash
 # Submit Application to HR
-curl -X PUT https://api-hrms-backend.kyptronix.us/onboarding/submit-application/APPLICATION_ID
+curl -X PUT http://localhost:1111/onboarding/submit-application/APPLICATION_ID
 ```
 
 ### Test HR Functions
 
 ```bash
 # Update Application Status (HR)
-curl -X PUT https://api-hrms-backend.kyptronix.us/onboarding/update-status/APPLICATION_ID \
+curl -X PUT http://localhost:1111/onboarding/update-status/APPLICATION_ID \
   -H "Content-Type: application/json" \
   -d '{
     "status": "under_review",
@@ -432,7 +432,7 @@ curl -X PUT https://api-hrms-backend.kyptronix.us/onboarding/update-status/APPLI
   }'
 
 # Get All Applications (HR View)
-curl -X GET https://api-hrms-backend.kyptronix.us/onboarding/get-all-applications
+curl -X GET http://localhost:1111/onboarding/get-all-applications
 ```
 
 ---
@@ -444,7 +444,7 @@ Create a file called `test-all-forms.js`:
 ```javascript
 const axios = require("axios");
 
-const BASE_URL = "https://api-hrms-backend.kyptronix.us/onboarding";
+const BASE_URL = "http://localhost:1111/onboarding";
 const EMPLOYEE_ID = "YOUR_EMPLOYEE_ID_HERE"; // Replace with actual employee ID
 
 async function testAllForms() {
@@ -549,13 +549,13 @@ For each form, you should see:
 
 ```bash
 # Check server status
-curl https://api-hrms-backend.kyptronix.us/
+curl http://localhost:1111/
 
 # Check if MongoDB is connected
 # Look for "Database Connected Successfully" in server logs
 
 # Test basic route
-curl https://api-hrms-backend.kyptronix.us/onboarding/get-all-applications
+curl http://localhost:1111/onboarding/get-all-applications
 ```
 
 This comprehensive testing guide will help you verify that all 13 interactive onboarding forms are working correctly!

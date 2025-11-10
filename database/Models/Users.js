@@ -60,6 +60,14 @@ const UserSchema = new Mongoose.Schema(
       default: "active",
       enum: ["active", "inactive"],
     },
+    otpEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    otpEnabled: {
+      type: Boolean,
+      default: false,
+    },
     tasks: [
       {
         type: mongoose.Schema.Types.ObjectId,
