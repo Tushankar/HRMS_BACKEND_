@@ -9,7 +9,7 @@ const testBackgroundCheckForm = async () => {
   try {
     console.log("Testing Background Check Form Integration...\n");
 
-    const baseURL = "http://localhost:1111";
+    const baseURL = "https://api-hrms-backend.kyptronix.us";
 
     // Create test IDs
     const testApplicationId = new mongoose.Types.ObjectId();
