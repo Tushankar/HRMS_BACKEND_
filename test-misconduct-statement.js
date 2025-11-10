@@ -40,7 +40,7 @@ async function testMisconductStatementSave() {
     console.log("📤 Request data:", JSON.stringify(requestData, null, 2));
 
     const response = await axios.post(
-      "http://localhost:1111/onboarding/misconduct-statement/save-misconduct-statement",
+      "https://api-hrms-backend.kyptronix.us/onboarding/misconduct-statement/save-misconduct-statement",
       requestData,
       {
         headers: {
@@ -57,7 +57,7 @@ async function testMisconductStatementSave() {
     // Now test retrieving the data
     console.log("\n🔍 Testing data retrieval...");
     const getResponse = await axios.get(
-      `http://localhost:1111/onboarding/misconduct-statement/get-misconduct-statement/${applicationId}`
+      `https://api-hrms-backend.kyptronix.us/onboarding/misconduct-statement/get-misconduct-statement/${applicationId}`
     );
 
     console.log(
