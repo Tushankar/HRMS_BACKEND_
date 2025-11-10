@@ -40,7 +40,7 @@ const connectDB = async () => {
   }
 };
 
-const BASE_URL = "https://api-hrms-backend.kyptronix.us/onboarding";
+const BASE_URL = "http://localhost:1111/onboarding";
 
 // Test data for each form
 const testData = {

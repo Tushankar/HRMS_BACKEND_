@@ -51,7 +51,10 @@ appRouter.post("/register", async (req, res) => {
       country,
       phoneNumber,
       password,
-      address,
+      addressLine1,
+      state,
+      city,
+      zip,
       dateOfBirth,
       userRole,
     } = req.body;
@@ -63,7 +66,10 @@ appRouter.post("/register", async (req, res) => {
       !country ||
       !phoneNumber ||
       !password ||
-      !address ||
+      !addressLine1 ||
+      !state ||
+      !city ||
+      !zip ||
       !dateOfBirth
     ) {
       return res.status(400).json({
@@ -82,6 +88,7 @@ appRouter.post("/register", async (req, res) => {
 
     // Generate OTP
     const otp = generateOTP();
+    console.log(`OTP generated for ${email}: ${otp}`);
 
     // Store OTP with email (expires in 10 minutes)
     otpStore.set(email, {
@@ -92,7 +99,10 @@ appRouter.post("/register", async (req, res) => {
         country,
         phoneNumber,
         password,
-        address,
+        addressLine1,
+        state,
+        city,
+        zip,
         dateOfBirth,
         userRole: userRole || "employee",
       },
@@ -164,7 +174,10 @@ appRouter.post("/verify-otp", async (req, res) => {
       email: userData.email,
       phoneNumber: userData.phoneNumber,
       country: userData.country,
-      address: userData.address,
+      addressLine1: userData.addressLine1,
+      state: userData.state,
+      city: userData.city,
+      zip: userData.zip,
       password: hashedPassword,
       dateOfBirth: userData.dateOfBirth,
       userRole: userData.userRole,

@@ -17,7 +17,23 @@ const UserSchema = new Mongoose.Schema(
       required: true,
       unique: true,
     },
+    addressLine1: {
+      type: String,
+      required: true,
+    },
     country: {
+      type: String,
+      required: true,
+    },
+    state: {
+      type: String,
+      required: true,
+    },
+    city: {
+      type: String,
+      required: true,
+    },
+    zip: {
       type: String,
       required: true,
     },
@@ -28,7 +44,6 @@ const UserSchema = new Mongoose.Schema(
     },
     address: {
       type: String,
-      required: true,
     },
     dateOfBirth: {
       type: Date,
