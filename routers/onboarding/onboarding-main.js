@@ -592,22 +592,29 @@ router.get("/get-application/:employeeId", async (req, res) => {
     let orientationChecklistFlattened = orientationChecklist;
     if (orientationChecklist) {
       orientationChecklistFlattened = {
-        // Map database checkbox fields back to frontend field names
-        policies: orientationChecklist.readPoliciesAndScope || false,
-        duties: orientationChecklist.understandDuties || false,
-        emergencies: orientationChecklist.reportEmergencies || false,
-        tbExposure: orientationChecklist.reportTBExposure || false,
-        clientRights: orientationChecklist.understandClientRights || false,
-        complaints: orientationChecklist.readProcedures || false,
-        documentation: orientationChecklist.understandDocumentation || false,
-        handbook: orientationChecklist.receivedHandbook || false,
-        // Signature fields
-        employeeSignature: orientationChecklist.employeeSignature || "",
-        employeeDate: orientationChecklist.employeeSignatureDate || null,
+        _id: orientationChecklist._id,
+        applicationId: orientationChecklist.applicationId,
+        employeeId: orientationChecklist.employeeId,
+        // Map database checkbox fields directly to frontend field names (they already match the schema)
+        policies: orientationChecklist.policies || false,
+        duties: orientationChecklist.duties || false,
+        emergencies: orientationChecklist.emergencies || false,
+        tbExposure: orientationChecklist.tbExposure || false,
+        clientRights: orientationChecklist.clientRights || false,
+        complaints: orientationChecklist.complaints || false,
+        documentation: orientationChecklist.documentation || false,
+        handbook: orientationChecklist.handbook || false,
+        // Signature fields - match schema and employee form
+        applicantSignature: orientationChecklist.applicantSignature || "",
+        signatureDate: orientationChecklist.signatureDate || null,
         agencySignature: orientationChecklist.agencySignature || "",
-        agencyDate: orientationChecklist.agencySignatureDate || null,
+        agencySignatureDate: orientationChecklist.agencySignatureDate || null,
+        // Status and feedback
         status: orientationChecklist.status || "draft",
-        hrFeedback: orientationChecklist.hrFeedback,
+        hrFeedback: orientationChecklist.hrFeedback || null,
+        // Timestamps
+        createdAt: orientationChecklist.createdAt,
+        updatedAt: orientationChecklist.updatedAt,
       };
     }
 
