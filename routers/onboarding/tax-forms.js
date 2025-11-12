@@ -83,6 +83,10 @@ router.post("/save-w4-form", async (req, res) => {
       hrFeedback,
     } = req.body;
 
+    console.log("=== SAVE W4 FORM DEBUG ===");
+    console.log("Received formData:", formData);
+    console.log("Received status:", status);
+
     // Handle HR feedback-only update
     if (!formData && hrFeedback) {
       let w4Form = await W4Form.findOne({ applicationId });
@@ -114,6 +118,21 @@ router.post("/save-w4-form", async (req, res) => {
         .json({ message: "Onboarding application not found" });
     }
 
+    // Map filing status values from frontend to schema format
+    const mapFilingStatus = (status) => {
+      const statusMap = {
+        single: "single_or_married_filing_separately",
+        married: "married_filing_jointly_or_qualifying_surviving_spouse",
+        head: "head_of_household",
+        single_or_married_filing_separately:
+          "single_or_married_filing_separately",
+        married_filing_jointly_or_qualifying_surviving_spouse:
+          "married_filing_jointly_or_qualifying_surviving_spouse",
+        head_of_household: "head_of_household",
+      };
+      return statusMap[status] || null;
+    };
+
     // Map flat form data to nested schema structure
     const mappedData = {
       // Step 1: Personal Information
@@ -123,7 +142,7 @@ router.post("/save-w4-form", async (req, res) => {
         address: formData.address || "",
         cityStateZip: formData.city || "",
         socialSecurityNumber: formData.ssn || "",
-        filingStatus: formData.filingStatus || null, // Allow null for empty filing status
+        filingStatus: mapFilingStatus(formData.filingStatus), // Map to schema enum values
       },
 
       // Step 2: Multiple Jobs or Spouse Works
@@ -244,11 +263,27 @@ router.get("/get-w4-form/:applicationId", async (req, res) => {
   try {
     const { applicationId } = req.params;
 
+    console.log("=== GET W4 FORM DEBUG ===");
+    console.log("Looking for applicationId:", applicationId);
+
     const w4Form = await W4Form.findOne({ applicationId });
 
     if (!w4Form) {
+      console.log("No W4 form found for applicationId:", applicationId);
       return res.status(404).json({ message: "W4 form not found" });
     }
+
+    console.log("Found W4 Form from DB:", w4Form);
+
+    // Map filing status values from schema to frontend format
+    const unmapFilingStatus = (status) => {
+      const statusMap = {
+        single_or_married_filing_separately: "single",
+        married_filing_jointly_or_qualifying_surviving_spouse: "married",
+        head_of_household: "head",
+      };
+      return statusMap[status] || status || "";
+    };
 
     // Map database fields to frontend field names
     const mappedData = {
@@ -259,7 +294,7 @@ router.get("/get-w4-form/:applicationId", async (req, res) => {
       address: w4Form.personalInfo?.address || "",
       city: w4Form.personalInfo?.cityStateZip || "",
       ssn: w4Form.personalInfo?.socialSecurityNumber || "",
-      filingStatus: w4Form.personalInfo?.filingStatus || "",
+      filingStatus: unmapFilingStatus(w4Form.personalInfo?.filingStatus) || "", // Map back to short form
 
       // Dependents
       childrenAmount: w4Form.dependents?.qualifyingChildren || "",
@@ -298,6 +333,8 @@ router.get("/get-w4-form/:applicationId", async (req, res) => {
       deductions4: w4Form.deductionsWorksheet?.otherAdjustments || "",
       deductions5: w4Form.deductionsWorksheet?.total || "",
     };
+
+    console.log("Mapped data being returned:", mappedData);
 
     res.status(200).json({
       message: "W4 form retrieved successfully",

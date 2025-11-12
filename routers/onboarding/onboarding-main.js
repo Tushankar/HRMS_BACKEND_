@@ -43,7 +43,7 @@ function mapFilingStatusToFrontend(status) {
   const mapping = {
     single_or_married_filing_separately: "single",
     married_filing_jointly_or_qualifying_surviving_spouse: "married",
-    head_of_household: "headOfHousehold",
+    head_of_household: "head",
   };
   return mapping[status] || status;
 }
