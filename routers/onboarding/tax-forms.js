@@ -1003,21 +1003,252 @@ router.post("/save-direct-deposit-form", async (req, res) => {
     const {
       applicationId,
       employeeId,
+      formData,
       status = "draft",
       hrFeedback,
     } = req.body;
-    const updateData = { status };
-    if (hrFeedback) {
-      updateData.hrFeedback = hrFeedback;
+
+    // Handle HR feedback-only update
+    if (!formData && hrFeedback) {
+      let directDepositForm = await DirectDepositForm.findOne({
+        applicationId,
+      });
+      if (!directDepositForm) {
+        return res
+          .status(404)
+          .json({ message: "Direct Deposit form not found" });
+      }
+      directDepositForm.hrFeedback = hrFeedback;
+      directDepositForm.status = status || "under_review";
+      await directDepositForm.save();
+      return res.status(200).json({
+        success: true,
+        message: "HR feedback saved successfully",
+        directDepositForm,
+      });
     }
-    const directDepositForm = await DirectDepositForm.findOneAndUpdate(
-      { applicationId, employeeId },
-      updateData,
-      { new: true, upsert: true, validateBeforeSave: status !== "draft" }
-    );
-    res.json({ success: true, directDepositForm });
+
+    if (!applicationId || !employeeId) {
+      return res
+        .status(400)
+        .json({ message: "Application ID and Employee ID are required" });
+    }
+
+    // Check if application exists
+    const OnboardingApplication = require("../../database/Models/OnboardingApplication");
+    const application = await OnboardingApplication.findById(applicationId);
+    if (!application) {
+      return res
+        .status(404)
+        .json({ message: "Onboarding application not found" });
+    }
+
+    // Determine if form has any data filled
+    const hasData =
+      formData &&
+      (formData.companyName ||
+        formData.employeeName ||
+        formData.employeeNumber ||
+        (formData.accounts &&
+          formData.accounts.some(
+            (acc) => acc.accountNumber || acc.routingNumber || acc.bankName
+          )));
+
+    // Map form data to schema - keeping it flat as in the form
+    const mappedData = {
+      companyName: formData?.companyName || "",
+      employeeName: formData?.employeeName || "",
+      employeeNumber: formData?.employeeNumber || "",
+
+      // Account 1
+      accounts_1_action: formData?.accounts?.[0]?.action || "",
+      accounts_1_accountType: formData?.accounts?.[0]?.accountType || "",
+      accounts_1_accountHolderName:
+        formData?.accounts?.[0]?.accountHolderName || "",
+      accounts_1_routingNumber: formData?.accounts?.[0]?.routingNumber || "",
+      accounts_1_accountNumber: formData?.accounts?.[0]?.accountNumber || "",
+      accounts_1_bankName: formData?.accounts?.[0]?.bankName || "",
+      accounts_1_depositType: formData?.accounts?.[0]?.depositType || "",
+      accounts_1_depositPercent: formData?.accounts?.[0]?.depositPercent || "",
+      accounts_1_depositAmount: formData?.accounts?.[0]?.depositAmount || "",
+      accounts_1_depositRemainder:
+        formData?.accounts?.[0]?.depositRemainder || false,
+      accounts_1_lastFourDigits: formData?.accounts?.[0]?.lastFourDigits || "",
+
+      // Account 2
+      accounts_2_action: formData?.accounts?.[1]?.action || "",
+      accounts_2_accountType: formData?.accounts?.[1]?.accountType || "",
+      accounts_2_accountHolderName:
+        formData?.accounts?.[1]?.accountHolderName || "",
+      accounts_2_routingNumber: formData?.accounts?.[1]?.routingNumber || "",
+      accounts_2_accountNumber: formData?.accounts?.[1]?.accountNumber || "",
+      accounts_2_bankName: formData?.accounts?.[1]?.bankName || "",
+      accounts_2_depositType: formData?.accounts?.[1]?.depositType || "",
+      accounts_2_depositPercent: formData?.accounts?.[1]?.depositPercent || "",
+      accounts_2_depositAmount: formData?.accounts?.[1]?.depositAmount || "",
+      accounts_2_depositRemainder:
+        formData?.accounts?.[1]?.depositRemainder || false,
+      accounts_2_lastFourDigits: formData?.accounts?.[1]?.lastFourDigits || "",
+
+      // Account 3
+      accounts_3_action: formData?.accounts?.[2]?.action || "",
+      accounts_3_accountType: formData?.accounts?.[2]?.accountType || "",
+      accounts_3_accountHolderName:
+        formData?.accounts?.[2]?.accountHolderName || "",
+      accounts_3_routingNumber: formData?.accounts?.[2]?.routingNumber || "",
+      accounts_3_accountNumber: formData?.accounts?.[2]?.accountNumber || "",
+      accounts_3_bankName: formData?.accounts?.[2]?.bankName || "",
+      accounts_3_depositType: formData?.accounts?.[2]?.depositType || "",
+      accounts_3_depositPercent: formData?.accounts?.[2]?.depositPercent || "",
+      accounts_3_depositAmount: formData?.accounts?.[2]?.depositAmount || "",
+      accounts_3_depositRemainder:
+        formData?.accounts?.[2]?.depositRemainder || false,
+      accounts_3_lastFourDigits: formData?.accounts?.[2]?.lastFourDigits || "",
+
+      // Signature fields
+      employeeSignature: formData?.employeeSignature || "",
+      employeeDate: formData?.employeeDate || "",
+      employerName: formData?.employerName || "",
+      employerSignature: formData?.employerSignature || "",
+      employerDate: formData?.employerDate || "",
+
+      status: hasData ? status : "draft",
+    };
+
+    // Find existing form or create new one
+    let directDepositForm = await DirectDepositForm.findOne({ applicationId });
+
+    if (directDepositForm) {
+      Object.assign(directDepositForm, mappedData);
+    } else {
+      directDepositForm = new DirectDepositForm({
+        applicationId,
+        employeeId,
+        ...mappedData,
+      });
+    }
+
+    await directDepositForm.save({ validateBeforeSave: status !== "draft" });
+
+    // Update application progress if completed
+    if (status === "completed" || hasData) {
+      if (!application.completedForms) {
+        application.completedForms = [];
+      }
+
+      if (!application.completedForms.includes("directDeposit")) {
+        application.completedForms.push("directDeposit");
+      }
+
+      application.completionPercentage =
+        application.calculateCompletionPercentage();
+      await application.save();
+    }
+
+    const message =
+      hasData && status === "completed"
+        ? "Direct Deposit form saved successfully"
+        : "Direct Deposit form saved as draft";
+
+    res.status(200).json({
+      success: true,
+      message,
+      directDepositForm,
+      completionPercentage: application.completionPercentage,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error saving Direct Deposit form:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Get Direct Deposit form
+router.get("/get-direct-deposit/:applicationId", async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+
+    const directDepositForm = await DirectDepositForm.findOne({
+      applicationId,
+    });
+
+    if (!directDepositForm) {
+      return res.status(404).json({ message: "Direct Deposit form not found" });
+    }
+
+    // Map database fields to frontend field names
+    const mappedData = {
+      ...directDepositForm.toObject(),
+      companyName: directDepositForm.companyName || "",
+      employeeName: directDepositForm.employeeName || "",
+      employeeNumber: directDepositForm.employeeNumber || "",
+
+      // Reconstruct accounts array from flat fields
+      accounts: [
+        {
+          action: directDepositForm.accounts_1_action || "",
+          accountType: directDepositForm.accounts_1_accountType || "",
+          accountHolderName:
+            directDepositForm.accounts_1_accountHolderName || "",
+          routingNumber: directDepositForm.accounts_1_routingNumber || "",
+          accountNumber: directDepositForm.accounts_1_accountNumber || "",
+          bankName: directDepositForm.accounts_1_bankName || "",
+          depositType: directDepositForm.accounts_1_depositType || "",
+          depositPercent: directDepositForm.accounts_1_depositPercent || "",
+          depositAmount: directDepositForm.accounts_1_depositAmount || "",
+          depositRemainder:
+            directDepositForm.accounts_1_depositRemainder || false,
+          lastFourDigits: directDepositForm.accounts_1_lastFourDigits || "",
+        },
+        {
+          action: directDepositForm.accounts_2_action || "",
+          accountType: directDepositForm.accounts_2_accountType || "",
+          accountHolderName:
+            directDepositForm.accounts_2_accountHolderName || "",
+          routingNumber: directDepositForm.accounts_2_routingNumber || "",
+          accountNumber: directDepositForm.accounts_2_accountNumber || "",
+          bankName: directDepositForm.accounts_2_bankName || "",
+          depositType: directDepositForm.accounts_2_depositType || "",
+          depositPercent: directDepositForm.accounts_2_depositPercent || "",
+          depositAmount: directDepositForm.accounts_2_depositAmount || "",
+          depositRemainder:
+            directDepositForm.accounts_2_depositRemainder || false,
+          lastFourDigits: directDepositForm.accounts_2_lastFourDigits || "",
+        },
+        {
+          action: directDepositForm.accounts_3_action || "",
+          accountType: directDepositForm.accounts_3_accountType || "",
+          accountHolderName:
+            directDepositForm.accounts_3_accountHolderName || "",
+          routingNumber: directDepositForm.accounts_3_routingNumber || "",
+          accountNumber: directDepositForm.accounts_3_accountNumber || "",
+          bankName: directDepositForm.accounts_3_bankName || "",
+          depositType: directDepositForm.accounts_3_depositType || "",
+          depositPercent: directDepositForm.accounts_3_depositPercent || "",
+          depositAmount: directDepositForm.accounts_3_depositAmount || "",
+          depositRemainder:
+            directDepositForm.accounts_3_depositRemainder || false,
+          lastFourDigits: directDepositForm.accounts_3_lastFourDigits || "",
+        },
+      ],
+
+      employeeSignature: directDepositForm.employeeSignature || "",
+      employeeDate: directDepositForm.employeeDate || "",
+      employerName: directDepositForm.employerName || "",
+      employerSignature: directDepositForm.employerSignature || "",
+      employerDate: directDepositForm.employerDate || "",
+    };
+
+    res.status(200).json({
+      message: "Direct Deposit form retrieved successfully",
+      directDeposit: mappedData,
+    });
+  } catch (error) {
+    console.error("Error getting Direct Deposit form:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
 

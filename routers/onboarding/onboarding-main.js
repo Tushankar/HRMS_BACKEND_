@@ -231,6 +231,37 @@ router.get("/get-application/:employeeId", async (req, res) => {
       await pcaTrainingQuestionsCreated.save();
     }
 
+    // Create Misconduct Statement if it doesn't exist
+    let misconductStatementCreated = misconductStatement;
+    if (!misconductStatement) {
+      console.log("📝 [OnboardingMain] Creating new misconduct statement");
+      misconductStatementCreated = new MisconductStatement({
+        applicationId: application._id,
+        employeeId: actualEmployeeId,
+        status: "pending",
+        formData: {
+          staffTitle: "",
+          companyName: "",
+          employeeNameParagraph: "",
+          employeeName: "",
+          employmentPosition: "",
+          signatureLine: "",
+          dateField1: "",
+          exhibitName: "",
+          printName: "",
+          signatureField: "",
+          dateField2: "",
+          notaryDay: "",
+          notaryMonth: "",
+          notaryYear: "",
+        },
+      });
+      await misconductStatementCreated.save();
+      misconductStatement = misconductStatementCreated;
+    } else {
+      misconductStatementCreated = misconductStatement;
+    }
+
     // Transform I9 form from nested to flat structure for frontend compatibility
     let i9FormFlattened = null;
     if (i9Form) {
@@ -481,42 +512,38 @@ router.get("/get-application/:employeeId", async (req, res) => {
 
     // Transform Misconduct Statement from nested to flat structure for frontend compatibility
     let misconductStatementFlattened = null;
-    if (misconductStatement) {
+    if (misconductStatementCreated) {
       misconductStatementFlattened = {
-        _id: misconductStatement._id,
-        applicationId: misconductStatement.applicationId,
-        employeeId: misconductStatement.employeeId,
-        // Staff Information (flattened from staffInfo)
-        staffTitle: misconductStatement.staffInfo?.staffTitle || "",
-        employeeName: misconductStatement.staffInfo?.employeeName || "",
+        _id: misconductStatementCreated._id,
+        applicationId: misconductStatementCreated.applicationId,
+        employeeId: misconductStatementCreated.employeeId,
+        // Form Data Fields (directly from formData object)
+        staffTitle: misconductStatementCreated.formData?.staffTitle || "",
+        companyName: misconductStatementCreated.formData?.companyName || "",
+        employeeNameParagraph:
+          misconductStatementCreated.formData?.employeeNameParagraph || "",
+        employeeName: misconductStatementCreated.formData?.employeeName || "",
         employmentPosition:
-          misconductStatement.staffInfo?.employmentPosition || "",
-        // Acknowledgment fields
-        understandsCodeOfConduct:
-          misconductStatement.acknowledgment?.understandsCodeOfConduct || false,
-        noMisconductHistory:
-          misconductStatement.acknowledgment?.noMisconductHistory || false,
-        formReadAndUnderstood:
-          misconductStatement.acknowledgment?.formReadAndUnderstood || false,
-        // Employee signature (flattened from employeeSignature)
-        signature: misconductStatement.employeeSignature?.signature || "",
-        date: misconductStatement.employeeSignature?.date || null,
-        // Verifier/Witness (flattened from verifier)
-        witnessName: misconductStatement.verifier?.printedName || "",
-        witnessSignature: misconductStatement.verifier?.signature || "",
-        witnessDate: misconductStatement.verifier?.date || null,
-        witnessStatement: misconductStatement.verifier?.statement || "",
-        // Notary information (flattened from notaryInfo)
-        notaryDate: misconductStatement.notaryInfo?.day?.toString() || "",
-        notaryMonth: misconductStatement.notaryInfo?.month || "",
-        notaryYear: misconductStatement.notaryInfo?.year?.toString() || "",
-        notarySignature: misconductStatement.notaryInfo?.notarySignature || "",
-        notarySeal: misconductStatement.notaryInfo?.notarySeal || "",
+          misconductStatementCreated.formData?.employmentPosition || "",
+        signatureLine: misconductStatementCreated.formData?.signatureLine || "",
+        dateField1: misconductStatementCreated.formData?.dateField1 || "",
+        exhibitName: misconductStatementCreated.formData?.exhibitName || "",
+        printName: misconductStatementCreated.formData?.printName || "",
+        signatureField:
+          misconductStatementCreated.formData?.signatureField || "",
+        dateField2: misconductStatementCreated.formData?.dateField2 || "",
+        notaryDay: misconductStatementCreated.formData?.notaryDay || "",
+        notaryMonth: misconductStatementCreated.formData?.notaryMonth || "",
+        notaryYear: misconductStatementCreated.formData?.notaryYear || "",
+        // Legacy fields for backward compatibility
+        signature: misconductStatementCreated.employeeSignature || "",
+        date: misconductStatementCreated.signatureDate || null,
+        signingMethod: misconductStatementCreated.signingMethod || "digital",
         // Metadata
-        createdAt: misconductStatement.createdAt,
-        updatedAt: misconductStatement.updatedAt,
-        status: misconductStatement.status,
-        hrFeedback: misconductStatement.hrFeedback,
+        createdAt: misconductStatementCreated.createdAt,
+        updatedAt: misconductStatementCreated.updatedAt,
+        status: misconductStatementCreated.status,
+        hrFeedback: misconductStatementCreated.hrFeedback,
       };
     }
 

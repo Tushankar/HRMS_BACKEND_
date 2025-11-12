@@ -1724,6 +1724,15 @@ router.get(
     try {
       const { applicationId, positionType } = req.params;
 
+      // Only handle job description types, pass through other types
+      const validJobDescriptionTypes = ["CNA", "LPN", "RN"];
+      if (!validJobDescriptionTypes.includes(positionType)) {
+        // Not a job description type, let the next router handle it
+        return res.status(404).json({
+          message: "Position type not found in job description",
+        });
+      }
+
       const JobModel = getJobDescriptionModel(positionType);
       const jobDesc = await JobModel.findOne({ applicationId });
 

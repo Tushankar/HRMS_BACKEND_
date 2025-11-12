@@ -14,43 +14,56 @@ const DirectDepositFormSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Section 1 - Payee Information
-    name: { type: String },
-    address: { type: String },
-    city: { type: String },
-    state: { type: String },
-    zipCode: { type: String },
-    telephone: { type: String },
-    areaCode: { type: String },
-    personEntitled: { type: String },
-    claimId: { type: String },
-    accountType: { type: String },
-    paymentType: [{ type: String }],
-    accountNumber: { type: String },
-    allotmentType: { type: String },
-    allotmentAmount: { type: String },
-    
-    // Section 2 - Government Agency
-    govAgencyName: { type: String },
-    govAgencyAddress: { type: String },
-    
-    // Section 3 - Financial Institution
-    financialInstitution: { type: String },
-    routingNumber: { type: String },
-    checkDigit: { type: String },
-    accountTitle: { type: String },
-    repName: { type: String },
-    repTelephone: { type: String },
-    
-    // Signatures
-    payeeSignature1: { type: String },
-    payeeDate1: { type: String },
-    payeeSignature2: { type: String },
-    payeeDate2: { type: String },
-    jointSignature1: { type: String },
-    jointDate1: { type: String },
-    jointSignature2: { type: String },
-    jointDate2: { type: String },
+    // Company and Employee Information
+    companyName: { type: String },
+    employeeName: { type: String },
+    employeeNumber: { type: String },
+
+    // Account 1
+    accounts_1_action: { type: String },
+    accounts_1_accountType: { type: String },
+    accounts_1_accountHolderName: { type: String },
+    accounts_1_routingNumber: { type: String },
+    accounts_1_accountNumber: { type: String },
+    accounts_1_bankName: { type: String },
+    accounts_1_depositType: { type: String },
+    accounts_1_depositPercent: { type: String },
+    accounts_1_depositAmount: { type: String },
+    accounts_1_depositRemainder: { type: Boolean, default: false },
+    accounts_1_lastFourDigits: { type: String },
+
+    // Account 2
+    accounts_2_action: { type: String },
+    accounts_2_accountType: { type: String },
+    accounts_2_accountHolderName: { type: String },
+    accounts_2_routingNumber: { type: String },
+    accounts_2_accountNumber: { type: String },
+    accounts_2_bankName: { type: String },
+    accounts_2_depositType: { type: String },
+    accounts_2_depositPercent: { type: String },
+    accounts_2_depositAmount: { type: String },
+    accounts_2_depositRemainder: { type: Boolean, default: false },
+    accounts_2_lastFourDigits: { type: String },
+
+    // Account 3
+    accounts_3_action: { type: String },
+    accounts_3_accountType: { type: String },
+    accounts_3_accountHolderName: { type: String },
+    accounts_3_routingNumber: { type: String },
+    accounts_3_accountNumber: { type: String },
+    accounts_3_bankName: { type: String },
+    accounts_3_depositType: { type: String },
+    accounts_3_depositPercent: { type: String },
+    accounts_3_depositAmount: { type: String },
+    accounts_3_depositRemainder: { type: Boolean, default: false },
+    accounts_3_lastFourDigits: { type: String },
+
+    // Signature fields
+    employeeSignature: { type: String },
+    employeeDate: { type: String },
+    employerName: { type: String },
+    employerSignature: { type: String },
+    employerDate: { type: String },
 
     // Internal status tracking
     status: {

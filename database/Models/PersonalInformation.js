@@ -38,8 +38,10 @@ const PersonalInformationSchema = new mongoose.Schema(
     dateAvailable: { type: Date },
     socialSecurityNo: { type: String },
     desiredSalary: { type: String },
-    salaryCurrency: { type: String, default: "USD" },
-    desiredSalaryType: { type: String, enum: ["hourly", "annual"] },
+    desiredSalaryType: {
+      type: String,
+      enum: ["hourly", "weekly", "biweekly", "monthly", "yearly"],
+    },
     positionAppliedFor: { type: String },
 
     // Government ID
