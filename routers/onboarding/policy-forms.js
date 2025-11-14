@@ -889,7 +889,26 @@ router.post("/save-non-compete-agreement", async (req, res) => {
           .status(404)
           .json({ message: "Non-compete agreement not found" });
       }
-      nonCompeteForm.hrFeedback = hrFeedback;
+      nonCompeteForm.hrFeedback = {
+        comment: hrFeedback.comment,
+        reviewedAt: hrFeedback.reviewedAt,
+        signature: hrFeedback.signature,
+      };
+
+      // Update company representative if provided
+      if (hrFeedback.companyRepSignature || hrFeedback.companyRepName) {
+        nonCompeteForm.companyRepresentative = {
+          ...nonCompeteForm.companyRepresentative,
+          signature:
+            hrFeedback.companyRepSignature ||
+            nonCompeteForm.companyRepresentative?.signature,
+          name:
+            hrFeedback.companyRepName ||
+            nonCompeteForm.companyRepresentative?.name,
+          signatureDate: new Date(),
+        };
+      }
+
       nonCompeteForm.status = status || "under_review";
       await nonCompeteForm.save();
       return res.status(200).json({

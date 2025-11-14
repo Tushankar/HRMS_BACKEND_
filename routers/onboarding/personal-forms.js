@@ -610,7 +610,14 @@ router.get("/get-professional-experience-by-id/:id", async (req, res) => {
 // Save or update Work Experience form
 router.post("/save-work-experience", async (req, res) => {
   try {
-    const { applicationId, employeeId, formData, status = "draft" } = req.body;
+    const {
+      applicationId,
+      employeeId,
+      formData,
+      status = "draft",
+      workExperiences,
+      hrFeedback,
+    } = req.body;
 
     if (!applicationId || !employeeId) {
       return res
@@ -629,23 +636,75 @@ router.post("/save-work-experience", async (req, res) => {
     // Find existing form or create new one
     let workExperienceForm = await WorkExperience.findOne({ applicationId });
 
-    if (workExperienceForm) {
-      // Update existing form - ensure status parameter overrides any status in formData
-      const { status: formDataStatus, ...cleanFormData } = formData;
-      Object.assign(workExperienceForm, cleanFormData);
+    // Determine if this is an HR feedback-only update
+    const isHRFeedbackOnly =
+      hrFeedback !== undefined &&
+      workExperiences === undefined &&
+      formData === undefined;
+
+    // Handle HR notes submission (when hrFeedback is sent)
+    if (hrFeedback !== undefined) {
+      if (!workExperienceForm) {
+        return res
+          .status(404)
+          .json({
+            message:
+              "Work experience form not found. Cannot add HR notes to non-existent form.",
+          });
+      }
+
+      // Update HR feedback
+      workExperienceForm.hrFeedback = hrFeedback;
+
+      // Only update workExperiences if provided (not for HR notes only)
+      if (workExperiences !== undefined) {
+        workExperienceForm.workExperiences = workExperiences;
+      }
+
+      // Update status
       workExperienceForm.status = status;
+    }
+    // Handle regular form submission (when formData is sent)
+    else if (formData) {
+      if (workExperienceForm) {
+        // Update existing form - ensure status parameter overrides any status in formData
+        const { status: formDataStatus, ...cleanFormData } = formData;
+        Object.assign(workExperienceForm, cleanFormData);
+        workExperienceForm.status = status;
+      } else {
+        // Create new form - ensure status parameter overrides any status in formData
+        const { status: formDataStatus, ...cleanFormData } = formData;
+        workExperienceForm = new WorkExperience({
+          applicationId,
+          employeeId,
+          ...cleanFormData,
+          status,
+        });
+      }
+    } else if (workExperiences !== undefined) {
+      // Handle workExperiences update without HR feedback
+      if (!workExperienceForm) {
+        workExperienceForm = new WorkExperience({
+          applicationId,
+          employeeId,
+          workExperiences,
+          status,
+        });
+      } else {
+        workExperienceForm.workExperiences = workExperiences;
+        workExperienceForm.status = status;
+      }
     } else {
-      // Create new form - ensure status parameter overrides any status in formData
-      const { status: formDataStatus, ...cleanFormData } = formData;
-      workExperienceForm = new WorkExperience({
-        applicationId,
-        employeeId,
-        ...cleanFormData,
-        status,
-      });
+      return res
+        .status(400)
+        .json({
+          message:
+            "Either formData, workExperiences, or hrFeedback must be provided",
+        });
     }
 
-    await workExperienceForm.save();
+    // Skip validation if only updating HR feedback
+    await workExperienceForm.save({ validateBeforeSave: !isHRFeedbackOnly });
 
     // Update application progress
     if (status === "completed") {
@@ -667,6 +726,8 @@ router.post("/save-work-experience", async (req, res) => {
     const message =
       status === "draft"
         ? "Work experience saved as draft"
+        : status === "under_review"
+        ? "Work experience sent for review"
         : "Work experience completed";
 
     res.status(200).json({

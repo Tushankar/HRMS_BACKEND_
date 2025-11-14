@@ -62,6 +62,7 @@ const PersonalInformationSchema = new mongoose.Schema(
       type: String,
       enum: ["YES", "NO"],
     },
+    authorizedToWorkExplanation: { type: String },
     hasWorkedHereBefore: {
       type: String,
       enum: ["YES", "NO"],

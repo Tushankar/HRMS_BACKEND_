@@ -158,7 +158,7 @@ router.get("/get/:employeeId", authMiddleware, async (req, res) => {
     let pcaTraining = await PCATrainingQuestions.findOne({
       applicationId: application._id,
       employeeId,
-    });
+    }).populate("employeeId", "firstName lastName email");
 
     if (!pcaTraining) {
       // Create new record if it doesn't exist
@@ -168,6 +168,10 @@ router.get("/get/:employeeId", authMiddleware, async (req, res) => {
         status: "pending",
       });
       await pcaTraining.save();
+      // Populate after saving
+      pcaTraining = await PCATrainingQuestions.findById(
+        pcaTraining._id
+      ).populate("employeeId", "firstName lastName email");
     }
 
     res.status(200).json({
@@ -583,41 +587,80 @@ router.post("/hr/add-note/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// HR: Update status of PCA Training submission
-router.put("/hr/update-status/:id", authMiddleware, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-    const hrId = req.user._id;
+// Download employee-uploaded PCA Training Questions file
+router.get(
+  "/download-submission/:employeeId",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { employeeId } = req.params;
 
-    const pcaTraining = await PCATrainingQuestions.findById(id);
+      console.log(
+        `[PCA Training] Downloading submission for employee: ${employeeId}`
+      );
 
-    if (!pcaTraining) {
-      return res.status(404).json({
+      // Find the onboarding application
+      const application = await OnboardingApplication.findOne({ employeeId });
+
+      if (!application) {
+        return res.status(404).json({
+          success: false,
+          message: "Onboarding application not found",
+        });
+      }
+
+      // Find PCA Training Questions record
+      const pcaTraining = await PCATrainingQuestions.findOne({
+        applicationId: application._id,
+        employeeId,
+      });
+
+      if (!pcaTraining || !pcaTraining.employeeUploadedFile) {
+        return res.status(404).json({
+          success: false,
+          message: "PCA Training submission not found",
+        });
+      }
+
+      const filePath = pcaTraining.employeeUploadedFile.path;
+
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({
+          success: false,
+          message: "Submission file not found on server",
+        });
+      }
+
+      console.log(
+        `[PCA Training] Downloading submission file: ${pcaTraining.employeeUploadedFile.originalName}`
+      );
+
+      // Send the file
+      res.download(
+        filePath,
+        pcaTraining.employeeUploadedFile.originalName,
+        (err) => {
+          if (err) {
+            console.error("[PCA Training] Error sending file:", err);
+            if (!res.headersSent) {
+              res.status(500).json({
+                success: false,
+                message: "Error downloading file",
+              });
+            }
+          }
+        }
+      );
+    } catch (error) {
+      console.error("[PCA Training] Download submission error:", error);
+      res.status(500).json({
         success: false,
-        message: "PCA Training record not found",
+        message: "Failed to download submission",
+        error: error.message,
       });
     }
-
-    pcaTraining.status = status;
-    pcaTraining.reviewedAt = new Date();
-    pcaTraining.reviewedBy = hrId;
-
-    await pcaTraining.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Status updated successfully",
-      data: pcaTraining,
-    });
-  } catch (error) {
-    console.error("[PCA Training] Error updating status:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update status",
-      error: error.message,
-    });
   }
-});
+);
 
 module.exports = router;
