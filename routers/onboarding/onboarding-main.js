@@ -469,28 +469,53 @@ router.get("/get-application/:employeeId", async (req, res) => {
         lastName: w4Form.personalInfo?.lastName || "",
         address: w4Form.personalInfo?.address || "",
         cityStateZip: w4Form.personalInfo?.cityStateZip || "",
+        city: w4Form.personalInfo?.cityStateZip || "",
         socialSecurityNumber: w4Form.personalInfo?.socialSecurityNumber || "",
+        ssn: w4Form.personalInfo?.socialSecurityNumber || "",
         filingStatus:
           mapFilingStatusToFrontend(w4Form.personalInfo?.filingStatus) || "",
         // Multiple Jobs Option (Step 2)
         multipleJobsOption: w4Form.multipleJobsOption || "",
+        twoJobs: w4Form.multipleJobsOption === "two_jobs",
         // Dependents (Step 3)
         qualifyingChildren: w4Form.dependents?.qualifyingChildren || "",
+        childrenAmount: w4Form.dependents?.qualifyingChildren || "",
         otherDependents: w4Form.dependents?.otherDependents || "",
         totalCredits: w4Form.dependents?.totalCredits || "",
+        step3Total: w4Form.dependents?.totalCredits || "",
         // Other Adjustments (Step 4)
         otherIncome: w4Form.otherAdjustments?.otherIncome || "",
+        step4a: w4Form.otherAdjustments?.otherIncome || "",
         deductions: w4Form.otherAdjustments?.deductions || "",
+        step4b: w4Form.otherAdjustments?.deductions || "",
         extraWithholding: w4Form.otherAdjustments?.extraWithholding || "",
+        step4c: w4Form.otherAdjustments?.extraWithholding || "",
         // Employee Signature (Step 5)
         employeeSignature: w4Form.employeeSignature || "",
+        signature: w4Form.employeeSignature || "",
         signatureDate: w4Form.signatureDate || "",
         exempt: w4Form.exempt || false,
         // Employer Information
         employerName: w4Form.employerInfo?.employerName || "",
         employerAddress: w4Form.employerInfo?.employerAddress || "",
         firstDateOfEmployment: w4Form.employerInfo?.firstDateOfEmployment || "",
+        employmentDate: w4Form.employerInfo?.firstDateOfEmployment || "",
         employerEIN: w4Form.employerInfo?.employerEIN || "",
+        ein: w4Form.employerInfo?.employerEIN || "",
+        // Multiple Jobs Worksheet data
+        multipleJobs1: w4Form.multipleJobsWorksheet?.twoJobs?.amount || "",
+        multipleJobs2a:
+          w4Form.multipleJobsWorksheet?.threeJobs?.firstTwoJobs || "",
+        multipleJobs2b: w4Form.multipleJobsWorksheet?.threeJobs?.thirdJob || "",
+        multipleJobs2c: w4Form.multipleJobsWorksheet?.threeJobs?.total || "",
+        multipleJobs3: w4Form.multipleJobsWorksheet?.payPeriods || "",
+        multipleJobs4: w4Form.multipleJobsWorksheet?.extraWithholding || "",
+        // Deductions Worksheet data
+        deductions1: w4Form.deductionsWorksheet?.itemizedDeductions || "",
+        deductions2: w4Form.deductionsWorksheet?.standardDeduction || "",
+        deductions3: w4Form.deductionsWorksheet?.difference || "",
+        deductions4: w4Form.deductionsWorksheet?.otherAdjustments || "",
+        deductions5: w4Form.deductionsWorksheet?.total || "",
         // Metadata
         createdAt: w4Form.createdAt,
         updatedAt: w4Form.updatedAt,
@@ -567,6 +592,13 @@ router.get("/get-application/:employeeId", async (req, res) => {
         employeeDate: serviceDeliveryPolicy.employeeSignatureDate || null,
         agencySignature: serviceDeliveryPolicy.supervisorSignature || "",
         agencyDate: serviceDeliveryPolicy.supervisorSignatureDate || null,
+        policyInitials: serviceDeliveryPolicy.policyInitials || {
+          policy1: "",
+          policy2: "",
+          policy3: "",
+          policy4: "",
+          policy5: "",
+        },
       };
     }
 
@@ -576,36 +608,17 @@ router.get("/get-application/:employeeId", async (req, res) => {
       nonCompeteAgreementFlattened = {
         ...nonCompeteAgreement.toObject(),
         // Map effective date back to frontend fields
-        agreementDate:
-          nonCompeteAgreement.effectiveDate?.day &&
-          nonCompeteAgreement.effectiveDate?.month &&
-          nonCompeteAgreement.effectiveDate?.year
-            ? new Date(
-                nonCompeteAgreement.effectiveDate.year,
-                [
-                  "January",
-                  "February",
-                  "March",
-                  "April",
-                  "May",
-                  "June",
-                  "July",
-                  "August",
-                  "September",
-                  "October",
-                  "November",
-                  "December",
-                ].indexOf(nonCompeteAgreement.effectiveDate.month),
-                nonCompeteAgreement.effectiveDate.day
-              )
-            : null,
-        agreementMonth: nonCompeteAgreement.effectiveDate?.month || "",
-        agreementYear:
-          nonCompeteAgreement.effectiveDate?.year?.toString() || "",
+        day: nonCompeteAgreement.effectiveDate?.day?.toString() || "",
+        month: nonCompeteAgreement.effectiveDate?.month || "",
+        year: nonCompeteAgreement.effectiveDate?.year?.toString() || "",
         // Map employee info
         employeeName: nonCompeteAgreement.employeeInfo?.employeeName || "",
         employeeAddress: nonCompeteAgreement.employeeInfo?.address || "",
-        jobTitle: nonCompeteAgreement.employeeInfo?.position || "",
+        employeePosition: nonCompeteAgreement.employeeInfo?.position || "",
+        // Map employee signature fields
+        employeeSignature: nonCompeteAgreement.employeeSignature || "",
+        employeeDate: nonCompeteAgreement.employeeSignatureDate || null,
+        employeeSignatureName: nonCompeteAgreement.employeeSignatureName || "",
         // Map company representative
         companyRepName: nonCompeteAgreement.companyRepresentative?.name || "",
         companyRepSignature:
