@@ -111,6 +111,7 @@ app.use("/onboarding", TaxForms);
 app.use("/onboarding", PersonalForms);
 app.use("/onboarding", PolicyForms);
 app.use("/onboarding", ScreeningForms);
+app.use("/onboarding", JobDescription); // JobDescription BEFORE TBSymptomScreen to avoid route collision
 app.use("/onboarding", WorkExperience);
 app.use("/onboarding", Education);
 app.use("/onboarding", References);
@@ -122,7 +123,6 @@ app.use("/onboarding/training-video", TrainingVideo);
 app.use("/onboarding/misconduct-statement", MisconductStatement);
 app.use("/onboarding", DrivingLicense);
 app.use("/onboarding", TBSymptomScreenUpload);
-app.use("/onboarding", JobDescription);
 
 // Direct job description route (for simplified API)
 app.use("/job-description", JobDescription);
