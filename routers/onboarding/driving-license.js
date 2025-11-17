@@ -61,7 +61,13 @@ router.get("/get-driving-license/:applicationId", async (req, res) => {
 // Save driving license form data
 router.post("/save-driving-license", async (req, res) => {
   try {
-    const { applicationId, employeeId, formData, status = "draft" } = req.body;
+    const {
+      applicationId,
+      employeeId,
+      formData,
+      status = "draft",
+      hrFeedback,
+    } = req.body;
 
     if (!applicationId || !employeeId) {
       return res
@@ -91,6 +97,15 @@ router.post("/save-driving-license", async (req, res) => {
       drivingLicense.licenseState = formData.licenseState || "";
       drivingLicense.expirationDate = formData.expirationDate || null;
       drivingLicense.licenseClass = formData.licenseClass || "";
+    }
+
+    // Update HR feedback if provided
+    if (hrFeedback) {
+      drivingLicense.hrFeedback = {
+        comment: hrFeedback.comment || "",
+        reviewedBy: hrFeedback.reviewedBy,
+        reviewedAt: hrFeedback.reviewedAt || new Date(),
+      };
     }
 
     drivingLicense.status = status;
