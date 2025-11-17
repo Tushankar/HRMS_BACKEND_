@@ -34,6 +34,7 @@ const { isFormEditable } = require("../../utils/formUtils");
 const {
   getFormKeysForPosition,
   getRelevantJobDescriptionForms,
+  checkProfessionalCertificateCompletion,
 } = require("../../utils/positionUtils");
 
 const router = express.Router();
@@ -708,6 +709,7 @@ router.get("/get-application/:employeeId", async (req, res) => {
     const response = {
       application,
       isEditable, // Add editable status
+      professionalCertificateCompleted: checkProfessionalCertificateCompletion(application, selectedPosition),
       forms: {
         personalInformation: personalInformation
           ? {

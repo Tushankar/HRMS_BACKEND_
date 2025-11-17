@@ -79,6 +79,11 @@ const OnboardingApplicationSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    // Professional certificates storage
+    professionalCertificates: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
   },
   {
     timestamps: true,

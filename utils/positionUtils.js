@@ -28,13 +28,13 @@ const getFormKeysForPosition = (positionType) => {
   // Add position-specific forms
   switch (positionType) {
     case 'PCA':
-      return [...baseFormKeys, "jobDescriptionPCA", "pcaTrainingQuestions"];
+      return [...baseFormKeys, "jobDescriptionPCA", "pcaTrainingQuestions", "professionalCertificatePCA"];
     case 'CNA':
-      return [...baseFormKeys, "jobDescriptionCNA"];
+      return [...baseFormKeys, "jobDescriptionCNA", "professionalCertificateCNA"];
     case 'LPN':
-      return [...baseFormKeys, "jobDescriptionLPN"];
+      return [...baseFormKeys, "jobDescriptionLPN", "professionalCertificateLPN"];
     case 'RN':
-      return [...baseFormKeys, "jobDescriptionRN"];
+      return [...baseFormKeys, "jobDescriptionRN", "professionalCertificateRN"];
     default:
       return baseFormKeys;
   }
@@ -55,7 +55,17 @@ const getRelevantJobDescriptionForms = (positionType) => {
   }
 };
 
+const checkProfessionalCertificateCompletion = (application, positionType) => {
+  if (!application.professionalCertificates || !positionType) {
+    return false;
+  }
+  
+  const documents = application.professionalCertificates[positionType] || [];
+  return documents.length > 0;
+};
+
 module.exports = {
   getFormKeysForPosition,
-  getRelevantJobDescriptionForms
+  getRelevantJobDescriptionForms,
+  checkProfessionalCertificateCompletion
 };

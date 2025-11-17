@@ -81,6 +81,7 @@ const TrainingVideo = require("./routers/onboarding/trainingVideo.js");
 const MisconductStatement = require("./routers/onboarding/misconduct-statement.js");
 const DrivingLicense = require("./routers/onboarding/driving-license.js");
 const TBSymptomScreenUpload = require("./routers/onboarding/tb-symptom-screen.js");
+const ProfessionalCertificates = require("./routers/onboarding/professional-certificates.js");
 
 // HR Review Routes
 const OnboardingReview = require("./routers/hr/onboarding-review.js");
@@ -104,6 +105,7 @@ app.use("/chat", Getchat);
 app.use("/upload", UploadRouter);
 
 // Apply Onboarding Routes
+app.use("/onboarding", TBSymptomScreenUpload);
 app.use("/onboarding", OnboardingMain);
 app.use("/onboarding", EmploymentApplication);
 app.use("/onboarding", I9Form);
@@ -111,7 +113,7 @@ app.use("/onboarding", TaxForms);
 app.use("/onboarding", PersonalForms);
 app.use("/onboarding", PolicyForms);
 app.use("/onboarding", ScreeningForms);
-app.use("/onboarding", JobDescription); // JobDescription BEFORE TBSymptomScreen to avoid route collision
+app.use("/onboarding", JobDescription);
 app.use("/onboarding", WorkExperience);
 app.use("/onboarding", Education);
 app.use("/onboarding", References);
@@ -122,7 +124,8 @@ app.use("/onboarding/pca-training", PCATrainingQuestions);
 app.use("/onboarding/training-video", TrainingVideo);
 app.use("/onboarding/misconduct-statement", MisconductStatement);
 app.use("/onboarding", DrivingLicense);
-app.use("/onboarding", TBSymptomScreenUpload);
+app.use("/onboarding/tb-symptom-screen", TBSymptomScreenUpload);
+app.use("/onboarding/professional-certificates", ProfessionalCertificates);
 
 // Direct job description route (for simplified API)
 app.use("/job-description", JobDescription);
