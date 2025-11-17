@@ -1720,7 +1720,7 @@ router.post(
 // Get all uploaded documents for job description
 router.get(
   "/get-uploaded-documents/:applicationId/:positionType",
-  async (req, res) => {
+  async (req, res, next) => {
     try {
       const { applicationId, positionType } = req.params;
 
@@ -1728,9 +1728,7 @@ router.get(
       const validJobDescriptionTypes = ["CNA", "LPN", "RN"];
       if (!validJobDescriptionTypes.includes(positionType)) {
         // Not a job description type, let the next router handle it
-        return res.status(404).json({
-          message: "Position type not found in job description",
-        });
+        return next();
       }
 
       const JobModel = getJobDescriptionModel(positionType);
