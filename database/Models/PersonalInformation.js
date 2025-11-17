@@ -60,7 +60,7 @@ const PersonalInformationSchema = new mongoose.Schema(
     },
     isAuthorizedToWork: {
       type: String,
-      enum: ["YES", "NO"],
+      enum: ["YES", "NO", ""],
     },
     authorizedToWorkExplanation: { type: String },
     hasWorkedHereBefore: {
