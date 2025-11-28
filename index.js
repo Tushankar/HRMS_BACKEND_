@@ -63,6 +63,7 @@ const EmployeeStatistics = require("./routers/hr/employee-statistics.js");
 
 // Onboarding Routes
 const OnboardingMain = require("./routers/onboarding/onboarding-main.js");
+const ApplicationsRouter = require("./routers/applications.js");
 const EmploymentApplication = require("./routers/onboarding/employment-application.js");
 const I9Form = require("./routers/onboarding/i9-form.js");
 const TaxForms = require("./routers/onboarding/tax-forms.js");
@@ -90,6 +91,9 @@ const OnboardingManagement = require("./routers/hr/onboarding-management.js");
 // Kanban Task Management Routes
 const KanbanTasks = require("./routers/hr/kanban-tasks.js");
 
+// Location Proxy Routes (to avoid CORS issues with external APIs)
+const LocationProxy = require("./routers/location-proxy.js");
+
 // Apply Routes
 app.use("/auth", RegisterRoute);
 app.use("/auth", LoginRoute);
@@ -105,6 +109,7 @@ app.use("/chat", Getchat);
 app.use("/upload", UploadRouter);
 
 // Apply Onboarding Routes
+app.use("/api/applications", ApplicationsRouter);
 app.use("/onboarding", TBSymptomScreenUpload);
 app.use("/onboarding", OnboardingMain);
 app.use("/onboarding", EmploymentApplication);
@@ -137,6 +142,9 @@ app.use("/hr", EmployeeStatistics);
 
 // Apply Kanban Task Management Routes
 app.use("/hr/kanban", KanbanTasks);
+
+// Apply Location Proxy Routes
+app.use("/api/location", LocationProxy);
 
 // WebSocket for Real-Time Chat
 const users = {}; // Store connected users { userId: WebSocket }

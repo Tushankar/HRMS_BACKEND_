@@ -51,16 +51,7 @@ router.put(
   async (req, res) => {
     try {
       const userId = req.user._id;
-      const {
-        userName,
-        email,
-        phone,
-        country,
-        addressLine1,
-        state,
-        city,
-        zip,
-      } = req.body;
+      const { userName, email, phone } = req.body;
 
       // Find the user
       const user = await User.findById(userId);
@@ -78,11 +69,6 @@ router.put(
       if (userName) updateData.userName = userName;
       if (email) updateData.email = email;
       if (phone) updateData.phoneNumber = Number(phone);
-      if (country) updateData.country = country;
-      if (addressLine1) updateData.addressLine1 = addressLine1;
-      if (state) updateData.state = state;
-      if (city) updateData.city = city;
-      if (zip) updateData.zip = zip;
 
       // Handle profile image upload
       if (req.file) {

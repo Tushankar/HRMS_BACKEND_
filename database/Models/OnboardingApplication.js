@@ -79,6 +79,12 @@ const OnboardingApplicationSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    // Employment type selection
+    employmentType: {
+      type: String,
+      enum: ["W-2", "1099"],
+      default: null,
+    },
     // Professional certificates storage
     professionalCertificates: {
       type: mongoose.Schema.Types.Mixed,

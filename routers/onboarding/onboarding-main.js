@@ -709,7 +709,10 @@ router.get("/get-application/:employeeId", async (req, res) => {
     const response = {
       application,
       isEditable, // Add editable status
-      professionalCertificateCompleted: checkProfessionalCertificateCompletion(application, selectedPosition),
+      professionalCertificateCompleted: checkProfessionalCertificateCompletion(
+        application,
+        selectedPosition
+      ),
       forms: {
         personalInformation: personalInformation
           ? {
@@ -987,6 +990,155 @@ router.get("/get-application/:employeeId", async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting application:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Get forms status for sidebar
+router.get("/forms-status/:applicationId", async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+
+    const application = await OnboardingApplication.findById(applicationId);
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    // Get all forms data similar to get-application but only status
+    const [
+      personalInformation,
+      professionalExperience,
+      education,
+      references,
+      legalDisclosures,
+      positionType,
+      employmentApp,
+      orientationPresentation,
+      i9Form,
+      w4Form,
+      w9Form,
+      emergencyContact,
+      directDeposit,
+      misconductStatement,
+      codeOfEthics,
+      serviceDeliveryPolicy,
+      nonCompeteAgreement,
+      backgroundCheck,
+      tbSymptomScreen,
+      drivingLicense,
+      orientationChecklist,
+      workExperience,
+      pcaTrainingQuestions,
+    ] = await Promise.all([
+      PersonalInformation.findOne({ applicationId }),
+      ProfessionalExperience.findOne({ applicationId }),
+      Education.findOne({ applicationId }),
+      References.findOne({ applicationId }),
+      LegalDisclosures.findOne({ applicationId }),
+      PositionType.findOne({ applicationId }),
+      EmploymentApplication.findOne({ applicationId }),
+      OrientationPresentation.findOne({ applicationId }),
+      I9Form.findOne({ applicationId }),
+      W4Form.findOne({ applicationId }),
+      W9Form.findOne({ applicationId }),
+      EmergencyContact.findOne({ applicationId }),
+      DirectDeposit.findOne({ applicationId }),
+      MisconductStatement.findOne({ applicationId }),
+      CodeOfEthics.findOne({ applicationId }),
+      ServiceDeliveryPolicy.findOne({ applicationId }),
+      NonCompeteAgreement.findOne({ applicationId }),
+      BackgroundCheck.findOne({ applicationId }),
+      TBSymptomScreen.findOne({ applicationId }),
+      DrivingLicense.findOne({ applicationId }),
+      OrientationChecklist.findOne({ applicationId }),
+      WorkExperience.findOne({ applicationId }),
+      PCATrainingQuestions.findOne({ applicationId }),
+    ]);
+
+    const formsStatus = {
+      employmentType: application.employmentType,
+      personalInformation: personalInformation
+        ? { status: personalInformation.status, _id: personalInformation._id }
+        : null,
+      professionalExperience: professionalExperience
+        ? {
+            status: professionalExperience.status,
+            _id: professionalExperience._id,
+          }
+        : null,
+      workExperience: workExperience
+        ? { status: workExperience.status, _id: workExperience._id }
+        : null,
+      education: education
+        ? { status: education.status, _id: education._id }
+        : null,
+      references: references
+        ? { status: references.status, _id: references._id }
+        : null,
+      legalDisclosures: legalDisclosures
+        ? { status: legalDisclosures.status, _id: legalDisclosures._id }
+        : null,
+      positionType: positionType
+        ? { status: positionType.status, _id: positionType._id }
+        : null,
+      employmentApplication: employmentApp
+        ? { status: employmentApp.status, _id: employmentApp._id }
+        : null,
+      orientationPresentation: orientationPresentation
+        ? {
+            status: orientationPresentation.status,
+            _id: orientationPresentation._id,
+          }
+        : null,
+      i9Form: i9Form ? { status: i9Form.status, _id: i9Form._id } : null,
+      w4Form: w4Form ? { status: w4Form.status, _id: w4Form._id } : null,
+      w9Form: w9Form ? { status: w9Form.status, _id: w9Form._id } : null,
+      emergencyContact: emergencyContact
+        ? { status: emergencyContact.status, _id: emergencyContact._id }
+        : null,
+      directDeposit: directDeposit
+        ? { status: directDeposit.status, _id: directDeposit._id }
+        : null,
+      misconductStatement: misconductStatement
+        ? { status: misconductStatement.status, _id: misconductStatement._id }
+        : null,
+      codeOfEthics: codeOfEthics
+        ? { status: codeOfEthics.status, _id: codeOfEthics._id }
+        : null,
+      serviceDeliveryPolicy: serviceDeliveryPolicy
+        ? {
+            status: serviceDeliveryPolicy.status,
+            _id: serviceDeliveryPolicy._id,
+          }
+        : null,
+      nonCompeteAgreement: nonCompeteAgreement
+        ? { status: nonCompeteAgreement.status, _id: nonCompeteAgreement._id }
+        : null,
+      backgroundCheck: backgroundCheck
+        ? { status: backgroundCheck.status, _id: backgroundCheck._id }
+        : null,
+      tbSymptomScreen: tbSymptomScreen
+        ? { status: tbSymptomScreen.status, _id: tbSymptomScreen._id }
+        : null,
+      drivingLicense: drivingLicense
+        ? { status: drivingLicense.status, _id: drivingLicense._id }
+        : null,
+      orientationChecklist: orientationChecklist
+        ? { status: orientationChecklist.status, _id: orientationChecklist._id }
+        : null,
+      pcaTrainingQuestions: pcaTrainingQuestions
+        ? { status: pcaTrainingQuestions.status, _id: pcaTrainingQuestions._id }
+        : null,
+    };
+
+    res.status(200).json({
+      message: "Forms status retrieved successfully",
+      forms: formsStatus,
+    });
+  } catch (error) {
+    console.error("Error getting forms status:", error);
     res
       .status(500)
       .json({ message: "Internal server error", error: error.message });

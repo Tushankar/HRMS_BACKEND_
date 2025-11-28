@@ -19,23 +19,18 @@ const UserSchema = new Mongoose.Schema(
     },
     addressLine1: {
       type: String,
-      required: true,
     },
     country: {
       type: String,
-      required: true,
     },
     state: {
       type: String,
-      required: true,
     },
     city: {
       type: String,
-      required: true,
     },
     zip: {
       type: String,
-      required: true,
     },
     password: {
       type: String,
@@ -47,7 +42,6 @@ const UserSchema = new Mongoose.Schema(
     },
     dateOfBirth: {
       type: Date,
-      required: true,
     },
     experience: {
       type: String,

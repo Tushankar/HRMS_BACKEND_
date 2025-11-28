@@ -45,33 +45,10 @@ async function sendOTPEmail(email, otp) {
 appRouter.post("/register", async (req, res) => {
   try {
     // get details from body
-    const {
-      fullName,
-      email,
-      country,
-      phoneNumber,
-      password,
-      addressLine1,
-      state,
-      city,
-      zip,
-      dateOfBirth,
-      userRole,
-    } = req.body;
+    const { fullName, email, phoneNumber, password, userRole } = req.body;
 
     // Validate required fields
-    if (
-      !fullName ||
-      !email ||
-      !country ||
-      !phoneNumber ||
-      !password ||
-      !addressLine1 ||
-      !state ||
-      !city ||
-      !zip ||
-      !dateOfBirth
-    ) {
+    if (!fullName || !email || !phoneNumber || !password) {
       return res.status(400).json({
         message: "All fields are required",
         status: "Error",
@@ -96,14 +73,8 @@ appRouter.post("/register", async (req, res) => {
       data: {
         fullName,
         email,
-        country,
         phoneNumber,
         password,
-        addressLine1,
-        state,
-        city,
-        zip,
-        dateOfBirth,
         userRole: userRole || "employee",
       },
       expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
@@ -173,13 +144,7 @@ appRouter.post("/verify-otp", async (req, res) => {
       userName: userData.fullName,
       email: userData.email,
       phoneNumber: userData.phoneNumber,
-      country: userData.country,
-      addressLine1: userData.addressLine1,
-      state: userData.state,
-      city: userData.city,
-      zip: userData.zip,
       password: hashedPassword,
-      dateOfBirth: userData.dateOfBirth,
       userRole: userData.userRole,
     });
 
