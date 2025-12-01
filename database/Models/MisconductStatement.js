@@ -30,6 +30,7 @@ const MisconductStatementSchema = new mongoose.Schema(
       notaryDay: { type: String },
       notaryMonth: { type: String },
       notaryYear: { type: String },
+      notarySignature: { type: String }, // Digital signature for notary signature field
     },
 
     // Admin uploaded template file

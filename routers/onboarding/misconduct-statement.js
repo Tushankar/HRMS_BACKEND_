@@ -246,6 +246,7 @@ router.get("/get-misconduct-statement/:applicationId", async (req, res) => {
       notaryDay: misconductStatement.formData?.notaryDay || "",
       notaryMonth: misconductStatement.formData?.notaryMonth || "",
       notaryYear: misconductStatement.formData?.notaryYear || "",
+      notarySignature: misconductStatement.formData?.notarySignature || "",
       // Legacy fields for backward compatibility
       signingMethod: misconductStatement.signingMethod || "digital",
       employeeSignature: misconductStatement.employeeSignature,
@@ -280,6 +281,10 @@ router.post("/save-misconduct-statement", async (req, res) => {
     console.log("  - applicationId:", applicationId);
     console.log("  - employeeId:", employeeId);
     console.log("  - formData keys:", Object.keys(formData || {}));
+    console.log(
+      "  - notarySignature:",
+      formData?.notarySignature ? "✅ Present" : "❌ Missing"
+    );
     console.log("  - status:", status);
 
     if (!applicationId || !employeeId) {
@@ -316,7 +321,11 @@ router.post("/save-misconduct-statement", async (req, res) => {
     }
 
     // Update form data
-    console.log("� [Misconduct Router] Updating form data");
+    console.log("🔧 [Misconduct Router] Updating form data");
+    console.log(
+      "📥 [Misconduct Router] Received notarySignature:",
+      formData.notarySignature ? "✅ Present" : "❌ Missing"
+    );
     misconductStatement.formData = {
       staffTitle: formData.staffTitle || "",
       companyName: formData.companyName || "",
@@ -332,7 +341,12 @@ router.post("/save-misconduct-statement", async (req, res) => {
       notaryDay: formData.notaryDay || "",
       notaryMonth: formData.notaryMonth || "",
       notaryYear: formData.notaryYear || "",
+      notarySignature: formData.notarySignature || "",
     };
+    console.log(
+      "💾 [Misconduct Router] Saved notarySignature to formData:",
+      misconductStatement.formData.notarySignature ? "✅ Saved" : "❌ Not saved"
+    );
 
     // Update signing method and legacy fields for backward compatibility
     misconductStatement.signingMethod = formData.signingMethod || "digital";
