@@ -14,6 +14,7 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + path.extname(file.originalname)),
 });
 const upload = multer({ storage });
+const uploadMultiple = multer({ storage }).array("files", 10); // Allow up to 10 files
 
 const router = express.Router();
 
@@ -449,7 +450,7 @@ router.post("/remove-background-check-upload", async (req, res) => {
   }
 });
 
-// Employee upload CPR/First Aid Certificate
+// Employee upload CPR/First Aid Certificate (single file - kept for backward compatibility)
 router.post(
   "/employee-upload-cpr-certificate",
   upload.single("file"),
@@ -488,6 +489,176 @@ router.post(
       });
     } catch (error) {
       console.error("Error uploading certificate:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
+  }
+);
+
+// Employee upload multiple CPR/First Aid Certificates
+router.post(
+  "/employee-upload-cpr-certificates",
+  uploadMultiple,
+  async (req, res) => {
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+
+      const { applicationId, employeeId } = req.body;
+
+      if (!applicationId) {
+        return res.status(400).json({ message: "Application ID is required" });
+      }
+
+      let backgroundCheck = await BackgroundCheck.findOne({ applicationId });
+
+      if (!backgroundCheck) {
+        backgroundCheck = new BackgroundCheck({
+          applicationId,
+          employeeId,
+        });
+      }
+
+      // Add each uploaded file to the cprCertificates array
+      const uploadedCertificatesData = req.files.map((file) => ({
+        filename: file.filename,
+        filePath: file.path,
+        uploadedAt: new Date(),
+        originalName: file.originalname,
+        fileType: "certificate",
+      }));
+
+      backgroundCheck.cprCertificates = [
+        ...(backgroundCheck.cprCertificates || []),
+        ...uploadedCertificatesData,
+      ];
+
+      // Keep the first file in cprFirstAidCertificate for backward compatibility
+      if (req.files.length > 0 && !backgroundCheck.cprFirstAidCertificate) {
+        backgroundCheck.cprFirstAidCertificate = {
+          filename: req.files[0].originalname,
+          filePath: req.files[0].path,
+          uploadedAt: new Date(),
+        };
+      }
+
+      await backgroundCheck.save();
+
+      res.status(200).json({
+        success: true,
+        message: `${req.files.length} file(s) uploaded successfully`,
+        backgroundCheck,
+      });
+    } catch (error) {
+      console.error("Error uploading certificates:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
+  }
+);
+
+// Remove a specific CPR certificate file
+router.post("/remove-cpr-certificate-file", async (req, res) => {
+  try {
+    const { applicationId, fileId } = req.body;
+
+    if (!applicationId || !fileId) {
+      return res
+        .status(400)
+        .json({ message: "Application ID and File ID are required" });
+    }
+
+    const backgroundCheck = await BackgroundCheck.findOne({ applicationId });
+
+    if (!backgroundCheck) {
+      return res.status(404).json({ message: "Background check not found" });
+    }
+
+    // Find and remove the file from cprCertificates array
+    const fileIndex = backgroundCheck.cprCertificates.findIndex(
+      (file) => file._id.toString() === fileId
+    );
+
+    if (fileIndex === -1) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    const fileToRemove = backgroundCheck.cprCertificates[fileIndex];
+
+    // Delete the file from the file system
+    try {
+      const filePath = path.join(__dirname, "../../", fileToRemove.filePath);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch (fileError) {
+      console.warn(
+        "Warning: Could not delete file from disk:",
+        fileError.message
+      );
+    }
+
+    backgroundCheck.cprCertificates.splice(fileIndex, 1);
+
+    // If no more files, reset cprFirstAidCertificate
+    if (backgroundCheck.cprCertificates.length === 0) {
+      backgroundCheck.cprFirstAidCertificate = null;
+    }
+
+    await backgroundCheck.save();
+
+    res.status(200).json({
+      success: true,
+      message: "File removed successfully",
+      backgroundCheck,
+    });
+  } catch (error) {
+    console.error("Error removing file:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Download a specific CPR certificate file
+router.get(
+  "/download-cpr-certificate/:applicationId/:fileId",
+  async (req, res) => {
+    try {
+      const { applicationId, fileId } = req.params;
+
+      if (!applicationId || !fileId) {
+        return res
+          .status(400)
+          .json({ message: "Application ID and File ID are required" });
+      }
+
+      const backgroundCheck = await BackgroundCheck.findOne({ applicationId });
+
+      if (!backgroundCheck) {
+        return res.status(404).json({ message: "Background check not found" });
+      }
+
+      const file = backgroundCheck.cprCertificates.find(
+        (f) => f._id.toString() === fileId
+      );
+
+      if (!file) {
+        return res.status(404).json({ message: "File not found" });
+      }
+
+      const filePath = path.join(__dirname, "../../", file.filePath);
+
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: "File not found on disk" });
+      }
+
+      res.download(filePath, file.originalName || file.filename);
+    } catch (error) {
+      console.error("Error downloading file:", error);
       res
         .status(500)
         .json({ message: "Internal server error", error: error.message });

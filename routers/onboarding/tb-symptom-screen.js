@@ -31,24 +31,42 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // Allow PDF and image files
+  // Allow PDF and image files - accept common MIME type variants
   const allowedMimes = [
     "application/pdf",
     "image/jpeg",
+    "image/jpg", // Some systems report JPG with this MIME type
     "image/png",
     "image/gif",
+    "image/x-png", // Alternative PNG MIME type
+    "image/pjpeg", // IE JPEG MIME type variant
   ];
   if (allowedMimes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Only PDF and image files are allowed"), false);
+    cb(
+      new Error(
+        `File type not allowed. Received: ${file.mimetype}. Only PDF and image files (JPG, PNG) are allowed`
+      ),
+      false
+    );
   }
 };
 
+// Configure multer for single file upload (legacy)
 const upload = multer({
   storage: storage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: fileFilter,
+});
+
+// Configure multer for multiple file uploads
+const uploadMultiple = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit per file
   },
   fileFilter: fileFilter,
 });
@@ -239,7 +257,7 @@ router.get(
         applicationId,
       }).lean();
 
-      if (!tbSymptomScreen || !tbSymptomScreen.employeeUploadedForm) {
+      if (!tbSymptomScreen) {
         console.log("No TB Symptom Screen form found for app:", applicationId);
         return res.status(200).json({
           data: {
@@ -248,25 +266,64 @@ router.get(
         });
       }
 
-      // Return documents array format for consistency with frontend expectations
-      const documents = [
-        {
-          _id: tbSymptomScreen._id,
-          filename: tbSymptomScreen.employeeUploadedForm.filename,
-          filePath: tbSymptomScreen.employeeUploadedForm.filePath,
-          uploadedAt: tbSymptomScreen.employeeUploadedForm.uploadedAt,
-          fileSize: 0, // Size info not available from schema
-          fullUrl: `${req.protocol}://${req.get("host")}/${tbSymptomScreen.employeeUploadedForm.filePath}`,
-        },
-      ];
+      // Check for new multiple documents first
+      if (
+        tbSymptomScreen.uploadedDocuments &&
+        tbSymptomScreen.uploadedDocuments.length > 0
+      ) {
+        const documents = tbSymptomScreen.uploadedDocuments.map((doc) => ({
+          _id: doc._id,
+          filename: doc.filename,
+          originalName: doc.originalName,
+          filePath: doc.filePath,
+          uploadedAt: doc.uploadedAt,
+          fileSize: doc.fileSize,
+          fileType: doc.fileType,
+        }));
 
-      console.log("✅ Documents found:", documents);
+        console.log("✅ Multiple documents found:", documents.length);
 
-      res.status(200).json({
+        return res.status(200).json({
+          success: true,
+          data: {
+            documents: documents,
+            count: documents.length,
+          },
+        });
+      }
+
+      // Fallback to legacy single document for backward compatibility
+      if (tbSymptomScreen.employeeUploadedForm) {
+        const documents = [
+          {
+            _id: tbSymptomScreen._id,
+            filename: tbSymptomScreen.employeeUploadedForm.filename,
+            originalName: tbSymptomScreen.employeeUploadedForm.filename,
+            filePath: tbSymptomScreen.employeeUploadedForm.filePath,
+            uploadedAt: tbSymptomScreen.employeeUploadedForm.uploadedAt,
+            fileSize: 0,
+            fileType: "unknown",
+          },
+        ];
+
+        console.log("✅ Legacy document found");
+
+        return res.status(200).json({
+          success: true,
+          data: {
+            documents: documents,
+            count: 1,
+          },
+        });
+      }
+
+      // No documents found
+      console.log("No documents found for app:", applicationId);
+      return res.status(200).json({
         success: true,
         data: {
-          documents: documents,
-          count: documents.length,
+          documents: [],
+          count: 0,
         },
       });
     } catch (error) {
@@ -410,6 +467,219 @@ router.post("/save-status", async (req, res) => {
     console.error("Error saving TB Symptom Screen status:", error);
     res.status(500).json({
       message: "Error saving form status",
+      error: error.message,
+    });
+  }
+});
+
+// Employee upload multiple TB Symptom Screen documents
+router.post(
+  "/employee-upload-tb-documents",
+  uploadMultiple.array("files", 10),
+  async (req, res) => {
+    console.log("🎯 Multiple TB documents upload endpoint hit!");
+    try {
+      const { applicationId, employeeId } = req.body;
+
+      // Validation
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+
+      if (!applicationId || !employeeId) {
+        return res.status(400).json({
+          message: "Application ID and Employee ID are required",
+        });
+      }
+
+      // Find or create TB Symptom Screen form
+      let tbSymptomScreen = await TBSymptomScreen.findOne({
+        applicationId,
+        employeeId,
+      });
+
+      if (!tbSymptomScreen) {
+        tbSymptomScreen = new TBSymptomScreen({
+          applicationId,
+          employeeId,
+          status: "draft",
+        });
+      }
+
+      // Initialize uploadedDocuments if it doesn't exist
+      if (!tbSymptomScreen.uploadedDocuments) {
+        tbSymptomScreen.uploadedDocuments = [];
+      }
+
+      // Add each uploaded file to the array
+      const uploadedFiles = [];
+      req.files.forEach((file) => {
+        const docObj = {
+          _id: new mongoose.Types.ObjectId(),
+          filename: file.filename,
+          originalName: file.originalname,
+          filePath: `uploads/tb-symptom-screen/${file.filename}`,
+          uploadedAt: new Date(),
+          fileType: file.mimetype,
+          fileSize: file.size,
+        };
+        tbSymptomScreen.uploadedDocuments.push(docObj);
+        uploadedFiles.push(docObj);
+      });
+
+      // Update status to completed when documents are uploaded
+      if (tbSymptomScreen.uploadedDocuments.length > 0) {
+        tbSymptomScreen.status = "completed";
+      }
+
+      await tbSymptomScreen.save();
+
+      console.log(`✅ ${req.files.length} TB documents uploaded successfully`);
+
+      res.status(200).json({
+        success: true,
+        message: `${req.files.length} document(s) uploaded successfully`,
+        documents: uploadedFiles,
+      });
+    } catch (error) {
+      // Clean up uploaded files if there was an error
+      if (req.files) {
+        req.files.forEach((file) => {
+          fs.unlink(file.path, (err) => {
+            if (err) console.error("Error deleting file:", err);
+          });
+        });
+      }
+
+      console.error("Error uploading TB documents:", error);
+      res.status(500).json({
+        message: "Error uploading documents",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// Remove specific TB document file
+router.post("/remove-tb-document-file", async (req, res) => {
+  try {
+    const { applicationId, fileId } = req.body;
+
+    // Validation
+    if (!applicationId || !fileId) {
+      return res.status(400).json({
+        message: "Application ID and File ID are required",
+      });
+    }
+
+    // Find TB Symptom Screen form
+    const tbSymptomScreen = await TBSymptomScreen.findOne({
+      applicationId,
+    });
+
+    if (!tbSymptomScreen) {
+      return res.status(404).json({
+        message: "TB Symptom Screen form not found",
+      });
+    }
+
+    // Find the document to remove
+    const docIndex = tbSymptomScreen.uploadedDocuments.findIndex(
+      (doc) => doc._id.toString() === fileId
+    );
+
+    if (docIndex === -1) {
+      return res.status(404).json({
+        message: "Document not found",
+      });
+    }
+
+    const document = tbSymptomScreen.uploadedDocuments[docIndex];
+
+    // Delete the file from disk
+    if (document.filePath) {
+      const filePath = path.join(__dirname, "../../", document.filePath);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+          console.log("✅ File deleted successfully:", filePath);
+        } catch (err) {
+          console.error("Error deleting file:", err);
+        }
+      }
+    }
+
+    // Remove document from array
+    tbSymptomScreen.uploadedDocuments.splice(docIndex, 1);
+
+    // Update status if no documents left
+    if (tbSymptomScreen.uploadedDocuments.length === 0) {
+      tbSymptomScreen.status = "draft";
+    }
+
+    await tbSymptomScreen.save();
+
+    console.log("✅ TB document removed successfully");
+
+    res.status(200).json({
+      success: true,
+      message: "Document removed successfully",
+    });
+  } catch (error) {
+    console.error("Error removing TB document:", error);
+    res.status(500).json({
+      message: "Error removing document",
+      error: error.message,
+    });
+  }
+});
+
+// Download specific TB document file
+router.get("/download-tb-document/:applicationId/:fileId", async (req, res) => {
+  try {
+    const { applicationId, fileId } = req.params;
+
+    // Find TB Symptom Screen form
+    const tbSymptomScreen = await TBSymptomScreen.findOne({
+      applicationId,
+    });
+
+    if (!tbSymptomScreen) {
+      return res.status(404).json({
+        message: "TB Symptom Screen form not found",
+      });
+    }
+
+    // Find the document
+    const document = tbSymptomScreen.uploadedDocuments.find(
+      (doc) => doc._id.toString() === fileId
+    );
+
+    if (!document) {
+      return res.status(404).json({
+        message: "Document not found",
+      });
+    }
+
+    // Build file path
+    const filePath = path.join(__dirname, "../../", document.filePath);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        message: "File not found on server",
+      });
+    }
+
+    // Send file
+    res.download(filePath, document.originalName, (err) => {
+      if (err) {
+        console.error("Error downloading file:", err);
+      }
+    });
+  } catch (error) {
+    console.error("Error downloading TB document:", error);
+    res.status(500).json({
+      message: "Error downloading document",
       error: error.message,
     });
   }

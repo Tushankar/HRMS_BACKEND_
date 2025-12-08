@@ -2,7 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const OnboardingApplication = require("../../database/Models/OnboardingApplication");
 const EmploymentApplication = require("../../database/Models/EmploymentApplication");
-const I9Form = require("../../database/Models/I9Form");
 const W4Form = require("../../database/Models/W4Form");
 const W9Form = require("../../database/Models/W9Form");
 const PersonalInformation = require("../../database/Models/PersonalInformation");
@@ -63,17 +62,6 @@ function mapTaxClassificationToFrontend(classification) {
   return mapping[classification] || classification;
 }
 
-// Helper function to map schema enum values back to frontend format for I9
-function mapCitizenshipStatusToFrontend(status) {
-  const mapping = {
-    us_citizen: "citizen",
-    non_citizen_national: "national",
-    lawful_permanent_resident: "alien",
-    authorized_alien: "authorized",
-  };
-  return mapping[status] || status;
-}
-
 // Get or create onboarding application
 router.get("/get-application/:employeeId", async (req, res) => {
   try {
@@ -130,7 +118,6 @@ router.get("/get-application/:employeeId", async (req, res) => {
       positionType,
       employmentApp,
       orientationPresentation,
-      i9Form,
       w4Form,
       w9Form,
       emergencyContact,
@@ -158,7 +145,6 @@ router.get("/get-application/:employeeId", async (req, res) => {
       PositionType.findOne({ applicationId: application._id }),
       EmploymentApplication.findOne({ applicationId: application._id }),
       OrientationPresentation.findOne({ applicationId: application._id }),
-      I9Form.findOne({ applicationId: application._id }),
       W4Form.findOne({ applicationId: application._id }),
       W9Form.findOne({ applicationId: application._id }),
       EmergencyContact.findOne({ applicationId: application._id }),
@@ -263,199 +249,8 @@ router.get("/get-application/:employeeId", async (req, res) => {
       misconductStatementCreated = misconductStatement;
     }
 
-    // Transform I9 form from nested to flat structure for frontend compatibility
+    // I-9 Form has been completely removed from the application
     let i9FormFlattened = null;
-    if (i9Form) {
-      i9FormFlattened = {
-        _id: i9Form._id,
-        applicationId: i9Form.applicationId,
-        employeeId: i9Form.employeeId,
-        // Section 1 fields (flattened from section1)
-        lastName: i9Form.section1?.lastName || "",
-        firstName: i9Form.section1?.firstName || "",
-        middleInitial: i9Form.section1?.middleInitial || "",
-        otherLastNames: i9Form.section1?.otherLastNames || "",
-        address: i9Form.section1?.address || "",
-        aptNumber: i9Form.section1?.aptNumber || "",
-        cityOrTown: i9Form.section1?.cityOrTown || "",
-        state: i9Form.section1?.state || "",
-        zipCode: i9Form.section1?.zipCode || "",
-        dateOfBirth: i9Form.section1?.dateOfBirth || "",
-        socialSecurityNumber: i9Form.section1?.socialSecurityNumber || "",
-        employeeEmail: i9Form.section1?.employeeEmail || "",
-        employeePhone: i9Form.section1?.employeePhone || "",
-        citizenshipStatus:
-          mapCitizenshipStatusToFrontend(i9Form.section1?.citizenshipStatus) ||
-          "",
-        uscisNumber: i9Form.section1?.uscisNumber || "",
-        formI94Number: i9Form.section1?.formI94Number || "",
-        foreignPassportNumber: i9Form.section1?.foreignPassportNumber || "",
-        countryOfIssuance: i9Form.section1?.countryOfIssuance || "",
-        expirationDate: i9Form.section1?.expirationDate || "",
-        employeeSignature: i9Form.section1?.employeeSignature || "",
-        employeeSignatureDate: i9Form.section1?.employeeSignatureDate || "",
-        // Preparer/Translator fields (flattened from section1.preparerTranslator)
-        preparerUsed:
-          i9Form.section1?.preparerTranslator?.preparerUsed || false,
-        preparerLastName:
-          i9Form.section1?.preparerTranslator?.preparerLastName || "",
-        preparerFirstName:
-          i9Form.section1?.preparerTranslator?.preparerFirstName || "",
-        preparerAddress:
-          i9Form.section1?.preparerTranslator?.preparerAddress || "",
-        preparerSignature:
-          i9Form.section1?.preparerTranslator?.preparerSignature || "",
-        preparerDate: i9Form.section1?.preparerTranslator?.preparerDate || "",
-        // Section 2 fields (flattened from section2)
-        employmentStartDate: i9Form.section2?.employmentStartDate || "",
-        documentTitle1: i9Form.section2?.documentTitle1 || "",
-        issuingAuthority1: i9Form.section2?.issuingAuthority1 || "",
-        documentNumber1: i9Form.section2?.documentNumber1 || "",
-        expirationDate1: i9Form.section2?.expirationDate1 || "",
-        documentTitle2: i9Form.section2?.documentTitle2 || "",
-        issuingAuthority2: i9Form.section2?.issuingAuthority2 || "",
-        documentNumber2: i9Form.section2?.documentNumber2 || "",
-        expirationDate2: i9Form.section2?.expirationDate2 || "",
-        documentTitle3: i9Form.section2?.documentTitle3 || "",
-        issuingAuthority3: i9Form.section2?.issuingAuthority3 || "",
-        documentNumber3: i9Form.section2?.documentNumber3 || "",
-        expirationDate3: i9Form.section2?.expirationDate3 || "",
-        additionalInfo: i9Form.section2?.additionalInfo || "",
-        employerSignature: i9Form.section2?.employerSignature || "",
-        employerSignatureDate: i9Form.section2?.employerSignatureDate || "",
-        employerName: i9Form.section2?.employerName || "",
-        employerTitle: i9Form.section2?.employerTitle || "",
-        employerBusinessName: i9Form.section2?.employerBusinessName || "",
-        employerBusinessAddress: i9Form.section2?.employerBusinessAddress || "",
-        // Supplement A fields (flattened from supplementA)
-        suppALastName: i9Form.supplementA?.employeeName?.lastName || "",
-        suppAFirstName: i9Form.supplementA?.employeeName?.firstName || "",
-        suppAMiddleInitial:
-          i9Form.supplementA?.employeeName?.middleInitial || "",
-        prep1Signature: i9Form.supplementA?.preparers?.[0]?.signature || "",
-        prep1Date: i9Form.supplementA?.preparers?.[0]?.date || "",
-        prep1LastName: i9Form.supplementA?.preparers?.[0]?.lastName || "",
-        prep1FirstName: i9Form.supplementA?.preparers?.[0]?.firstName || "",
-        prep1MiddleInitial:
-          i9Form.supplementA?.preparers?.[0]?.middleInitial || "",
-        prep1Address: i9Form.supplementA?.preparers?.[0]?.address || "",
-        prep1City: i9Form.supplementA?.preparers?.[0]?.city || "",
-        prep1State: i9Form.supplementA?.preparers?.[0]?.state || "",
-        prep1ZipCode: i9Form.supplementA?.preparers?.[0]?.zipCode || "",
-        prep2Signature: i9Form.supplementA?.preparers?.[1]?.signature || "",
-        prep2Date: i9Form.supplementA?.preparers?.[1]?.date || "",
-        prep2LastName: i9Form.supplementA?.preparers?.[1]?.lastName || "",
-        prep2FirstName: i9Form.supplementA?.preparers?.[1]?.firstName || "",
-        prep2MiddleInitial:
-          i9Form.supplementA?.preparers?.[1]?.middleInitial || "",
-        prep2Address: i9Form.supplementA?.preparers?.[1]?.address || "",
-        prep2City: i9Form.supplementA?.preparers?.[1]?.city || "",
-        prep2State: i9Form.supplementA?.preparers?.[1]?.state || "",
-        prep2ZipCode: i9Form.supplementA?.preparers?.[1]?.zipCode || "",
-        prep3Signature: i9Form.supplementA?.preparers?.[2]?.signature || "",
-        prep3Date: i9Form.supplementA?.preparers?.[2]?.date || "",
-        prep3LastName: i9Form.supplementA?.preparers?.[2]?.lastName || "",
-        prep3FirstName: i9Form.supplementA?.preparers?.[2]?.firstName || "",
-        prep3MiddleInitial:
-          i9Form.supplementA?.preparers?.[2]?.middleInitial || "",
-        prep3Address: i9Form.supplementA?.preparers?.[2]?.address || "",
-        prep3City: i9Form.supplementA?.preparers?.[2]?.city || "",
-        prep3State: i9Form.supplementA?.preparers?.[2]?.state || "",
-        prep3ZipCode: i9Form.supplementA?.preparers?.[2]?.zipCode || "",
-        prep4Signature: i9Form.supplementA?.preparers?.[3]?.signature || "",
-        prep4Date: i9Form.supplementA?.preparers?.[3]?.date || "",
-        prep4LastName: i9Form.supplementA?.preparers?.[3]?.lastName || "",
-        prep4FirstName: i9Form.supplementA?.preparers?.[3]?.firstName || "",
-        prep4MiddleInitial:
-          i9Form.supplementA?.preparers?.[3]?.middleInitial || "",
-        prep4Address: i9Form.supplementA?.preparers?.[3]?.address || "",
-        prep4City: i9Form.supplementA?.preparers?.[3]?.city || "",
-        prep4State: i9Form.supplementA?.preparers?.[3]?.state || "",
-        prep4ZipCode: i9Form.supplementA?.preparers?.[3]?.zipCode || "",
-        // Supplement B fields (flattened from supplementB)
-        suppBLastName: i9Form.supplementB?.employeeName?.lastName || "",
-        suppBFirstName: i9Form.supplementB?.employeeName?.firstName || "",
-        suppBMiddleInitial:
-          i9Form.supplementB?.employeeName?.middleInitial || "",
-        rev1Date: i9Form.supplementB?.reverifications?.[0]?.dateOfRehire || "",
-        rev1LastName:
-          i9Form.supplementB?.reverifications?.[0]?.newName?.lastName || "",
-        rev1FirstName:
-          i9Form.supplementB?.reverifications?.[0]?.newName?.firstName || "",
-        rev1MiddleInitial:
-          i9Form.supplementB?.reverifications?.[0]?.newName?.middleInitial ||
-          "",
-        rev1DocTitle:
-          i9Form.supplementB?.reverifications?.[0]?.documentTitle || "",
-        rev1DocNumber:
-          i9Form.supplementB?.reverifications?.[0]?.documentNumber || "",
-        rev1ExpDate:
-          i9Form.supplementB?.reverifications?.[0]?.expirationDate || "",
-        rev1EmployerName:
-          i9Form.supplementB?.reverifications?.[0]?.employerName || "",
-        rev1EmployerSignature:
-          i9Form.supplementB?.reverifications?.[0]?.employerSignature || "",
-        rev1EmployerDate:
-          i9Form.supplementB?.reverifications?.[0]?.employerDate || "",
-        rev1AdditionalInfo:
-          i9Form.supplementB?.reverifications?.[0]?.additionalInfo || "",
-        rev1AltProcedure:
-          i9Form.supplementB?.reverifications?.[0]?.altProcedureUsed || false,
-        rev2Date: i9Form.supplementB?.reverifications?.[1]?.dateOfRehire || "",
-        rev2LastName:
-          i9Form.supplementB?.reverifications?.[1]?.newName?.lastName || "",
-        rev2FirstName:
-          i9Form.supplementB?.reverifications?.[1]?.newName?.firstName || "",
-        rev2MiddleInitial:
-          i9Form.supplementB?.reverifications?.[1]?.newName?.middleInitial ||
-          "",
-        rev2DocTitle:
-          i9Form.supplementB?.reverifications?.[1]?.documentTitle || "",
-        rev2DocNumber:
-          i9Form.supplementB?.reverifications?.[1]?.documentNumber || "",
-        rev2ExpDate:
-          i9Form.supplementB?.reverifications?.[1]?.expirationDate || "",
-        rev2EmployerName:
-          i9Form.supplementB?.reverifications?.[1]?.employerName || "",
-        rev2EmployerSignature:
-          i9Form.supplementB?.reverifications?.[1]?.employerSignature || "",
-        rev2EmployerDate:
-          i9Form.supplementB?.reverifications?.[1]?.employerDate || "",
-        rev2AdditionalInfo:
-          i9Form.supplementB?.reverifications?.[1]?.additionalInfo || "",
-        rev2AltProcedure:
-          i9Form.supplementB?.reverifications?.[1]?.altProcedureUsed || false,
-        rev3Date: i9Form.supplementB?.reverifications?.[2]?.dateOfRehire || "",
-        rev3LastName:
-          i9Form.supplementB?.reverifications?.[2]?.newName?.lastName || "",
-        rev3FirstName:
-          i9Form.supplementB?.reverifications?.[2]?.newName?.firstName || "",
-        rev3MiddleInitial:
-          i9Form.supplementB?.reverifications?.[2]?.newName?.middleInitial ||
-          "",
-        rev3DocTitle:
-          i9Form.supplementB?.reverifications?.[2]?.documentTitle || "",
-        rev3DocNumber:
-          i9Form.supplementB?.reverifications?.[2]?.documentNumber || "",
-        rev3ExpDate:
-          i9Form.supplementB?.reverifications?.[2]?.expirationDate || "",
-        rev3EmployerName:
-          i9Form.supplementB?.reverifications?.[2]?.employerName || "",
-        rev3EmployerSignature:
-          i9Form.supplementB?.reverifications?.[2]?.employerSignature || "",
-        rev3EmployerDate:
-          i9Form.supplementB?.reverifications?.[2]?.employerDate || "",
-        rev3AdditionalInfo:
-          i9Form.supplementB?.reverifications?.[2]?.additionalInfo || "",
-        rev3AltProcedure:
-          i9Form.supplementB?.reverifications?.[2]?.altProcedureUsed || false,
-        // Metadata
-        status: i9Form.status,
-        createdAt: i9Form.createdAt,
-        updatedAt: i9Form.updatedAt,
-        hrFeedback: i9Form.hrFeedback,
-      };
-    }
 
     // Transform W4 form from nested to flat structure for frontend compatibility
     let w4FormFlattened = null;
@@ -1340,18 +1135,29 @@ router.put("/submit-application/:applicationId", async (req, res) => {
       return res.status(404).json({ message: "Application not found" });
     }
 
+    // Get employment type to determine which tax form is required
+    const employmentApp = await EmploymentApplication.findOne({
+      applicationId,
+    });
+    const employmentType = employmentApp?.employmentType;
+
     // Check if all required forms are completed
     const requiredForms = [
       { model: PersonalInformation, name: "Personal Information" },
       { model: ProfessionalExperience, name: "Professional Experience" },
-      { model: I9Form, name: "I-9 Form" },
-      { model: W4Form, name: "W-4 Form" },
       { model: EmergencyContact, name: "Emergency Contact" },
       { model: MisconductStatement, name: "Staff Statement of Misconduct" },
       { model: CodeOfEthics, name: "Code of Ethics" },
       { model: BackgroundCheck, name: "Background Check Form" },
       { model: TBSymptomScreen, name: "TB Symptom Screen" },
     ];
+
+    // Add tax form based on employment type
+    if (employmentType === "W-2") {
+      requiredForms.push({ model: W4Form, name: "W-4 Form" });
+    } else if (employmentType === "1099") {
+      requiredForms.push({ model: W9Form, name: "W-9 Form" });
+    }
 
     const incompleteforms = [];
     for (const form of requiredForms) {
@@ -1399,10 +1205,6 @@ router.put("/submit-application/:applicationId", async (req, res) => {
         { status: "submitted" }
       ),
       EmploymentApplication.updateMany(
-        { applicationId, status: "completed" },
-        { status: "submitted" }
-      ),
-      I9Form.updateMany(
         { applicationId, status: "completed" },
         { status: "submitted" }
       ),

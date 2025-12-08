@@ -59,12 +59,23 @@ const BackgroundCheckSchema = new mongoose.Schema(
       uploadedAt: { type: Date },
     },
 
-    // CPR/First Aid Certificate (Optional)
+    // CPR/First Aid Certificate (Optional) - kept for backward compatibility
     cprFirstAidCertificate: {
       filename: { type: String },
       filePath: { type: String },
       uploadedAt: { type: Date },
     },
+
+    // Multiple CPR/First Aid Certificates (new structure for multiple file support)
+    cprCertificates: [
+      {
+        filename: { type: String },
+        filePath: { type: String },
+        uploadedAt: { type: Date },
+        originalName: { type: String },
+        fileType: { type: String, default: "certificate" },
+      },
+    ],
 
     // DBHDD Notification Cover Sheet
     notification: {
@@ -77,7 +88,14 @@ const BackgroundCheckSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+      enum: [
+        "draft",
+        "completed",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+      ],
       default: "draft",
     },
 
@@ -98,7 +116,4 @@ const BackgroundCheckSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model(
-  "BackgroundCheck",
-  BackgroundCheckSchema
-);
+module.exports = mongoose.model("BackgroundCheck", BackgroundCheckSchema);

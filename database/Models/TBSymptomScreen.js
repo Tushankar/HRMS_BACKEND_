@@ -99,12 +99,25 @@ const TBSymptomScreenSchema = new mongoose.Schema(
     clientSignature: { type: String },
     clientSignatureDate: { type: Date },
 
-    // Employee uploaded signed document
+    // Employee uploaded signed document (legacy - single file)
     employeeUploadedForm: {
       filename: { type: String },
       filePath: { type: String },
       uploadedAt: { type: Date },
     },
+
+    // Multiple uploaded documents
+    uploadedDocuments: [
+      {
+        _id: mongoose.Schema.Types.ObjectId,
+        filename: { type: String },
+        originalName: { type: String },
+        filePath: { type: String },
+        uploadedAt: { type: Date, default: Date.now },
+        fileType: { type: String },
+        fileSize: { type: Number },
+      },
+    ],
 
     status: {
       type: String,

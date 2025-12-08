@@ -29,6 +29,7 @@ app.use(
       "https://cool-malabi-d4598b.netlify.app",
       "https://meek-fox-fdb3c3.netlify.app",
       "https://hrmsmanagement.netlify.app",
+      "https://api-hrms-backend.kyptronix.us",
     ], // Include both frontend ports and production URL
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow all standard methods
     allowedHeaders: ["Content-Type", "Authorization", "Accept"], // Allow common headers
@@ -110,7 +111,6 @@ app.use("/upload", UploadRouter);
 
 // Apply Onboarding Routes
 app.use("/api/applications", ApplicationsRouter);
-app.use("/onboarding", TBSymptomScreenUpload);
 app.use("/onboarding", OnboardingMain);
 app.use("/onboarding", EmploymentApplication);
 app.use("/onboarding", I9Form);
@@ -129,7 +129,7 @@ app.use("/onboarding/pca-training", PCATrainingQuestions);
 app.use("/onboarding/training-video", TrainingVideo);
 app.use("/onboarding/misconduct-statement", MisconductStatement);
 app.use("/onboarding", DrivingLicense);
-app.use("/onboarding/tb-symptom-screen", TBSymptomScreenUpload);
+app.use("/onboarding", TBSymptomScreenUpload);
 app.use("/onboarding/professional-certificates", ProfessionalCertificates);
 
 // Direct job description route (for simplified API)

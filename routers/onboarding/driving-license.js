@@ -14,6 +14,7 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+const uploadMultiple = multer({ storage }).array("files", 10); // Allow up to 10 files
 
 const router = express.Router();
 
@@ -130,7 +131,7 @@ router.post("/save-driving-license", async (req, res) => {
   }
 });
 
-// Employee upload driving license
+// Employee upload driving license (single file - kept for backward compatibility)
 router.post(
   "/employee-upload-driving-license",
   upload.single("file"),
@@ -170,6 +171,178 @@ router.post(
       });
     } catch (error) {
       console.error("Error uploading driving license:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
+  }
+);
+
+// Employee upload multiple driving license documents
+router.post(
+  "/employee-upload-driving-license-files",
+  uploadMultiple,
+  async (req, res) => {
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+
+      const { applicationId, employeeId } = req.body;
+
+      if (!applicationId) {
+        return res.status(400).json({ message: "Application ID is required" });
+      }
+
+      let drivingLicense = await DrivingLicense.findOne({ applicationId });
+
+      if (!drivingLicense) {
+        drivingLicense = new DrivingLicense({
+          applicationId,
+          employeeId,
+        });
+      }
+
+      // Add each uploaded file to the uploadedFiles array
+      const uploadedFilesData = req.files.map((file) => ({
+        filename: file.filename,
+        filePath: file.path,
+        uploadedAt: new Date(),
+        originalName: file.originalname,
+        fileType: req.body[`fileType_${file.fieldname}`] || "document",
+      }));
+
+      drivingLicense.uploadedFiles = [
+        ...(drivingLicense.uploadedFiles || []),
+        ...uploadedFilesData,
+      ];
+
+      // Keep the first file in employeeUploadedForm for backward compatibility
+      if (req.files.length > 0 && !drivingLicense.employeeUploadedForm) {
+        drivingLicense.employeeUploadedForm = {
+          filename: req.files[0].originalname,
+          filePath: req.files[0].path,
+          uploadedAt: new Date(),
+        };
+      }
+
+      drivingLicense.status = "submitted";
+      await drivingLicense.save();
+
+      res.status(200).json({
+        success: true,
+        message: `${req.files.length} file(s) uploaded successfully`,
+        drivingLicense,
+      });
+    } catch (error) {
+      console.error("Error uploading driving license files:", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", error: error.message });
+    }
+  }
+);
+
+// Remove a specific uploaded file
+router.post("/remove-driving-license-file", async (req, res) => {
+  try {
+    const { applicationId, fileId } = req.body;
+
+    if (!applicationId || !fileId) {
+      return res
+        .status(400)
+        .json({ message: "Application ID and File ID are required" });
+    }
+
+    const drivingLicense = await DrivingLicense.findOne({ applicationId });
+
+    if (!drivingLicense) {
+      return res.status(404).json({ message: "Driving license not found" });
+    }
+
+    // Find and remove the file from uploadedFiles array
+    const fileIndex = drivingLicense.uploadedFiles.findIndex(
+      (file) => file._id.toString() === fileId
+    );
+
+    if (fileIndex === -1) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    const fileToRemove = drivingLicense.uploadedFiles[fileIndex];
+
+    // Delete the file from the file system
+    try {
+      const filePath = path.join(__dirname, "../../", fileToRemove.filePath);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch (fileError) {
+      console.warn(
+        "Warning: Could not delete file from disk:",
+        fileError.message
+      );
+    }
+
+    drivingLicense.uploadedFiles.splice(fileIndex, 1);
+
+    // If no more files, reset status and employeeUploadedForm
+    if (drivingLicense.uploadedFiles.length === 0) {
+      drivingLicense.employeeUploadedForm = null;
+      drivingLicense.status = "draft";
+    }
+
+    await drivingLicense.save();
+
+    res.status(200).json({
+      success: true,
+      message: "File removed successfully",
+      drivingLicense,
+    });
+  } catch (error) {
+    console.error("Error removing file:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Download a specific uploaded file
+router.get(
+  "/download-driving-license-file/:applicationId/:fileId",
+  async (req, res) => {
+    try {
+      const { applicationId, fileId } = req.params;
+
+      if (!applicationId || !fileId) {
+        return res
+          .status(400)
+          .json({ message: "Application ID and File ID are required" });
+      }
+
+      const drivingLicense = await DrivingLicense.findOne({ applicationId });
+
+      if (!drivingLicense) {
+        return res.status(404).json({ message: "Driving license not found" });
+      }
+
+      const file = drivingLicense.uploadedFiles.find(
+        (f) => f._id.toString() === fileId
+      );
+
+      if (!file) {
+        return res.status(404).json({ message: "File not found" });
+      }
+
+      const filePath = path.join(__dirname, "../../", file.filePath);
+
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: "File not found on disk" });
+      }
+
+      res.download(filePath, file.originalName || file.filename);
+    } catch (error) {
+      console.error("Error downloading file:", error);
       res
         .status(500)
         .json({ message: "Internal server error", error: error.message });

@@ -20,12 +20,23 @@ const DrivingLicenseSchema = new mongoose.Schema(
     expirationDate: { type: Date },
     licenseClass: { type: String },
 
-    // Employee uploaded signed form
+    // Employee uploaded signed form (kept for backward compatibility)
     employeeUploadedForm: {
       filename: { type: String },
       filePath: { type: String },
       uploadedAt: { type: Date },
     },
+
+    // Multiple uploaded files (new structure for multiple file support)
+    uploadedFiles: [
+      {
+        filename: { type: String },
+        filePath: { type: String },
+        uploadedAt: { type: Date },
+        fileType: { type: String, default: "document" }, // 'front', 'back', 'document', etc.
+        originalName: { type: String },
+      },
+    ],
 
     status: {
       type: String,

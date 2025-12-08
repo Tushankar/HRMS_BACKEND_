@@ -6,6 +6,7 @@ const CodeOfEthics = require("../../database/Models/CodeOfEthics");
 const CodeOfEthicsTemplate = require("../../database/Models/CodeOfEthicsTemplate");
 const ServiceDeliveryPolicy = require("../../database/Models/ServiceDeliveryPolicy");
 const ServiceDeliveryPolicyTemplate = require("../../database/Models/ServiceDeliveryPolicyTemplate");
+const ServiceDeliveryPolicyContent = require("../../database/Models/ServiceDeliveryPolicyContent");
 const NonCompeteAgreement = require("../../database/Models/NonCompeteAgreement");
 const NonCompeteTemplate = require("../../database/Models/NonCompeteTemplate");
 const OnboardingApplication = require("../../database/Models/OnboardingApplication");
@@ -1676,5 +1677,148 @@ router.post(
     }
   }
 );
+
+// ============================================
+// Service Delivery Policy Content Management
+// ============================================
+
+// Get current service delivery policy content
+router.get("/get-service-delivery-policy-content", async (req, res) => {
+  try {
+    let content = await ServiceDeliveryPolicyContent.findOne({
+      isActive: true,
+    });
+
+    // If no content exists, create default
+    if (!content) {
+      content = new ServiceDeliveryPolicyContent({
+        isActive: true,
+      });
+      await content.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Policy content retrieved successfully",
+      content,
+    });
+  } catch (error) {
+    console.error("Error getting policy content:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
+// HR: Update service delivery policy content (admin only)
+router.post("/hr-update-service-delivery-policy-content", async (req, res) => {
+  try {
+    const {
+      policyStatements,
+      logoUrl,
+      companyName,
+      policyTitle,
+      introductionText,
+      updatedBy,
+    } = req.body;
+
+    console.log("=== HR Update Policy Content ===");
+    console.log("Received data:", {
+      policyStatements: !!policyStatements,
+      logoUrl,
+      companyName,
+      policyTitle,
+      introductionText: introductionText?.substring(0, 50),
+      updatedBy,
+    });
+
+    // Find the currently active content
+    let content = await ServiceDeliveryPolicyContent.findOne({
+      isActive: true,
+    });
+
+    console.log("Found active content:", !!content);
+
+    // If no active content exists, create new one
+    if (!content) {
+      content = new ServiceDeliveryPolicyContent({
+        isActive: true,
+      });
+    }
+
+    // Update fields if provided
+    if (policyStatements) {
+      content.policyStatements = policyStatements;
+      console.log("Updated policyStatements");
+    }
+    if (logoUrl) {
+      content.logoUrl = logoUrl;
+      console.log("Updated logoUrl:", logoUrl);
+    }
+    if (companyName) {
+      content.companyName = companyName;
+      console.log("Updated companyName:", companyName);
+    }
+    if (policyTitle) {
+      content.policyTitle = policyTitle;
+      console.log("Updated policyTitle:", policyTitle);
+    }
+    if (introductionText) {
+      content.introductionText = introductionText;
+      console.log("Updated introductionText");
+    }
+    if (updatedBy) {
+      content.updatedBy = updatedBy;
+      console.log("Updated updatedBy:", updatedBy);
+    }
+
+    content.lastUpdatedAt = new Date();
+    const savedContent = await content.save();
+
+    console.log("Content saved successfully:", {
+      _id: savedContent._id,
+      companyName: savedContent.companyName,
+      isActive: savedContent.isActive,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Policy content updated successfully",
+      content: savedContent,
+    });
+  } catch (error) {
+    console.error("Error updating policy content:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
+
+// HR: Get policy update history
+router.get("/hr-get-policy-content-history", async (req, res) => {
+  try {
+    const history = await ServiceDeliveryPolicyContent.find({})
+      .populate("updatedBy", "firstName lastName email")
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    res.status(200).json({
+      success: true,
+      message: "Policy content history retrieved successfully",
+      history,
+    });
+  } catch (error) {
+    console.error("Error getting policy content history:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+});
 
 module.exports = router;
