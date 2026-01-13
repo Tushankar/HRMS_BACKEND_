@@ -9,11 +9,11 @@ async function testOnboardingEndpoint() {
     console.log("Testing onboarding endpoint...");
     console.log(
       "URL:",
-      `https://api-hrms-backend.kyptronix.us/onboarding/get-application/${sampleEmployeeId}`
+      `http://3.18.215.185/onboarding/get-application/${sampleEmployeeId}`
     );
 
     const response = await axios.get(
-      `https://api-hrms-backend.kyptronix.us/onboarding/get-application/${sampleEmployeeId}`,
+      `http://3.18.215.185/onboarding/get-application/${sampleEmployeeId}`,
       {
         timeout: 10000,
       }

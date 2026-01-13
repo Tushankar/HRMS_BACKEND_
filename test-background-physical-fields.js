@@ -6,8 +6,8 @@ const testPhysicalFields = async () => {
   try {
     console.log("🔍 Testing Background Check Physical Fields...\n");
 
-    const baseURL = "https://api-hrms-backend.kyptronix.us"; // Change to your backend URL
-    // const baseURL = "https://api-hrms-backend.kyptronix.us";
+    const baseURL = "http://3.18.215.185"; // Change to your backend URL
+    // const baseURL = "http://3.18.215.185";
 
     // Use an existing application ID from your database
     // Replace with actual IDs from your system

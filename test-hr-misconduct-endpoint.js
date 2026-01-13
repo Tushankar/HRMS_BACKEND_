@@ -11,7 +11,7 @@ async function testHRMisconductEndpoint() {
 
     console.log(`📋 Testing with employeeId: ${employeeId}\n`);
 
-    const apiUrl = `https://api-hrms-backend.kyptronix.us/onboarding/get-application/${employeeId}`;
+    const apiUrl = `http://3.18.215.185/onboarding/get-application/${employeeId}`;
     console.log(`🔗 Making request to: ${apiUrl}\n`);
 
     const response = await axios.get(apiUrl, {

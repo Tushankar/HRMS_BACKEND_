@@ -3,7 +3,7 @@
 ## Problem Summary
 
 **Error**: `Failed to load resource: the server responded with a status of 404 (Not Found)`  
-**Endpoint**: `https://api-hrms-backend.kyptronix.us/onboarding/employee-upload-document`  
+**Endpoint**: `http://3.18.215.185/onboarding/employee-upload-document`  
 **Root Cause**: The backend was missing the TB Symptom Screen document upload endpoint and related handlers.
 
 ## What Was Wrong
@@ -171,17 +171,17 @@ Documents are stored in: `backend/uploads/tb-symptom-screen/`
 
 ```bash
 # 1. Upload document
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/employee-upload-document \
+curl -X POST http://3.18.215.185/onboarding/employee-upload-document \
   -F "file=@symptom-screen.pdf" \
   -F "applicationId=<APP_ID>" \
   -F "employeeId=<EMPLOYEE_ID>" \
   -F "positionType=tbSymptomScreen"
 
 # 2. Get uploaded documents
-curl https://api-hrms-backend.kyptronix.us/onboarding/get-uploaded-documents/<APP_ID>/tbSymptomScreen
+curl http://3.18.215.185/onboarding/get-uploaded-documents/<APP_ID>/tbSymptomScreen
 
 # 3. Remove document
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/remove-document \
+curl -X POST http://3.18.215.185/onboarding/remove-document \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "<APP_ID>",
@@ -190,7 +190,7 @@ curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/remove-document \
   }'
 
 # 4. Save status
-curl -X POST https://api-hrms-backend.kyptronix.us/onboarding/tb-symptom-screen/save-status \
+curl -X POST http://3.18.215.185/onboarding/tb-symptom-screen/save-status \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "<APP_ID>",

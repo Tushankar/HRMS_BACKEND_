@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const BASE_URL = "https://api-hrms-backend.kyptronix.us/onboarding";
+const BASE_URL = "http://3.18.215.185/onboarding";
 const EMPLOYEE_ID = "67e0f8770c6feb6ba99d11d2";
 
 async function quickTest() {

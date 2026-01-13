@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const BASE_URL = "https://api-hrms-backend.kyptronix.us/onboarding";
+const BASE_URL = "http://3.18.215.185/onboarding";
 const EMPLOYEE_ID = "66cb24c3c2f8df2f90e8c123"; // Replace with actual employee ID from your database
 
 // Test data for each form

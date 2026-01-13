@@ -15,7 +15,7 @@ const testSubmitNotes = async () => {
     console.log("📤 Sending request:", testData);
 
     const response = await axios.post(
-      "https://api-hrms-backend.kyptronix.us/onboarding/submit-notes",
+      "http://3.18.215.185/onboarding/submit-notes",
       testData,
       {
         headers: {
@@ -65,7 +65,7 @@ const testSubmitNotes = async (formType) => {
     };
 
     const response = await axios.post(
-      "https://api-hrms-backend.kyptronix.us/onboarding/submit-notes",
+      "http://3.18.215.185/onboarding/submit-notes",
       testData,
       {
         headers: {

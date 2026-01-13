@@ -1,8 +1,7 @@
 const axios = require("axios");
 
 async function testMisconductStatement() {
-  const BASE_URL =
-    "https://api-hrms-backend.kyptronix.us/onboarding/misconduct-statement";
+  const BASE_URL = "http://3.18.215.185/onboarding/misconduct-statement";
 
   // Test data with digital signature
   const testData = {
