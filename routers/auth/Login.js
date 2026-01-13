@@ -39,7 +39,7 @@ async function sendOTPEmail(email, otp) {
 
   await transporter.sendMail(mailOptions);
 }
-
+//shs
 // Temporary storage for login OTPs (in production, use Redis or database)
 const loginOtpStore = new Map();
 // Temporary storage for forgot-password OTPs
