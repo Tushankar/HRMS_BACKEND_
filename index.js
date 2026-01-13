@@ -29,7 +29,7 @@ app.use(
       "https://cool-malabi-d4598b.netlify.app",
       "https://meek-fox-fdb3c3.netlify.app",
       "https://hrmsmanagement.netlify.app",
-      "https://api-hrms-backend.kyptronix.us",
+      "http://3.18.215.185:1111",
       "http://hrms-client.s3-website.us-east-2.amazonaws.com",
     ], // Include both frontend ports and production URL
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow all standard methods
