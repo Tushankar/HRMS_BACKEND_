@@ -29,20 +29,22 @@ app.use(
       "https://cool-malabi-d4598b.netlify.app",
       "https://meek-fox-fdb3c3.netlify.app",
       "https://hrmsmanagement.netlify.app",
-      "http://3.18.215.185",
+      "https://api.carecompapp.com",
       "http://hrms-client.s3-website.us-east-2.amazonaws.com",
+      "https://www.carecompapp.com",
+      "https://carecompapp.com",
     ], // Include both frontend ports and production URL
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow all standard methods
     allowedHeaders: ["Content-Type", "Authorization", "Accept"], // Allow common headers
     exposedHeaders: ["Authorization"], // Expose headers if needed
     credentials: true, // Allow cookies and authorization headers
-  })
+  }),
 );
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
     contentSecurityPolicy: false,
-  })
+  }),
 );
 app.use(morgan("combined"));
 app.use(express.json());
@@ -171,7 +173,10 @@ wss.on("connection", (ws) => {
         if (!senderId) {
           console.error("Login failed: No senderId provided", data);
           ws.send(
-            JSON.stringify({ event: "login-error", message: "Invalid user ID" })
+            JSON.stringify({
+              event: "login-error",
+              message: "Invalid user ID",
+            }),
           );
           return;
         }
@@ -194,7 +199,7 @@ wss.on("connection", (ws) => {
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
             client.send(
-              JSON.stringify({ event: "message", ...newMessage.toObject() })
+              JSON.stringify({ event: "message", ...newMessage.toObject() }),
             );
           }
         });
@@ -220,7 +225,7 @@ wss.on("connection", (ws) => {
                 JSON.stringify({
                   event: "message-updated",
                   ...message.toObject(),
-                })
+                }),
               );
             }
           });
@@ -230,7 +235,7 @@ wss.on("connection", (ws) => {
           "Processing call event. Sender:",
           senderId,
           "Receiver:",
-          receiverId
+          receiverId,
         );
         console.log("Current users:", Object.keys(users));
         if (users[receiverId]) {
@@ -239,7 +244,7 @@ wss.on("connection", (ws) => {
               event: "incoming-call",
               senderId,
               offer,
-            })
+            }),
           );
         } else {
           console.error(`Receiver ${receiverId} not found in users`);
@@ -247,7 +252,7 @@ wss.on("connection", (ws) => {
             JSON.stringify({
               event: "call-error",
               message: "User not connected",
-            })
+            }),
           );
         }
       } else if (event === "answer") {
@@ -257,7 +262,7 @@ wss.on("connection", (ws) => {
               event: "call-answer",
               senderId,
               answer,
-            })
+            }),
           );
         } else {
           console.error(`Receiver ${receiverId} not found for answer`);
@@ -269,7 +274,7 @@ wss.on("connection", (ws) => {
               event: "ice-candidate",
               senderId,
               candidate,
-            })
+            }),
           );
         }
       } else if (event === "end-call") {
@@ -278,7 +283,7 @@ wss.on("connection", (ws) => {
             JSON.stringify({
               event: "end-call",
               senderId,
-            })
+            }),
           );
         }
       }

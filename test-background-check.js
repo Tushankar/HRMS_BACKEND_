@@ -9,7 +9,7 @@ const testBackgroundCheckForm = async () => {
   try {
     console.log("Testing Background Check Form Integration...\n");
 
-    const baseURL = "http://3.18.215.185";
+    const baseURL = "https://api.carecompapp.com";
 
     // Create test IDs
     const testApplicationId = new mongoose.Types.ObjectId();
@@ -63,7 +63,7 @@ const testBackgroundCheckForm = async () => {
         employeeId: testEmployeeId,
         formData: testFormData,
         status: "draft",
-      }
+      },
     );
 
     console.log("✓ Save Response:", saveResponse.data.message);
@@ -73,13 +73,13 @@ const testBackgroundCheckForm = async () => {
     // Test retrieving the background check form
     console.log("2. Testing get-background-check-by-id endpoint...");
     const getResponse = await axios.get(
-      `${baseURL}/onboarding/get-background-check-by-id/${savedFormId}`
+      `${baseURL}/onboarding/get-background-check-by-id/${savedFormId}`,
     );
 
     console.log("✓ Get Response:", getResponse.data.message);
     console.log("✓ Form data retrieved successfully");
     console.log(
-      `✓ Retrieved form for: ${getResponse.data.backgroundCheck.formData.firstName} ${getResponse.data.backgroundCheck.formData.lastName}\n`
+      `✓ Retrieved form for: ${getResponse.data.backgroundCheck.formData.firstName} ${getResponse.data.backgroundCheck.formData.lastName}\n`,
     );
 
     // Test updating the form
@@ -92,12 +92,12 @@ const testBackgroundCheckForm = async () => {
         employeeId: testEmployeeId,
         formData: updatedFormData,
         status: "completed",
-      }
+      },
     );
 
     console.log("✓ Update Response:", updateResponse.data.message);
     console.log(
-      `✓ Form status updated to: ${updateResponse.data.backgroundCheck.status}\n`
+      `✓ Form status updated to: ${updateResponse.data.backgroundCheck.status}\n`,
     );
 
     // Clean up test data
@@ -112,7 +112,7 @@ const testBackgroundCheckForm = async () => {
   } catch (error) {
     console.error(
       "❌ Test failed:",
-      error.response ? error.response.data : error.message
+      error.response ? error.response.data : error.message,
     );
     try {
       await mongoose.connection.close();

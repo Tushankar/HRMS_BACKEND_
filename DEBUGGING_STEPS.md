@@ -189,7 +189,7 @@ In your backend terminal, after clicking Save, look for:
 
 ```bash
 # Test Save
-curl -X POST http://3.18.215.185/onboarding/save-background-check \
+curl -X POST https://api.carecompapp.com/onboarding/save-background-check \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "68cd668621dec4327dd0d41f",
@@ -209,7 +209,7 @@ curl -X POST http://3.18.215.185/onboarding/save-background-check \
   }'
 
 # Test Get
-curl http://3.18.215.185/onboarding/get-background-check/68cd668621dec4327dd0d41f
+curl https://api.carecompapp.com/onboarding/get-background-check/68cd668621dec4327dd0d41f
 ```
 
 ## 📸 What to Share with Me
@@ -217,14 +217,12 @@ curl http://3.18.215.185/onboarding/get-background-check/68cd668621dec4327dd0d41
 If it's still not working, please share:
 
 1. **Console logs** showing:
-
    - The `⭐ PHYSICAL FIELD CHANGED` logs
    - The `⭐ PHYSICAL FIELDS AT SUBMIT` logs
    - The `🔴 Payload structure` logs
    - Any error messages
 
 2. **Backend logs** showing:
-
    - The `🟡 ApplicantInfo field values` logs
    - The `🟢 VERIFICATION - Physical fields in DB` logs
    - Any error messages

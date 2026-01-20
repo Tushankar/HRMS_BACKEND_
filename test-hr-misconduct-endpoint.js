@@ -11,7 +11,7 @@ async function testHRMisconductEndpoint() {
 
     console.log(`📋 Testing with employeeId: ${employeeId}\n`);
 
-    const apiUrl = `http://3.18.215.185/onboarding/get-application/${employeeId}`;
+    const apiUrl = `https://api.carecompapp.com/onboarding/get-application/${employeeId}`;
     console.log(`🔗 Making request to: ${apiUrl}\n`);
 
     const response = await axios.get(apiUrl, {
@@ -26,11 +26,11 @@ async function testHRMisconductEndpoint() {
     console.log("  - response.data.data exists:", !!response.data?.data);
     console.log(
       "  - response.data.data.forms exists:",
-      !!response.data?.data?.forms
+      !!response.data?.data?.forms,
     );
     console.log(
       "  - response.data.data.forms.misconductStatement exists:",
-      !!response.data?.data?.forms?.misconductStatement
+      !!response.data?.data?.forms?.misconductStatement,
     );
 
     console.log("\n📄 Misconduct Statement Data:");
@@ -50,11 +50,11 @@ async function testHRMisconductEndpoint() {
       console.log("  - dateField2:", misconductData.dateField2);
       console.log(
         "  - signatureLine length:",
-        misconductData.signatureLine?.length || 0
+        misconductData.signatureLine?.length || 0,
       );
       console.log(
         "  - signatureField length:",
-        misconductData.signatureField?.length || 0
+        misconductData.signatureField?.length || 0,
       );
       console.log("  - hrFeedback:", misconductData.hrFeedback);
       console.log("\n✅ Data is being returned correctly from backend!");
@@ -83,7 +83,7 @@ async function testHRMisconductEndpoint() {
       console.log("📄 Error message:", error.response.data?.message);
       console.log(
         "📄 Full response:",
-        JSON.stringify(error.response.data, null, 2)
+        JSON.stringify(error.response.data, null, 2),
       );
     } else if (error.request) {
       console.log("❌ No response received from server");

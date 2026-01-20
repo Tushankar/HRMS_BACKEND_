@@ -1,7 +1,8 @@
 const axios = require("axios");
 
 async function testMisconductStatement() {
-  const BASE_URL = "http://3.18.215.185/onboarding/misconduct-statement";
+  const BASE_URL =
+    "https://api.carecompapp.com/onboarding/misconduct-statement";
 
   // Test data with digital signature
   const testData = {
@@ -33,7 +34,7 @@ async function testMisconductStatement() {
 
     const response = await axios.post(
       `${BASE_URL}/save-misconduct-statement`,
-      testData
+      testData,
     );
 
     console.log("✅ Success!");

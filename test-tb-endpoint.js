@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const BASE_URL = "http://3.18.215.185/onboarding";
+const BASE_URL = "https://api.carecompapp.com/onboarding";
 
 async function testTBSymptomScreen() {
   try {
@@ -58,7 +58,7 @@ async function testTBSymptomScreen() {
 
     const response = await axios.post(
       `${BASE_URL}/save-tb-symptom-screen`,
-      testData
+      testData,
     );
 
     console.log("✅ Success! Response status:", response.status);
@@ -73,19 +73,19 @@ async function testTBSymptomScreen() {
       if (response.data.tbSymptomScreen.basicInfo) {
         console.log(
           "✅ Basic Info mapped:",
-          response.data.tbSymptomScreen.basicInfo.fullName
+          response.data.tbSymptomScreen.basicInfo.fullName,
         );
       }
       if (response.data.tbSymptomScreen.symptoms) {
         console.log(
           "✅ Symptoms mapped:",
-          Object.keys(response.data.tbSymptomScreen.symptoms)
+          Object.keys(response.data.tbSymptomScreen.symptoms),
         );
       }
       if (response.data.tbSymptomScreen.actionTaken) {
         console.log(
           "✅ Action Taken mapped:",
-          Object.keys(response.data.tbSymptomScreen.actionTaken)
+          Object.keys(response.data.tbSymptomScreen.actionTaken),
         );
       }
     }

@@ -15,14 +15,14 @@ const testSubmitNotes = async () => {
     console.log("📤 Sending request:", testData);
 
     const response = await axios.post(
-      "http://3.18.215.185/onboarding/submit-notes",
+      "https://api.carecompapp.com/onboarding/submit-notes",
       testData,
       {
         headers: {
           "Content-Type": "application/json",
         },
         timeout: 10000,
-      }
+      },
     );
 
     console.log("✅ Success! Response:", response.data);
@@ -65,21 +65,21 @@ const testSubmitNotes = async (formType) => {
     };
 
     const response = await axios.post(
-      "http://3.18.215.185/onboarding/submit-notes",
+      "https://api.carecompapp.com/onboarding/submit-notes",
       testData,
       {
         headers: {
           "Content-Type": "application/json",
         },
         timeout: 10000,
-      }
+      },
     );
 
     console.log(`✅ ${formType}: Success!`, response.data.message);
   } catch (error) {
     console.error(
       `❌ ${formType}: Error -`,
-      error.response?.data?.error || error.message
+      error.response?.data?.error || error.message,
     );
   }
 };

@@ -9,14 +9,14 @@ async function testOnboardingEndpoint() {
     console.log("Testing onboarding endpoint...");
     console.log(
       "URL:",
-      `http://3.18.215.185/onboarding/get-application/${sampleEmployeeId}`
+      `https://api.carecompapp.com/onboarding/get-application/${sampleEmployeeId}`,
     );
 
     const response = await axios.get(
-      `http://3.18.215.185/onboarding/get-application/${sampleEmployeeId}`,
+      `https://api.carecompapp.com/onboarding/get-application/${sampleEmployeeId}`,
       {
         timeout: 10000,
-      }
+      },
     );
 
     console.log("Response status:", response.status);

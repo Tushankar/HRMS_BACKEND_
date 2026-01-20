@@ -22,14 +22,14 @@ async function testBackgroundCheckHRFeedback() {
     console.log("\n---\n");
 
     const response = await axios.post(
-      "http://3.18.215.185/onboarding/save-background-check",
+      "https://api.carecompapp.com/onboarding/save-background-check",
       payload,
       {
         headers: {
           "Content-Type": "application/json",
         },
         withCredentials: true,
-      }
+      },
     );
 
     console.log("✅ Success! Response:");

@@ -15,7 +15,7 @@ const connectDB = async () => {
         email: String,
         role: String,
       }),
-      "users"
+      "users",
     );
 
     let testEmployee = await User.findOne();
@@ -40,7 +40,7 @@ const connectDB = async () => {
   }
 };
 
-const BASE_URL = "http://3.18.215.185/onboarding";
+const BASE_URL = "https://api.carecompapp.com/onboarding";
 
 // Test data for each form
 const testData = {
@@ -371,7 +371,7 @@ async function testAllForms() {
     console.log("\n1️⃣ Testing Main Application Creation...");
     try {
       const appResponse = await axios.get(
-        `${BASE_URL}/get-application/${EMPLOYEE_ID}`
+        `${BASE_URL}/get-application/${EMPLOYEE_ID}`,
       );
       APPLICATION_ID = appResponse.data.data.application._id;
       console.log("✅ Application created successfully");
@@ -380,7 +380,7 @@ async function testAllForms() {
     } catch (error) {
       console.log(
         "❌ Application creation failed:",
-        error.response?.data?.message || error.message
+        error.response?.data?.message || error.message,
       );
       console.log(`   Status: ${error.response?.status || "Unknown"}`);
       failedTests++;
@@ -424,7 +424,7 @@ async function testAllForms() {
 
         // Retrieve form
         const getResponse = await axios.get(
-          `${BASE_URL}/get-${formName}/${APPLICATION_ID}`
+          `${BASE_URL}/get-${formName}/${APPLICATION_ID}`,
         );
         console.log(`  📥 Get: ✅ Status ${getResponse.status}`);
 
@@ -436,18 +436,18 @@ async function testAllForms() {
             employeeId: EMPLOYEE_ID,
             formData: testData[formName],
             status: "completed",
-          }
+          },
         );
 
         console.log(`  ✅ Complete: ✅ Status ${completeResponse.status}`);
         console.log(
-          `  📊 Progress: ${completeResponse.data.completionPercentage}%`
+          `  📊 Progress: ${completeResponse.data.completionPercentage}%`,
         );
 
         passedTests++;
       } catch (error) {
         console.log(
-          `  ❌ FAILED: ${error.response?.data?.message || error.message}`
+          `  ❌ FAILED: ${error.response?.data?.message || error.message}`,
         );
         console.log(`     Status: ${error.response?.status || "Unknown"}`);
         failedTests++;
@@ -458,17 +458,17 @@ async function testAllForms() {
     console.log("\n3️⃣ Testing Application Submission...");
     try {
       const submitResponse = await axios.put(
-        `${BASE_URL}/submit-application/${APPLICATION_ID}`
+        `${BASE_URL}/submit-application/${APPLICATION_ID}`,
       );
       console.log("✅ Application submitted successfully");
       console.log(
-        `   Status: ${submitResponse.data.application.applicationStatus}`
+        `   Status: ${submitResponse.data.application.applicationStatus}`,
       );
       passedTests++;
     } catch (error) {
       console.log(
         "❌ Application submission failed:",
-        error.response?.data?.message || error.message
+        error.response?.data?.message || error.message,
       );
       failedTests++;
     }
@@ -478,10 +478,10 @@ async function testAllForms() {
     try {
       // Get all applications
       const allAppsResponse = await axios.get(
-        `${BASE_URL}/get-all-applications`
+        `${BASE_URL}/get-all-applications`,
       );
       console.log(
-        `✅ Retrieved ${allAppsResponse.data.applications.length} applications`
+        `✅ Retrieved ${allAppsResponse.data.applications.length} applications`,
       );
 
       // Update application status
@@ -491,18 +491,18 @@ async function testAllForms() {
           status: "under_review",
           reviewComments: "Test review comment",
           reviewedBy: EMPLOYEE_ID,
-        }
+        },
       );
       console.log("✅ Application status updated");
       console.log(
-        `   New Status: ${statusResponse.data.application.applicationStatus}`
+        `   New Status: ${statusResponse.data.application.applicationStatus}`,
       );
 
       passedTests += 2;
     } catch (error) {
       console.log(
         "❌ HR functions failed:",
-        error.response?.data?.message || error.message
+        error.response?.data?.message || error.message,
       );
       failedTests += 2;
     }
@@ -519,8 +519,8 @@ async function testAllForms() {
   console.log(`❌ Failed Tests: ${failedTests}`);
   console.log(
     `📊 Success Rate: ${Math.round(
-      (passedTests / (passedTests + failedTests)) * 100
-    )}%`
+      (passedTests / (passedTests + failedTests)) * 100,
+    )}%`,
   );
 
   if (failedTests === 0) {

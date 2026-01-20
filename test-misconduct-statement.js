@@ -3,7 +3,7 @@ const axios = require("axios");
 async function testMisconductStatementSave() {
   try {
     console.log(
-      "🧪 Testing misconduct statement save with proper data structure..."
+      "🧪 Testing misconduct statement save with proper data structure...",
     );
 
     // Use an existing application ID from the database
@@ -40,29 +40,29 @@ async function testMisconductStatementSave() {
     console.log("📤 Request data:", JSON.stringify(requestData, null, 2));
 
     const response = await axios.post(
-      "http://3.18.215.185/onboarding/misconduct-statement/save-misconduct-statement",
+      "https://api.carecompapp.com/onboarding/misconduct-statement/save-misconduct-statement",
       requestData,
       {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     console.log(
       "✅ Success! Response:",
-      JSON.stringify(response.data, null, 2)
+      JSON.stringify(response.data, null, 2),
     );
 
     // Now test retrieving the data
     console.log("\n🔍 Testing data retrieval...");
     const getResponse = await axios.get(
-      `http://3.18.215.185/onboarding/misconduct-statement/get-misconduct-statement/${applicationId}`
+      `https://api.carecompapp.com/onboarding/misconduct-statement/get-misconduct-statement/${applicationId}`,
     );
 
     console.log(
       "✅ Retrieval Success! Response:",
-      JSON.stringify(getResponse.data, null, 2)
+      JSON.stringify(getResponse.data, null, 2),
     );
   } catch (error) {
     console.error("❌ Error occurred:");

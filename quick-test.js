@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const BASE_URL = "http://3.18.215.185/onboarding";
+const BASE_URL = "https://api.carecompapp.com/onboarding";
 const EMPLOYEE_ID = "67e0f8770c6feb6ba99d11d2";
 
 async function quickTest() {
@@ -14,7 +14,7 @@ async function quickTest() {
     // Step 1: Get/Create Application
     console.log("1️⃣ Creating application...");
     const appResponse = await axios.get(
-      `${BASE_URL}/get-application/${EMPLOYEE_ID}`
+      `${BASE_URL}/get-application/${EMPLOYEE_ID}`,
     );
     APPLICATION_ID = appResponse.data.data.application._id;
     console.log(`✅ Application ID: ${APPLICATION_ID}`);
@@ -49,7 +49,7 @@ async function quickTest() {
       status: "completed",
     });
     console.log(
-      `✅ Employment Application: ${empApp.status} - ${empApp.data.completionPercentage}%`
+      `✅ Employment Application: ${empApp.status} - ${empApp.data.completionPercentage}%`,
     );
 
     // Step 3: Test I-9 Form
@@ -74,7 +74,7 @@ async function quickTest() {
       status: "completed",
     });
     console.log(
-      `✅ I-9 Form: ${i9Form.status} - ${i9Form.data.completionPercentage}%`
+      `✅ I-9 Form: ${i9Form.status} - ${i9Form.data.completionPercentage}%`,
     );
 
     // Step 4: Test W-4 Form
@@ -103,7 +103,7 @@ async function quickTest() {
       status: "completed",
     });
     console.log(
-      `✅ W-4 Form: ${w4Form.status} - ${w4Form.data.completionPercentage}%`
+      `✅ W-4 Form: ${w4Form.status} - ${w4Form.data.completionPercentage}%`,
     );
 
     // Step 5: Test Emergency Contact
@@ -132,26 +132,26 @@ async function quickTest() {
           },
         },
         status: "completed",
-      }
+      },
     );
     console.log(
-      `✅ Emergency Contact: ${emergencyContact.status} - ${emergencyContact.data.completionPercentage}%`
+      `✅ Emergency Contact: ${emergencyContact.status} - ${emergencyContact.data.completionPercentage}%`,
     );
 
     // Step 6: Submit Application
     console.log("\n6️⃣ Submitting Application...");
     const submitResponse = await axios.put(
-      `${BASE_URL}/submit-application/${APPLICATION_ID}`
+      `${BASE_URL}/submit-application/${APPLICATION_ID}`,
     );
     console.log(
-      `✅ Application Submitted: ${submitResponse.data.application.applicationStatus}`
+      `✅ Application Submitted: ${submitResponse.data.application.applicationStatus}`,
     );
 
     // Step 7: Test HR Functions
     console.log("\n7️⃣ Testing HR Functions...");
     const allApps = await axios.get(`${BASE_URL}/get-all-applications`);
     console.log(
-      `✅ Retrieved ${allApps.data.applications.length} applications`
+      `✅ Retrieved ${allApps.data.applications.length} applications`,
     );
 
     console.log("\n🎉 QUICK TEST COMPLETED SUCCESSFULLY! 🎉");

@@ -6,8 +6,8 @@ const testPhysicalFields = async () => {
   try {
     console.log("🔍 Testing Background Check Physical Fields...\n");
 
-    const baseURL = "http://3.18.215.185"; // Change to your backend URL
-    // const baseURL = "http://3.18.215.185";
+    const baseURL = "https://api.carecompapp.com"; // Change to your backend URL
+    // const baseURL = "https://api.carecompapp.com";
 
     // Use an existing application ID from your database
     // Replace with actual IDs from your system
@@ -75,7 +75,7 @@ const testPhysicalFields = async () => {
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       console.log("✅ Save Response:", saveResponse.data.message);
@@ -85,19 +85,19 @@ const testPhysicalFields = async () => {
       console.log("\n🔍 Verifying saved physical fields:");
       console.log(
         "   Height:",
-        savedData.applicantInfo?.height || "❌ NOT SAVED"
+        savedData.applicantInfo?.height || "❌ NOT SAVED",
       );
       console.log(
         "   Weight:",
-        savedData.applicantInfo?.weight || "❌ NOT SAVED"
+        savedData.applicantInfo?.weight || "❌ NOT SAVED",
       );
       console.log(
         "   Eye Color:",
-        savedData.applicantInfo?.eyeColor || "❌ NOT SAVED"
+        savedData.applicantInfo?.eyeColor || "❌ NOT SAVED",
       );
       console.log(
         "   Hair Color:",
-        savedData.applicantInfo?.hairColor || "❌ NOT SAVED"
+        savedData.applicantInfo?.hairColor || "❌ NOT SAVED",
       );
 
       if (
@@ -113,7 +113,7 @@ const testPhysicalFields = async () => {
     } catch (saveError) {
       console.error(
         "❌ Error saving form:",
-        saveError.response?.data || saveError.message
+        saveError.response?.data || saveError.message,
       );
       return;
     }
@@ -127,7 +127,7 @@ const testPhysicalFields = async () => {
         `${baseURL}/onboarding/get-background-check/${testApplicationId}`,
         {
           withCredentials: true,
-        }
+        },
       );
 
       console.log("✅ Get Response:", getResponse.data.message);
@@ -137,19 +137,19 @@ const testPhysicalFields = async () => {
       console.log("\n🔍 Verifying retrieved physical fields:");
       console.log(
         "   Height:",
-        retrievedData.applicantInfo?.height || "❌ NOT FOUND"
+        retrievedData.applicantInfo?.height || "❌ NOT FOUND",
       );
       console.log(
         "   Weight:",
-        retrievedData.applicantInfo?.weight || "❌ NOT FOUND"
+        retrievedData.applicantInfo?.weight || "❌ NOT FOUND",
       );
       console.log(
         "   Eye Color:",
-        retrievedData.applicantInfo?.eyeColor || "❌ NOT FOUND"
+        retrievedData.applicantInfo?.eyeColor || "❌ NOT FOUND",
       );
       console.log(
         "   Hair Color:",
-        retrievedData.applicantInfo?.hairColor || "❌ NOT FOUND"
+        retrievedData.applicantInfo?.hairColor || "❌ NOT FOUND",
       );
 
       if (
@@ -165,7 +165,7 @@ const testPhysicalFields = async () => {
     } catch (getError) {
       console.error(
         "❌ Error retrieving form:",
-        getError.response?.data || getError.message
+        getError.response?.data || getError.message,
       );
       return;
     }
@@ -206,7 +206,7 @@ const testPhysicalFields = async () => {
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       console.log("✅ Update Response:", updateResponse.data.message);
@@ -216,19 +216,19 @@ const testPhysicalFields = async () => {
       console.log("\n🔍 Verifying updated physical fields:");
       console.log(
         "   Height:",
-        updatedData.applicantInfo?.height || "❌ NOT UPDATED"
+        updatedData.applicantInfo?.height || "❌ NOT UPDATED",
       );
       console.log(
         "   Weight:",
-        updatedData.applicantInfo?.weight || "❌ NOT UPDATED"
+        updatedData.applicantInfo?.weight || "❌ NOT UPDATED",
       );
       console.log(
         "   Eye Color:",
-        updatedData.applicantInfo?.eyeColor || "❌ NOT UPDATED"
+        updatedData.applicantInfo?.eyeColor || "❌ NOT UPDATED",
       );
       console.log(
         "   Hair Color:",
-        updatedData.applicantInfo?.hairColor || "❌ NOT UPDATED"
+        updatedData.applicantInfo?.hairColor || "❌ NOT UPDATED",
       );
 
       if (
@@ -244,7 +244,7 @@ const testPhysicalFields = async () => {
     } catch (updateError) {
       console.error(
         "❌ Error updating form:",
-        updateError.response?.data || updateError.message
+        updateError.response?.data || updateError.message,
       );
       return;
     }

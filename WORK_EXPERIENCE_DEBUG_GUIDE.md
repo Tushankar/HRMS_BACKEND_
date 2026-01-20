@@ -119,7 +119,7 @@ Watch BOTH consoles:
 **Symptom**:
 
 ```
-POST http://3.18.215.185/onboarding/work-experience/save 404 (Not Found)
+POST https://api.carecompapp.com/onboarding/work-experience/save 404 (Not Found)
 ```
 
 **Solution**:
@@ -148,7 +148,7 @@ POST http://3.18.215.185/onboarding/work-experience/save 404 (Not Found)
 **Symptom**:
 
 ```
-Access to fetch at 'http://3.18.215.185/...' from origin 'http://localhost:5173' has been blocked by CORS
+Access to fetch at 'https://api.carecompapp.com/...' from origin 'http://localhost:5173' has been blocked by CORS
 ```
 
 **Solution**:
@@ -241,7 +241,7 @@ Check `backend/database/Models/WorkExperience.js` exists and is properly defined
 Verify `HRMS/.env` has:
 
 ```
-VITE__BASEURL=http://3.18.215.185
+VITE__BASEURL=https://api.carecompapp.com
 ```
 
 ## 📝 What to Share if Still Broken

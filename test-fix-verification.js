@@ -34,12 +34,12 @@ async function testFixedEndpoint() {
 
     console.log("📤 Sending request to save background check form...");
     const response = await axios.post(
-      "http://3.18.215.185/onboarding/save-background-check",
+      "https://api.carecompapp.com/onboarding/save-background-check",
       payload,
       {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
-      }
+      },
     );
 
     console.log("✅ SUCCESS! Background check form saved");
@@ -89,12 +89,12 @@ async function testUpdateForm(formId) {
     };
 
     const response = await axios.post(
-      "http://3.18.215.185/onboarding/save-background-check",
+      "https://api.carecompapp.com/onboarding/save-background-check",
       payload,
       {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
-      }
+      },
     );
 
     console.log("✅ Form updated successfully!");
@@ -112,7 +112,7 @@ async function runTests() {
   }
 
   console.log(
-    "\n🎉 Tests completed! The background check form should now work properly."
+    "\n🎉 Tests completed! The background check form should now work properly.",
   );
   console.log("💡 Key fixes applied:");
   console.log("   - Added fallback application ID when initialization fails");
