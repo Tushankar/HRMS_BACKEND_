@@ -8,7 +8,7 @@
 
 const axios = require("axios");
 
-const BASE_URL = "http://localhost:5000/api"; // Update with your actual URL
+const BASE_URL = "https://api.carecompapp.com/api"; // Update with your actual URL
 
 // Test data
 const testApplicationId = "YOUR_APPLICATION_ID"; // Replace with actual ID

@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const baseURL = "http://localhost:5000";
+const baseURL = "https://api.carecompapp.com";
 
 // Test data
 const applicationId = "YOUR_APPLICATION_ID";
