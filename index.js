@@ -62,6 +62,7 @@ const CreateEmployee = require("./routers/hr/create-employee.js");
 const UploadSignature = require("./routers/employee/uploadSignature.js");
 const UpdateProfile = require("./routers/employee/update-profile.js");
 const Getchat = require("./routers/chat/getChatHistory.js");
+const SendMessage = require("./routers/chat/sendMessage.js");
 const UploadRouter = require("./routers/upload.js");
 const EmployeeStatistics = require("./routers/hr/employee-statistics.js");
 
@@ -110,6 +111,7 @@ app.use("/doc", UploadFile);
 app.use("/hr", CreateEmployee);
 app.use("/signature", UploadSignature);
 app.use("/chat", Getchat);
+app.use("/chat", SendMessage);
 app.use("/upload", UploadRouter);
 
 // Apply Onboarding Routes
