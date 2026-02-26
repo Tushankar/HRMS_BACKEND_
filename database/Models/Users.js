@@ -13,7 +13,7 @@ const UserSchema = new Mongoose.Schema(
       unique: true,
     },
     phoneNumber: {
-      type: Number,
+      type: String,
       required: true,
       unique: true,
     },
@@ -56,6 +56,15 @@ const UserSchema = new Mongoose.Schema(
       type: String,
       default: "employee",
       enum: ["employee", "hr", "admin"],
+    },
+    isSuperAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      default: null,
     },
     profileImage: {
       type: String,

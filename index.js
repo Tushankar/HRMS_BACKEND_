@@ -53,6 +53,7 @@ app.use("/uploads", express.static("uploads"));
 // Import Routes
 const RegisterRoute = require("./routers/auth/Register.js");
 const LoginRoute = require("./routers/auth/Login.js");
+const AdminManagement = require("./routers/auth/admin-management.js");
 const CreateTask = require("./routers/hr/create-task.js");
 const GetTasks = require("./routers/hr/get-task.js");
 const GetAllEmployee = require("./routers/employee/getAllEmployee.js");
@@ -102,6 +103,7 @@ const LocationProxy = require("./routers/location-proxy.js");
 // Apply Routes
 app.use("/auth", RegisterRoute);
 app.use("/auth", LoginRoute);
+app.use("/admin", AdminManagement);
 app.use("/task", CreateTask);
 app.use("/task", GetTasks);
 app.use("/task", UpdateTask);
